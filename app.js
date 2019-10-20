@@ -58,7 +58,11 @@ app.use(
 );
 
 
-
+// set authentication details for every request 
+app.use((req,res,next)=>{
+  res.locals.isAuthenticated=req.session.isLoggedIn;
+  next();
+})
 
 
   // multer middleware for handling images
