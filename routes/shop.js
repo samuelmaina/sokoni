@@ -1,4 +1,4 @@
-const path = require('path');
+const IsAuth=require('../authmiddleware/userRoutesProtect')
 
 const express = require('express');
 
@@ -12,16 +12,16 @@ router.get('/products', shopController.getProducts);
 
 router.get('/products/:productId', shopController.getProduct);
 
-router.get('/cart', shopController.getCart);
+router.get('/cart', IsAuth,shopController.getCart);
 
-router.post('/cart', shopController.postCart);
+router.post('/cart', IsAuth,shopController.postCart);
 
-router.post('/cart-delete-item', shopController.postCartDeleteProduct);
+router.post('/cart-delete-item',IsAuth, shopController.postCartDeleteProduct);
 
-router.post('/create-orders', shopController.postOrders);
+router.post('/create-orders', IsAuth,shopController.postOrders);
 
-router.get('/orders', shopController.getOrders);
-router.get('/orders/:orderId',shopController.getInvoice);
+router.get('/orders', IsAuth,shopController.getOrders);
+router.get('/orders/:orderId',IsAuth,shopController.getInvoice);
 
 // router.get('/checkout', shopController.getCheckout);
 
