@@ -12,7 +12,7 @@
                             <article class="card product-item">
                                 <header class="card__header">
                                     <h1 class="product__title">
-                                        <%= product.title %>
+                                        Name:  <%= product.title %>
                                     </h1>
                                 </header>
                                 <div  class="card__image" >
@@ -20,11 +20,22 @@
                                 </div>
 
                                 <div class="card__content">
-                                    <h2 class="product__price">$
-                                        <%= product.price %>
+                                    <h2 class="product__price">
+                                       Price: $ <%= product.price %>
                                     </h2>
+                                    <br>
+
                                     <p class="product__description">
-                                        <%= product.description %>
+                                        Description: <%= product.description %>
+                                    </p>
+                                    <br>
+                                    <br>
+                                    <p class="product__description">
+                                        Stock:<%= product.quantity %>
+                                    </p>
+                                    <br>
+                                    <p class="product__price">
+                                        Managed By:<%= product.adminName %>
                                     </p>
                                 </div>
                                 <div class="card__actions">
