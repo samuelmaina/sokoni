@@ -1,12 +1,12 @@
 const Product = require("../models/product");
 const Order = require("../models/order");
-const path=require('path');
-const fs=require('fs');
+const path = require("path");
+const fs = require("fs");
 
 exports.getProducts = (req, res, next) => {
   Product.find()
     .then(products => {
-      console.log('the session user is '+req.session.user);
+      //ejs view will dispay 'no product' incase products is null.no need to check if null
       res.render("shop/product-list", {
         prods: products,
         pageTitle: "All Products",
@@ -18,7 +18,10 @@ exports.getProducts = (req, res, next) => {
 
 exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId;
-  Product.findById({_id: prodId }).then(product => {
+  Product.findById({ _id: prodId }).then(product => {
+    if (!product) {
+      res.redirect("/");
+    }
     res.render("shop/product-detail", {
       product: product,
       pageTitle: product.title,
@@ -30,6 +33,7 @@ exports.getProduct = (req, res, next) => {
 exports.getIndex = (req, res, next) => {
   Product.find()
     .then(products => {
+      //ejs view will dispay 'no product' incase products is null.no need to check if null
       res.render("shop/index", {
         prods: products,
         pageTitle: "Shop",
@@ -44,9 +48,11 @@ exports.getCart = (req, res, next) => {
     .populate("cart.items.productId ")
     .execPopulate()
     .then(user => {
+      //same as for products .no need for if null,ejs will display 'no products in cart'
       const products = user.cart.items;
+      console.log(products);
       res.render("shop/cart", {
-        path: "/cart", 
+        path: "/cart",
         pageTitle: "Your Cart",
         products: products
       });
@@ -58,7 +64,9 @@ exports.postCart = (req, res, next) => {
   const prodId = req.body.productId;
   Product.findById(prodId)
     .then(product => {
-      return req.user.addToCart(product);
+      if (product) {
+        return req.user.addToCart(product);
+      }
     })
     .then(result => {
       res.redirect("/products");
@@ -80,20 +88,21 @@ exports.postOrders = (req, res, next) => {
     .populate("cart.items.productId")
     .execPopulate()
     .then(user => {
-      const prods=user.cart.items.map(i=>{
-       return {
-        quantity:i.quantity,product:{...i.productId._doc}
-       } 
-      })
+      const prods = user.cart.items.map(i => {
+        return {
+          quantity: i.quantity,
+          product: { ...i.productId._doc }
+        };
+      });
       console.log(prods);
       const order = new Order({
         user: {
           name: req.user.name,
           userId: req.user
         },
-        products:prods
+        products: prods
       });
-      order.save()
+      order.save();
       return user.clearCart();
     })
     .then(result => res.redirect("/orders"))
@@ -101,7 +110,7 @@ exports.postOrders = (req, res, next) => {
 };
 
 exports.getOrders = (req, res, next) => {
-  Order.find({'user.userId':req.user.id})
+  Order.find({ "user.userId": req.user.id })
     .then(orders => {
       res.render("shop/orders", {
         path: "/orders",
@@ -112,12 +121,12 @@ exports.getOrders = (req, res, next) => {
     .catch(err => console.log(err));
 };
 
-exports.getInvoice=(req,res,next)=>{
-  const order=req.params.orderId;
-  const InvoicePath=path.join('data','invoices','Kreutzer R. Understanding Artificial Intelligence. Fundamentals, Use Cases and Methods...2019.pdf');
-//  data is streamed
-  const file=fs.createReadStream(InvoicePath);
-    res.setHeader('Content-Type','application/pdf');
-    res.setHeader('Content-Disposition','attachment;filename=samuel.pdf');
-    file.pipe(res);
-  };
+exports.getInvoice = (req, res, next) => {
+  const order = req.params.orderId;
+  const InvoicePath = path.join("data", "invoices", "file.pdf");
+  //  data is streamed
+  const file = fs.createReadStream(InvoicePath);
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", "attachment;filename=samuel.pdf");
+  file.pipe(res);
+};

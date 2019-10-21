@@ -9,16 +9,20 @@
     <main>
         <form class="login-form" action="/signup" method="POST">
             <div class="form-control">
-                <label for="">email</label>
-                <input type="email" name="email" id="email" value="email">
+                <label for="name">Name</label>
+                <input type='text' name="name" id="name" placeholder="name">
             </div>
             <div class="form-control">
-                <label for="password"> password </label>
-                <input type="password" name ="password" id="password"/>
+                <label for="email">Email</label>
+                <input type="email" name="email" id="email" placeholder="email">
+            </div>
+            <div class="form-control">
+                <label for="password"> Password </label>
+                <input type="password" name ="password" placeholder="password"/>
             </div>
             <div class="form-control">
                 <label for="ConfirmPassword"> Confirm Password </label>
-                <input type="password" name ="ConfirmPassword" id="password"/>
+                <input type="password" name ="ConfirmPassword" placeholder="password"/>
             </div>
             <input class="btn" type="submit" value="Sign Up">
         </form>
