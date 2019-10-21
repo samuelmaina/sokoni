@@ -1,33 +1,76 @@
 const User = require("../models/user");
+const bcrypt = require("bcrypt");
 
 exports.getLogin = (req, res, next) => {
-  console.log(req.session);
   res.render("auth/login", {
     pageTitle: "login",
-    path: "/auth/login"
+    path: "login"
   });
 };
 
-
-exports.getSignUp= (req, res, next) => {
+exports.getSignUp = (req, res, next) => {
   res.render("auth/signup", {
     pageTitle: "Sign UP ",
-    path: "/auth/signup"
+    path: "signup"
   });
 };
 
-
-exports.postLogin = (req, res, next) => {
-  User.findById("5da1f8947fb2132c1c7d450d")
+exports.postSignUp = (req, res, next) => {
+  const name = req.body.name;
+  const email = req.body.email;
+  const password = req.body.password;
+  const ConfirmPassword = req.body.ConfirmPassword;
+  User.findOne({ email: email })
     .then(user => {
-      req.session.isLoggedIn = true;
-      req.session.user = user;
-      req.session.save(err => {
+      if (user || password !== ConfirmPassword) {
+        return res.redirect("/signup");
+      }
+
+      bcrypt.hash(password, 12, (err, result) => {
         if (err) {
           console.log(err);
         }
-        res.redirect("/");
+        const newUser = new User({
+          name: name,
+          email: email,
+          password: result,
+          cart: { items: [] }
+        });
+        newUser.save().then(result => res.redirect("/login"));
       });
+    })
+    .catch(err => {
+      console.log(err);
+    });
+};
+
+exports.postLogin = (req, res, next) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  User.findOne({ email: email })
+    .then(user => {
+      if (!user) {
+        return res.redirect("/login");
+      }
+      bcrypt
+        .compare(password, user.password)
+        .then(isPwdValid => {
+          if (isPwdValid) {
+            req.session.isLoggedIn = true;
+            req.session.user = user;
+            return req.session.save(err => {
+              if (err) {
+                console.log(err);
+              }else {
+                res.redirect("/");
+              }
+             
+            });
+          } else {
+            return res.redirect("/login");
+          }
+        })
+        .catch(err => console.log(err));
     })
     .catch(err => console.log(err));
 };
@@ -37,7 +80,6 @@ exports.postLogout = (req, res, next) => {
     if (err) {
       console.log(err);
     }
-    console.log("Deleted the current active session");
     res.redirect("/");
   });
 };
