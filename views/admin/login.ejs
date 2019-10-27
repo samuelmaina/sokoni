@@ -16,6 +16,7 @@
                 <label for="password">  Administrator password </label>
                 <input type="password" name ="password" id="password"/>
             </div>
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <input class="btn" type="submit" value="Login">
         </form>
     </main>

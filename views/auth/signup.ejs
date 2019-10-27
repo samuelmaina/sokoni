@@ -24,6 +24,7 @@
                 <label for="ConfirmPassword"> Confirm Password </label>
                 <input type="password" name ="ConfirmPassword" placeholder="password"/>
             </div>
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <input class="btn" type="submit" value="Sign Up">
         </form>
     </main>

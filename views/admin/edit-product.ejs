@@ -31,8 +31,8 @@
             <% if (editing) { %>
                 <input type="hidden" value="<%= product.id %>" name="productId">
             <% } %>
-
-            <button class="btn" type="submit"><% if (editing) { %>Update Product<% } else { %>Add Product<% } %></button>
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input class="btn" type="submit" value='<% if (editing) { %>Update Product<% } else { %>Add Product<% } %> '>
         </form>
     </main>
 <%- include('../includes/end.ejs') %>

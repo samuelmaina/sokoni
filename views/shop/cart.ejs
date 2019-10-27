@@ -12,12 +12,15 @@
                             <p> Total: (ksh :<%= p.quantity*p.productId.price %>)</p>
                             <form action="/cart-delete-item" method="POST">
                                 <input type="hidden" value="<%= p.productId.id %>" name="productId">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                                 <input class="btn" type="submit" value='delete'>
                             </form>
                         </li>
                     <% }) %>
                 </ul>
+                <p> Total Price ksh :<%=total %></p>
                 <form action="/create-orders" method="POST">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <input class="btn" type="submit" value='Order Now!!'>
                 </form>
             <% } else { %>

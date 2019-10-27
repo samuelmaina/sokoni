@@ -20,8 +20,7 @@
           >Orders</a
         >
       </li>
-      <% } %>
-      <% if (isAdmin) { %>
+      <% } %> <% if (isAdmin&&!isAuthenticated) { %>
       <li class="main-header__item">
         <a
           class="<%= path === '/admin/add-product' ? 'active' : '' %>"
@@ -39,7 +38,9 @@
       <% } %>
     </ul>
     <ul class="main-header__item-list">
-      <% if (!isAuthenticated) { %>
+      <!-- added the second agurment is not admin to make sure that admin dont get the login
+      and sign up forms -->
+      <% if (!isAuthenticated&&!isAdmin) { %>
       <li class="main-header__item">
         <a class="<%= path === '/login' ? 'active' : '' %>" href="/login"
           >Login</a
@@ -50,36 +51,42 @@
           >Sign Up</a
         >
       </li>
-      <% } else { %>
+      <% } %> 
+      <% if (!isAuthenticated&&!isAdmin) { %>
+      <li class="main-header__item">
+        <a
+          class="<%= path === '/admin/login' ? 'active' : '' %>"
+          href="/admin/login"
+        >
+          Admin Login</a
+        >
+      </li>
+      <li class="main-header__item">
+        <a
+          class="<%= path === '/admin/signup' ? 'active' : '' %>"
+          href="/admin/signup"
+        >
+          Admin Sign Up</a
+        >
+      </li>
+      <% } %> <% if (isAdmin||isAuthenticated) { %>
       <li class="main-header__item">
         <form action="/logout" method="post">
-          <button type="submit">Logout</button>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <button
+            class="<%= path === '/logout' ? 'active' : '' %>"
+            type="submit"
+          >
+            logout
+          </button>
         </form>
       </li>
       <% } %>
-
-      <% if (!isAdmin) { %>
-        <li class="main-header__item">
-          <a class="<%= path === '/admin/login' ? 'active' : '' %>" href="/admin/login"
-            > Admin Login</a
-          >
-        </li>
-        <li class="main-header__item">
-          <a class="<%= path === '/admin/signup' ? 'active' : '' %>" href="/admin/signup"
-            > Admin Sign Up</a
-          >
-        </li>
-        <% } else { %>
-        <li class="main-header__item">
-          <form action="/logout" method="post">
-            <button type="submit">Logout</button>
-          </form>
-        </li>
-        <% } %>
-
     </ul>
   </nav>
 </header>
+
+<!-- the mobile view navigation setting -->
 
 <nav class="mobile-nav">
   <ul class="mobile-nav__item-list">
@@ -91,6 +98,36 @@
         >Products</a
       >
     </li>
+
+    <% if (!isAuthenticated&&!isAdmin) { %>
+    <li class="mobile-nav__item">
+      <a class="<%= path === '/login' ? 'active' : '' %>" href="/login"
+        >Login</a
+      >
+    </li>
+    <li class="mobile-nav__item">
+      <a class="<%= path === '/signup' ? 'active' : '' %>" href="/signup"
+        >Sign Up</a
+      >
+    </li>
+    <li class="mobile-nav__item">
+      <a
+        class="<%= path === '/admin/signup' ? 'active' : '' %>"
+        href="/admin/signup"
+      >
+        Admin Sign Up</a
+      >
+    </li>
+    <li class="mobile-nav__item">
+      <a
+        class="<%= path === '/admin/login' ? 'active' : '' %>"
+        href="/admin/login"
+      >
+        Admin Login</a
+      >
+    </li>
+      <% } %>
+    <% if (isAuthenticated) { %>
     <li class="mobile-nav__item">
       <a class="<%= path === '/cart' ? 'active' : '' %>" href="/cart">Cart</a>
     </li>
@@ -99,6 +136,9 @@
         >Orders</a
       >
     </li>
+    
+    <% } %> 
+    <% if (isAdmin) { %>
     <li class="mobile-nav__item">
       <a
         class="<%= path === '/admin/add-product' ? 'active' : '' %>"
@@ -113,5 +153,15 @@
         >Admin Products
       </a>
     </li>
+    <% } %> <% if (isAdmin||isAuthenticated) { %>
+    <li class="mobile-nav__item">
+      <form action="/logout" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <button class="<%= path === '/logout' ? 'active' : '' %>" type="submit">
+          logout
+        </button>
+      </form>
+    </li>
+    <% } %>
   </ul>
 </nav>
