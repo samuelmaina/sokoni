@@ -61,10 +61,9 @@ exports.postLogin = (req, res, next) => {
             return req.session.save(err => {
               if (err) {
                 console.log(err);
-              }else {
-                res.redirect("/");
+              } else {
+                res.redirect("/products");
               }
-             
             });
           } else {
             return res.redirect("/login");

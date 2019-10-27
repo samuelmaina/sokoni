@@ -15,7 +15,7 @@ exports.getAdminSignUp = (req, res, next) => {
 exports.postAdminSignUp = (req, res, next) => {
   const name = req.body.name;
   const email = req.body.email;
-  const password = req.body.password;
+  const password = req.body.password;  
   const ConfirmPassword = req.body.ConfirmPassword;
   Admin.findOne({ email: email })
     .then(admin => {
@@ -52,7 +52,6 @@ exports.getLogin = (req, res, next) => {
 };
 
 exports.postLogin = (req, res, next) => {
-  console.log("reached the post login route");
   const email = req.body.email;
   const password = req.body.password;
   Admin.findOne({ adminEmail: email })
@@ -87,7 +86,6 @@ exports.postLogout = (req, res, next) => {
     if (err) {
       console.log(err);
     }
-    console.log("Deleted the current active session");
     res.redirect("/");
   });
 };
@@ -106,6 +104,7 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
   const quantity = req.body.quantity;
+  
 
   if (!image) {
     image = "good person";
@@ -158,7 +157,6 @@ exports.postEditProduct = (req, res, next) => {
   let image = req.file;
   const updatedDesc = req.body.description;
   const updatedquantity = req.body.quantity;
-  console.log(image);
   if (!image) {
     image = "good person";
   } else {

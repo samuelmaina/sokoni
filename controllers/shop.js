@@ -25,7 +25,7 @@ exports.getProduct = (req, res, next) => {
     res.render("shop/product-detail", {
       product: product,
       pageTitle: product.title,
-      path: "/products"
+      path: "/product"
     });
   });
 };
@@ -50,11 +50,18 @@ exports.getCart = (req, res, next) => {
     .then(user => {
       //same as for products .no need for if null,ejs will display 'no products in cart'
       const products = user.cart.items;
-      console.log(products);
+      //  get the total price of all the products in the cart
+      let total = 0.0;
+      products.forEach(product => {
+        total += product.quantity * product.productId.price;
+      });
+      req.session.total = total;
+      req.session.cartProducts = products;
       res.render("shop/cart", {
         path: "/cart",
         pageTitle: "Your Cart",
-        products: products
+        products: products,
+        total: total
       });
     })
     .catch(err => console.log(err));
@@ -88,24 +95,25 @@ exports.postOrders = (req, res, next) => {
     .populate("cart.items.productId")
     .execPopulate()
     .then(user => {
-      const prods = user.cart.items.map(i => {
-        return {
-          quantity: i.quantity,
-          product: { ...i.productId._doc }
-        };
+      const products = user.cart.items.map(i => {
+        return { quantity: i.quantity, productId: { ...i.productId._doc } };
       });
-      console.log(prods);
       const order = new Order({
         user: {
           name: req.user.name,
           userId: req.user
         },
-        products: prods
+        products: products,
+        total: req.session.total
       });
-      order.save();
-      return user.clearCart();
+      return order.save();
     })
-    .then(result => res.redirect("/orders"))
+    .then(result => {
+      return req.user.clearCart();
+    })
+    .then(() => {
+      res.redirect("/orders");
+    })
     .catch(err => console.log(err));
 };
 
@@ -124,6 +132,7 @@ exports.getOrders = (req, res, next) => {
 exports.getInvoice = (req, res, next) => {
   const order = req.params.orderId;
   const InvoicePath = path.join("data", "invoices", "file.pdf");
+
   //  data is streamed
   const file = fs.createReadStream(InvoicePath);
   res.setHeader("Content-Type", "application/pdf");
