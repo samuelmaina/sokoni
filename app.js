@@ -8,7 +8,7 @@ const User = require("./models/user");
 const session = require('express-session');
 const  MongoDBSession=require('connect-mongodb-session')(session);
 const csurf=require('csurf');
-
+const flash=require('connect-flash');
 
 
 
@@ -108,6 +108,7 @@ const sendgridKey= 'SG.impTxzk5RHymMpHu-IuIhQ.wM7bHp_hNwQl_LhCD60SdLYzbXzkdrtixa
 body parser or multer can have already parsed the  data from body.
 */
 app.use(csurfProtection);
+app.use(flash());
 
 // set authentication details for every response.
 app.use((req,res,next)=>{

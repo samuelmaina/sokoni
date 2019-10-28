@@ -2,9 +2,11 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 
 exports.getLogin = (req, res, next) => {
+  console.log(req.flash('error'));
   res.render("auth/login", {
     pageTitle: "login",
-    path: "login"
+    path: "login",
+    errormessage:req.flash('error')
   });
 };
 
@@ -50,6 +52,7 @@ exports.postLogin = (req, res, next) => {
   User.findOne({ email: email })
     .then(user => {
       if (!user) {
+        res.flash('error','invalid password or email.try again later to login again');
         return res.redirect("/login");
       }
       bcrypt
