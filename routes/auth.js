@@ -1,14 +1,47 @@
-const express= require('express');
-const router= express.Router();
-const AuthControllers=require('../controllers/auth');
+const express = require("express");
+const { body } = require("express-validator/check");
 
-router.get('/login',AuthControllers.getLogin);
+const router = express.Router();
 
-router.post('/login',AuthControllers.postLogin);
+const AuthControllers = require("../controllers/auth");
+const User = require("../models/user");
 
-router.post('/logout',AuthControllers.postLogout);
+router.get("/login", AuthControllers.getLogin);
 
-router.get('/signup',AuthControllers.getSignUp);
-router.post('/signup',AuthControllers.postSignUp);
+router.post("/login", AuthControllers.postLogin);
 
-module.exports=router;
+router.post("/logout", AuthControllers.postLogout);
+
+router.get("/signup", AuthControllers.getSignUp);
+
+router.post(
+  "/signup",
+  [
+    body("email")
+      .isEmail()
+      .withMessage("Please enter a valid email")
+      .custom(value => {
+        return User.findOne({ email: value }).then(user => {
+          if (user) {
+            return Promise.reject(
+              "The email already exists please try another on"//check for the existence of an email before feeding the data to the database
+            );
+          }
+        });
+      }),
+
+    body(
+      "password",
+      "The password should be 8 or more character and should be alphanumeric!"
+    ).isLength({ min: 8 }),
+    body("ConfirmPassword").custom((value, { req }) => {
+      if (value !== req.body.password) {
+        throw new Error("Passwords do not match!");
+      }
+      return true;
+    })
+  ],
+  AuthControllers.postSignUp
+);
+
+module.exports = router;

@@ -99,11 +99,6 @@ app.use((req,res,next)=>{
  
 
 
-
-
-
-const sendgridKey= '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'
-
 /*use the csurf as the last option so that
 body parser or multer can have already parsed the  data from body.
 */

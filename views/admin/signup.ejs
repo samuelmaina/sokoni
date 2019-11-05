@@ -5,6 +5,11 @@
 
 <body>
    <%- include('../includes/navigation.ejs') %>
+   <%if(errorMessage){%>
+    
+         <div class='error-message'> <%= errorMessage %> </div>
+
+    <% }%>
 
     <main>
         <form class="login-form" action="/admin/signup" method="POST">

@@ -1,62 +1,84 @@
-const Product = require("../models/product");
-const Admin = require("../models/admin");
 const bcrypt = require("bcrypt");
+const { validationResult } = require("express-validator");
 
 // function to delete a product image when deleting a product  in the database or when updating the product.
 const filedeleter = require("../util/file");
 
+const Product = require("../models/product");
+const Admin = require("../models/admin");
+
 exports.getAdminSignUp = (req, res, next) => {
+  let message = req.flash("error");
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
   res.render("admin/signup", {
     pageTitle: "Administrator Sign In",
-    path: "/admin/signup"
+    path: "/admin/signup",
+    errorMessage: message
   });
 };
 
 exports.postAdminSignUp = (req, res, next) => {
   const name = req.body.name;
   const email = req.body.email;
-  const password = req.body.password;  
-  const ConfirmPassword = req.body.ConfirmPassword;
-  Admin.findOne({ email: email })
-    .then(admin => {
-      if (admin || password !== ConfirmPassword) {
-        return res.redirect("/admin/signup");
-      }
-
-      bcrypt.hash(password, 12, (err, result) => {
-        if (err) {
-          console.log(err);
-        }
-        const newAdmin = new Admin({
-          adminName: name,
-          adminEmail: email,
-          password: result
-        });
-
-        newAdmin
-          .save()
-          .then(result => res.redirect("/admin/login"))
-          .catch(err => console.log(err));
-      });
-    })
-    .catch(err => {
-      console.log(err);
+  const password = req.body.password;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.render("admin/signup", {
+      pageTitle: "Administrator Sign In",
+      path: "/admin/signup",
+      errorMessage: errors.array()[0].msg
     });
+  }
+  bcrypt.hash(password, 12, (err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    const newAdmin = new Admin({
+      adminName: name,
+      adminEmail: email,
+      password: result
+    });
+
+    newAdmin
+      .save()
+      .then(result => res.redirect("/admin/login"))
+      .catch(err => console.log(err));
+  });
 };
 
 exports.getLogin = (req, res, next) => {
+  let message = req.flash("error");
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
   res.render("admin/login", {
     pageTitle: "Administrator Login",
-    path: "/auth/login"
+    path: "/auth/login",
+    errorMessage: message
   });
 };
 
 exports.postLogin = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.render("admin/login", {
+      pageTitle: "Administrator Login",
+      path: "/auth/login",
+      errorMessage: errors.array()[0].msg
+    });
+  }
   Admin.findOne({ adminEmail: email })
     .then(admin => {
       if (!admin) {
+        req.flash("error", "Incorrect email");
         return res.redirect("/admin/login");
       }
       bcrypt
@@ -73,6 +95,7 @@ exports.postLogin = (req, res, next) => {
               }
             });
           } else {
+            req.flash("error", "Incorrect password");
             return res.redirect("/admin/login");
           }
         })
@@ -91,10 +114,17 @@ exports.postLogout = (req, res, next) => {
 };
 
 exports.getAddProduct = (req, res, next) => {
+  let message = req.flash("error");
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
   res.render("admin/edit-product", {
     pageTitle: "Add Product",
     path: "/admin/add-product",
-    editing: false
+    editing: false,
+    errorMessage: message
   });
 };
 
@@ -104,16 +134,29 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
   const quantity = req.body.quantity;
-  
 
-  if (!image) {
-    image = "good person";
-  } else {
-    image = image.path;
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    res.render("admin/edit-product", {
+      pageTitle: "Add Product",
+      path: "/admin/add-product",
+      editing: false,
+      errorMessage: errors.array()[0].msg
+    });
   }
+  if (!req.file) {
+    return res.render("admin/edit-product", {
+      pageTitle: "Add Product",
+      path: "/admin/add-product",
+      editing: false,
+      errorMessage: "Please select an image for your pruduct"
+    });
+  }
+
   const product = new Product({
     title: title,
-    ImageUrl: image,
+    ImageUrl: image.path,
     price: price,
     description: description,
     quantity: quantity,
@@ -130,56 +173,93 @@ exports.postAddProduct = (req, res, next) => {
 
 exports.getEditProduct = (req, res, next) => {
   const editMode = req.query.edit;
-  if (!editMode) {
-    return res.redirect("/");
-  }
   const prodId = req.params.productId;
   Product.findById({ _id: prodId }).then(product => {
     if (
       !product ||
       product.adminId.toString() !== req.session.admin._id.toString()
     ) {
-      return res.redirect("/admin/products");
+      return res.render("admin/edit-product", {
+        pageTitle: "Edit Product",
+        path: "/admin/edit-product",
+        editing: editMode,
+        product: product,
+        errorMessage:
+          "The product does not exists or you are not authorised to modify the product"
+      });
     }
     res.render("admin/edit-product", {
       pageTitle: "Edit Product",
       path: "/admin/edit-product",
       editing: editMode,
-      product: product
+      product: product,
+      errorMessage:'hii website ni matako sana'
     });
   });
 };
 
+
+
+
 exports.postEditProduct = (req, res, next) => {
+  console.log(req.body)
   const prodId = req.body.productId;
   const updatedTitle = req.body.title;
   const updatedPrice = req.body.price;
   let image = req.file;
   const updatedDesc = req.body.description;
   const updatedquantity = req.body.quantity;
-  if (!image) {
-    image = "good person";
-  } else {
-    image = image.path;
-  }
-  Product.findById({ _id: prodId })
+  const errors = validationResult(req);
+
+  console.log('Reached the the point of searching in the database')
+
+  Product.findOne({_id:prodId})
     .then(product => {
+      console.log(product);
       if (
         !product ||
         product.adminId.toString() !== req.session.admin._id.toString()
       ) {
-        return res.redirect("/admin/edit-product");
+          // return res.status(442).render("admin/edit-product", {
+          //   pageTitle: "Edit Product",
+          //   path: "/admin/edit-product",
+          //   editing: editMode,
+          //   product: product,
+          //   errorMessage: 'The product does not exist or you are not authorized to modify this product'
+          // });
+        }
+    
+      // if (!errors.isEmpty()) {
+
+      //   return res.status(442).render("admin/edit-product", {
+      //     pageTitle: "Edit Product",
+      //     path: "/admin/edit-product",
+      //     editing: editMode,
+      //     product: product,
+      //     errorMessage: errors.array()[0].msg
+      //   });
+      // }
+      
+      if (!req.file) {
+      return res.render("admin/edit-product", {
+         pageTitle: "Edit Product",
+         path: "/admin/edit-product",
+         editing: true,
+         product: product,
+         errorMessage: "hii website ni matako sana"
+       });
       }
       // delete current product image before updating the product
       filedeleter.deletefile(product.ImageUrl);
       product.title = updatedTitle;
       product.price = updatedPrice;
-      product.ImageUrl = image;
+      product.ImageUrl = image.path;
       product.description = updatedDesc;
       product.quantity = updatedquantity;
       product.adminId = req.session.admin._id;
       product.adminName = req.session.admin.adminName;
       product.save();
+      console.log('Just modified the current product so that it can be saved')
     })
     .catch(err => console.log(err));
   res.redirect("/admin/products");
@@ -201,7 +281,10 @@ exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
   Product.findById(prodId)
     .then(prod => {
-      if (!prod || prod.adminId.toString()!== req.session.admin._id.toString()) {
+      if (
+        !prod ||
+        prod.adminId.toString() !== req.session.admin._id.toString()
+      ) {
         return res.redirect("/admin/products");
       }
       filedeleter.deletefile(prod.ImageUrl);
