@@ -1,5 +1,6 @@
+.env.default
 /node_modules
 .vscode/
 IMAGES
 .env
-.env.default
+data/
