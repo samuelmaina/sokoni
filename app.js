@@ -9,6 +9,9 @@ const session = require('express-session');
 const  MongoDBSession=require('connect-mongodb-session')(session);
 const csurf=require('csurf');
 const flash=require('connect-flash');
+require('dotenv').config();
+
+
 
 
 
@@ -21,10 +24,8 @@ const authRoutes = require("./routes/auth");
 // intialization
 const app = express();
 const port = 3000;
-const MONGO_URI = "mongodb://127.0.0.1:27017/admin";
+const MONGO_URI = process.env.MONGO_URI;
 const csurfProtection= csurf();
-
-
 
 
 // express setting
@@ -71,10 +72,10 @@ const store = new MongoDBSession({
 });
 app.use(
   session({
-    secret: "samuelmaina",
-    resave:false,
+    secret: process.env.SESSION_SECRET,
+    resave: false,
     saveUnitialized: false,
-    store:store
+    store: store
   })
 );
 
@@ -100,7 +101,7 @@ app.use((req,res,next)=>{
 
 
 /*use the csurf as the last option so that
-body parser or multer can have already parsed the  data from body.
+body parser or multer have already parsed the  data from body.
 */
 app.use(csurfProtection);
 app.use(flash());

@@ -1,6 +1,6 @@
 {
     "env":{
-        "password":"Smainachez6871"
+        "SEND_GRID_KEY":""
     }
 
 }

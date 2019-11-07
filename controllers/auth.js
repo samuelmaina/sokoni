@@ -1,20 +1,20 @@
 const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
+require('dotenv').config();
+// required for sending emails to the user for authentication details
+const nodemailer = require("nodemailer");
+const sendGridTransporter = require("nodemailer-sendgrid-transport");
 
 const User = require("../models/user");
 
-// const nodemailer=require('nodemailer');
-// const sendgridTransporter=require('@sendgrid/mail');//configure the nodemailer-sendgrid-transport so that we can be able to send emails using the sendgrid package
-
 // this will be used to send emails using the sendgrid api
-// const transporter = nodemailer.createTransport(
-//   sendgridTransporter({
-//     auth: {
-//       api_key:
-//         "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"
-//     }
-//   })
-// );
+const transporter = nodemailer.createTransport(
+  sendGridTransporter({
+    auth: {
+      api_key: process.env.SEND_GRID_API_KEY
+    }
+  })
+);
 
 exports.getLogin = (req, res, next) => {
   let message = req.flash("error");
@@ -57,18 +57,32 @@ exports.postSignUp = (req, res, next) => {
       errorMessage: errors.array()[0].msg
     });
   }
-      bcrypt.hash(password, 12, (err, result) => {
-        if (err) {
-          console.log(err);
-        }
-        const newUser = new User({
-          name: name,
-          email: email,
-          password: result,
-          cart: { items: [] }
-        });
-        newUser.save().then(result => res.redirect("/login"));
-      });
+  bcrypt.hash(password, 12, (err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    const newUser = new User({
+      name: name,
+      email: email,
+      password: result,
+      cart: { items: [] }
+    });
+    newUser.save().then(savedUser => {
+      console.log(savedUser.email);
+      return transporter
+        .sendMail({
+          to: savedUser.email,
+          from: "samuelsonlineshop@online.com",
+          subject: "SIgn Up at Online shop successful!!!",
+          html:
+            "<strong>You have successfully sign up at the online shop.  You can now login at the shop to see more offers that can make you happy all the days  of your life</strpng>"
+        })
+        .then(result => {
+          res.redirect("/login"); //redirect to the login page after we have sent a sign up email.
+        })
+        .catch(err => console.log(err));
+    });
+  });
 };
 
 exports.postLogin = (req, res, next) => {
