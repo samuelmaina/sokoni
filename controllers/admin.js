@@ -1,11 +1,36 @@
 const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
+require("dotenv").config();
+
+
+
+// required for sending emails to the user for authentication details
+const nodemailer = require("nodemailer");
+
+
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    // also remember to turn on third party intervention in the account setting https://www.youtube.com/redirect?q=https%3A%2F%2Fmyaccount.google.com%2Flesssecureapps&v=NB71vyCj2X4&event=video_description&redir_token=sZ5_aOhjQQJNBvg3NBb4VZRn0nN8MTU3MzI0MDg0MkAxNTczMTU0NDQy
+    user: "samuelmainaonlineshop@gmail.com",
+    pass: process.env.GOOGLE_PASSWORD
+  }
+});
+
 
 // function to delete a product image when deleting a product  in the database or when updating the product.
-const filedeleter = require("../util/file");
+const filedeleter = require("../util/deletefile");
 
 const Product = require("../models/product");
 const Admin = require("../models/admin");
+
+
+
+
+
+
 
 exports.getAdminSignUp = (req, res, next) => {
   let message = req.flash("error");
@@ -27,7 +52,7 @@ exports.postAdminSignUp = (req, res, next) => {
   const password = req.body.password;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.render("admin/signup", {
+    return res.render("admin/signup", {
       pageTitle: "Administrator Sign In",
       path: "/admin/signup",
       errorMessage: errors.array()[0].msg
@@ -45,7 +70,17 @@ exports.postAdminSignUp = (req, res, next) => {
 
     newAdmin
       .save()
-      .then(result => res.redirect("/admin/login"))
+      .then(result => {
+        res.redirect("/admin/login");
+        return transporter
+          .sendMail({
+            from: "samuelawesomeshop@online.com",
+            to: result.adminEmail,
+            subject: "Admin Sign Up successful",
+            html: `<strong> Dear ${name} ,<br> You have successfully signed in as an admin.Login to do the following: </strong><br><p>add products<br><p>edit products</p><br><p>And do much more as an admin</p>`
+          })
+          .catch(err => console.log(err));
+      })
       .catch(err => console.log(err));
   });
 };
@@ -69,7 +104,7 @@ exports.postLogin = (req, res, next) => {
   const password = req.body.password;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    res.render("admin/login", {
+    return res.render("admin/login", {
       pageTitle: "Administrator Login",
       path: "/auth/login",
       errorMessage: errors.array()[0].msg
@@ -134,11 +169,10 @@ exports.postAddProduct = (req, res, next) => {
   const price = req.body.price;
   const description = req.body.description;
   const quantity = req.body.quantity;
-
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    res.render("admin/edit-product", {
+    return res.render("admin/edit-product", {
       pageTitle: "Add Product",
       path: "/admin/add-product",
       editing: false,
@@ -193,16 +227,13 @@ exports.getEditProduct = (req, res, next) => {
       path: "/admin/edit-product",
       editing: editMode,
       product: product,
-      errorMessage:'hii website ni matako sana'
+      errorMessage: ''
     });
   });
 };
 
-
-
-
 exports.postEditProduct = (req, res, next) => {
-  console.log(req.body)
+  console.log(req.body);
   const prodId = req.body.productId;
   const updatedTitle = req.body.title;
   const updatedPrice = req.body.price;
@@ -211,24 +242,24 @@ exports.postEditProduct = (req, res, next) => {
   const updatedquantity = req.body.quantity;
   const errors = validationResult(req);
 
-  console.log('Reached the the point of searching in the database')
+  console.log("Reached the the point of searching in the database");
 
-  Product.findOne({_id:prodId})
+  Product.findOne({ _id: prodId })
     .then(product => {
       console.log(product);
       if (
         !product ||
         product.adminId.toString() !== req.session.admin._id.toString()
       ) {
-          // return res.status(442).render("admin/edit-product", {
-          //   pageTitle: "Edit Product",
-          //   path: "/admin/edit-product",
-          //   editing: editMode,
-          //   product: product,
-          //   errorMessage: 'The product does not exist or you are not authorized to modify this product'
-          // });
-        }
-    
+        // return res.status(442).render("admin/edit-product", {
+        //   pageTitle: "Edit Product",
+        //   path: "/admin/edit-product",
+        //   editing: editMode,
+        //   product: product,
+        //   errorMessage: 'The product does not exist or you are not authorized to modify this product'
+        // });
+      }
+
       // if (!errors.isEmpty()) {
 
       //   return res.status(442).render("admin/edit-product", {
@@ -239,15 +270,15 @@ exports.postEditProduct = (req, res, next) => {
       //     errorMessage: errors.array()[0].msg
       //   });
       // }
-      
+
       if (!req.file) {
-      return res.render("admin/edit-product", {
-         pageTitle: "Edit Product",
-         path: "/admin/edit-product",
-         editing: true,
-         product: product,
-         errorMessage: "hii website ni matako sana"
-       });
+        return res.render("admin/edit-product", {
+          pageTitle: "Edit Product",
+          path: "/admin/edit-product",
+          editing: true,
+          product: product,
+          errorMessage: "hii website ni matako sana"
+        });
       }
       // delete current product image before updating the product
       filedeleter.deletefile(product.ImageUrl);
@@ -259,7 +290,7 @@ exports.postEditProduct = (req, res, next) => {
       product.adminId = req.session.admin._id;
       product.adminName = req.session.admin.adminName;
       product.save();
-      console.log('Just modified the current product so that it can be saved')
+      console.log("Just modified the current product so that it can be saved");
     })
     .catch(err => console.log(err));
   res.redirect("/admin/products");

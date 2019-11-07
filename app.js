@@ -36,12 +36,15 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/IMAGES", express.static(path.join(__dirname, "IMAGES")));
 
  // multer middleware for handling images
+
+
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "IMAGES");
   },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname);
+  filename: (req, file, cb) => { 
+    // math.random is used to create unique images names so that when deleting we dont delete images with the same name
+    cb(null,Math.random()+'-'+file.originalname);
   }
 });
 const filter = (req, file, cb) => {

@@ -1,20 +1,21 @@
 const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
-require('dotenv').config();
+require("dotenv").config();
 // required for sending emails to the user for authentication details
 const nodemailer = require("nodemailer");
-const sendGridTransporter = require("nodemailer-sendgrid-transport");
 
 const User = require("../models/user");
 
-// this will be used to send emails using the sendgrid api
-const transporter = nodemailer.createTransport(
-  sendGridTransporter({
-    auth: {
-      api_key: process.env.SEND_GRID_API_KEY
-    }
-  })
-);
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
+  auth: {
+    // also remember to turn on third party intervention in the account setting https://www.youtube.com/redirect?q=https%3A%2F%2Fmyaccount.google.com%2Flesssecureapps&v=NB71vyCj2X4&event=video_description&redir_token=sZ5_aOhjQQJNBvg3NBb4VZRn0nN8MTU3MzI0MDg0MkAxNTczMTU0NDQy
+    user: "samuelmainaonlineshop@gmail.com",
+    pass: process.env.GOOGLE_PASSWORD
+  }
+});
 
 exports.getLogin = (req, res, next) => {
   let message = req.flash("error");
@@ -68,17 +69,13 @@ exports.postSignUp = (req, res, next) => {
       cart: { items: [] }
     });
     newUser.save().then(savedUser => {
-      console.log(savedUser.email);
+      res.redirect("/login"); //to make the application faster since sending emails take time
       return transporter
         .sendMail({
-          to: savedUser.email,
           from: "samuelsonlineshop@online.com",
+          to: email,
           subject: "SIgn Up at Online shop successful!!!",
-          html:
-            "<strong>You have successfully sign up at the online shop.  You can now login at the shop to see more offers that can make you happy all the days  of your life</strpng>"
-        })
-        .then(result => {
-          res.redirect("/login"); //redirect to the login page after we have sent a sign up email.
+          html: `<strong> Dear ${name}, <br> You have successfully sign up at the online shop.  You can now login at the shop to see more offers that can make you happy all the days  of your life</strpng>`
         })
         .catch(err => console.log(err));
     });
@@ -116,7 +113,19 @@ exports.postLogin = (req, res, next) => {
     })
     .catch(err => console.log(err));
 };
-
+exports.getReset = (req, res, next) => {
+  let message = req.flash("error");
+  if (message.length > 0) {
+    message = message[0];
+  } else {
+    message = null;
+  }
+  res.render("auth/resetPassword", {
+    pageTitle: "Reset Password",
+    path: "reset",
+    errorMessage: message
+  });
+};
 exports.postLogout = (req, res, next) => {
   req.session.destroy(err => {
     if (err) {
@@ -125,3 +134,5 @@ exports.postLogout = (req, res, next) => {
     res.redirect("/");
   });
 };
+
+

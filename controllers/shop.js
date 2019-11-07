@@ -127,7 +127,7 @@ exports.getOrders = (req, res, next) => {
       });
     })
     .catch(err => console.log(err));
-n};
+};
 
 exports.getInvoice = (req, res, next) => {
   const order = req.params.orderId;
