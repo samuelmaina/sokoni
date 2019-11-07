@@ -3,4 +3,4 @@
 .vscode/
 IMAGES
 .env
-data/
+/data
