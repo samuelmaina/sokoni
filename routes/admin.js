@@ -2,11 +2,16 @@ const express = require("express");
 const { body } = require("express-validator/check");
 
 const IsAuth = require("../authmiddleware/AdminRoutesProtect");
+
+// controllers
 const adminController = require("../controllers/admin");
+
+//models
 const Admin = require("../models/admin");
 
 const router = express.Router();
 
+// auth related routes
 router.get("/signup", adminController.getAdminSignUp);
 
 router.post(
@@ -55,13 +60,10 @@ router.post(
   adminController.postLogin
 );
 
-// /admin/add-product => GET
+// product management Routes
+
 router.get("/add-product", IsAuth, adminController.getAddProduct);
 
-// /admin/products => GET
-router.get("/products", IsAuth, adminController.getProducts);
-
-// /admin/add-product => POST
 router.post(
   "/add-product",
   IsAuth,
@@ -97,6 +99,9 @@ router.post(
   ],
   adminController.postAddProduct
 );
+
+// get all products
+router.get("/products", IsAuth, adminController.getProducts);
 
 router.get("/edit-product/:productId", IsAuth, adminController.getEditProduct);
 

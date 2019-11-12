@@ -19,7 +19,7 @@
             </div>
             <div class="form-control">
                 <label for="file">upload file</label>
-                <input type="file" name ="image" id="image"/>
+                <input type="file" name ="image" id="image" value="<% if (editing) { %><%= product.ImageUrl %><% } %>"/>
             </div>
             <div class="form-control">
                 <label for="price">Price</label>

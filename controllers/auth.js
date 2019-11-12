@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 require("dotenv").config();
@@ -24,7 +26,6 @@ exports.getLogin = (req, res, next) => {
   } else {
     message = null;
   }
-  console.log(message);
   res.render("auth/login", {
     pageTitle: "login",
     path: "login",
@@ -60,7 +61,9 @@ exports.postSignUp = (req, res, next) => {
   }
   bcrypt.hash(password, 12, (err, result) => {
     if (err) {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     }
     const newUser = new User({
       name: name,
@@ -77,7 +80,11 @@ exports.postSignUp = (req, res, next) => {
           subject: "SIgn Up at Online shop successful!!!",
           html: `<strong> Dear ${name}, <br> You have successfully sign up at the online shop.  You can now login at the shop to see more offers that can make you happy all the days  of your life</strpng>`
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+        });
     });
   });
 };
@@ -99,7 +106,9 @@ exports.postLogin = (req, res, next) => {
             req.session.user = user;
             return req.session.save(err => {
               if (err) {
-                console.log(err);
+                const error = new Error(err);
+                error.httpStatusCode = 500;
+                return next(error);
               } else {
                 req.flash("error", "Invalid password or email");
                 res.redirect("/products");
@@ -109,10 +118,19 @@ exports.postLogin = (req, res, next) => {
             return res.redirect("/login");
           }
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+        });
     })
-    .catch(err => console.log(err));
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
 };
+
 exports.getReset = (req, res, next) => {
   let message = req.flash("error");
   if (message.length > 0) {
@@ -126,13 +144,157 @@ exports.getReset = (req, res, next) => {
     errorMessage: message
   });
 };
+
+exports.postReset = (req, res, next) => {
+  crypto.randomBytes(32, (err, buffer) => {
+    if (err) {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    }
+    const token = buffer.toString("hex");
+    User.findOne({ email: req.body.email })
+      .then(user => {
+        if (!user) {
+          return res.render("auth/resetPassword", {
+            pageTitle: "Reset Password",
+            path: "reset",
+            errorMessage: "No user by that email exists"
+          });
+        }
+        user.resetToken = token;
+        user.tokenExpiration = Date.now() + 60 * 60 * 1000;
+        user.save().catch(err => {
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+        });
+
+        transporter
+          .sendMail({
+            from: "samuelsonlineshop@online.com",
+            to: user.email,
+            subject: "Reset Password",
+            html: `<strong> Dear ${user.name}</strong>,
+             <br><p>You can click this link to reset your password : <a href='http://localhost:3000/reset/${token}'>
+             Reset password</a></p>
+             <p>Please note your have only one hour to reset your password</p>
+            <br> Thank you `
+          })
+          .then(result => {
+            const error = new Error(
+              "Please Check your email inbox to reset your password"
+            );
+            error.httpStatusCode = 500;
+            return next(error);
+          })
+          .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+          });
+      })
+      .catch(err => {
+        const error = new Error(err);
+        error.httpStatusCode = 500;
+        return next(error);
+      });
+  });
+};
+
+exports.getNewPassword = (req, res, next) => {
+  User.findOne({
+    resetToken: req.params.token,
+    tokenExpiration: { $gt: Date.now() }
+  })
+    .then(resetUser => {
+      if (!resetUser) {
+        return res.render("auth/resetPassword", {
+          pageTitle: "Reset Password",
+          path: "reset",
+          errorMessage: "Too late for the rest. Please try again"
+        });
+      }
+
+      resetUser.tokenExpiration = undefined;
+
+      resetUser
+        .save()
+        .then(result => {
+          res.render("auth/newPassword", {
+            pageTitle: "New Password",
+            path: "new password",
+            errorMessage: "",
+            userId: resetUser.id,
+            token: resetUser.resetToken
+          });
+        })
+        .catch(err => {
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+        });
+    })
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
+};
+
+exports.postNewPassword = (req, res, next) => {
+  const newPassword = req.body.password;
+  const userId = req.body.userId;
+  const token = req.body.token;
+  User.findOne({ resetToken: token, _id: userId })
+    .then(user => {
+      if (!user) {
+        return res.render("auth/newPassword", {
+          pageTitle: "New Password",
+          path: "new password",
+          errorMessage: "You are not authorized to modify the password"
+        });
+      }
+
+      bcrypt.hash(newPassword, 12, (err, result) => {
+        if (err) {
+          const error = new Error(err);
+          error.httpStatusCode = 500;
+          return next(error);
+        }
+        user.resetToken = undefined;
+        user.password = result;
+        user
+          .save()
+          .then(savedUser => {
+            res.redirect("/login");
+          })
+          .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+          })
+          .catch(err => {
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+          });
+      });
+    })
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
+};
+
 exports.postLogout = (req, res, next) => {
   req.session.destroy(err => {
     if (err) {
-      console.log(err);
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     }
     res.redirect("/");
   });
 };
-
-

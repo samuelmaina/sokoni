@@ -13,6 +13,8 @@ const userSchema = new Schema({
    type:String,
    required:true
   },
+  resetToken:String,
+  tokenExpiration:Date,
   cart: {
     items: [
       {
@@ -27,23 +29,28 @@ const userSchema = new Schema({
   }
 });
 
+
+// add a  product to the cart
 userSchema.methods.addToCart = function(product) {
   const cartProductIndex = this.cart.items.findIndex(cp => {
     return cp.productId.toString() === product._id.toString();
   });
   let newQuantity = 1;
-  const updatedCartItems = [...this.cart.items];
+  const updatedCartItems = [...this.cart.items];//maintain the old cart,so that we dont introduce an existing productS
 
+  // if the product has an indexed(it exists)
   if (cartProductIndex >= 0) {
-    newQuantity = this.cart.items[cartProductIndex].quantity + 1;
-    updatedCartItems[cartProductIndex].quantity = newQuantity;
+    newQuantity = this.cart.items[cartProductIndex].quantity + 1;//increment the previous quantity by one
+    updatedCartItems[cartProductIndex].quantity = newQuantity;//then update the quantity to incremented quantity
   } else {
+    // product does not exist  so add it to the cart 
     updatedCartItems.push({
       productId: product._id,
       quantity: newQuantity
     });
   }
   const updatedCart = {
+    // update the cart which ever the above case
     items: updatedCartItems
   };
   this.cart = updatedCart;

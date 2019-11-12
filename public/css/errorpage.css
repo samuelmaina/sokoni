@@ -1,0 +1,11 @@
+.errorMessage {
+    margin-left: 10vw;
+   text-align: center;
+    background-color:rgb(202, 108, 108);
+    border:red solid 2px;
+    height:3rem;
+    width:60%;
+}
+p{
+margin-left:40vw;
+}

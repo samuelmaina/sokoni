@@ -10,7 +10,6 @@ router.get("/login", AuthControllers.getLogin);
 
 router.post("/login", AuthControllers.postLogin);
 
-router.post("/logout", AuthControllers.postLogout);
 
 router.get("/signup", AuthControllers.getSignUp);
 
@@ -44,4 +43,15 @@ router.post(
   AuthControllers.postSignUp
 );
 router.get('/reset',AuthControllers.getReset);
+
+
+router.post('/reset',AuthControllers.postReset);
+
+router.get('/reset/:token',AuthControllers.getNewPassword);
+
+router.post('/newPassword',AuthControllers.postNewPassword);
+
+
+router.post("/logout", AuthControllers.postLogout);
+
 module.exports = router;
