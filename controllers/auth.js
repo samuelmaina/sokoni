@@ -3,11 +3,14 @@ const crypto = require("crypto");
 const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 require("dotenv").config();
+
 // required for sending emails to the user for authentication details
 const nodemailer = require("nodemailer");
 
 const User = require("../models/user");
 
+const errorHandler = require("../util/feedbackToUser").errorHandler;
+const userMessage = require("../util/feedbackToUser").messageToUser;
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
@@ -61,9 +64,7 @@ exports.postSignUp = (req, res, next) => {
   }
   bcrypt.hash(password, 12, (err, result) => {
     if (err) {
-      const error = new Error(err);
-      error.httpStatusCode = 500;
-      return next(error);
+      errorHandler(err, next);
     }
     const newUser = new User({
       name: name,
@@ -80,11 +81,7 @@ exports.postSignUp = (req, res, next) => {
           subject: "SIgn Up at Online shop successful!!!",
           html: `<strong> Dear ${name}, <br> You have successfully sign up at the online shop.  You can now login at the shop to see more offers that can make you happy all the days  of your life</strpng>`
         })
-        .catch(err => {
-          const error = new Error(err);
-          error.httpStatusCode = 500;
-          return next(error);
-        });
+        .catch(err => errorHandler(err, next));
     });
   });
 };
@@ -106,9 +103,7 @@ exports.postLogin = (req, res, next) => {
             req.session.user = user;
             return req.session.save(err => {
               if (err) {
-                const error = new Error(err);
-                error.httpStatusCode = 500;
-                return next(error);
+                errorHandler(err, next);
               } else {
                 req.flash("error", "Invalid password or email");
                 res.redirect("/products");
@@ -118,17 +113,9 @@ exports.postLogin = (req, res, next) => {
             return res.redirect("/login");
           }
         })
-        .catch(err => {
-          const error = new Error(err);
-          error.httpStatusCode = 500;
-          return next(error);
-        });
+        .catch(err => errorHandler(err, next));
     })
-    .catch(err => {
-      const error = new Error(err);
-      error.httpStatusCode = 500;
-      return next(error);
-    });
+    .catch(err => errorHandler(err, next));
 };
 
 exports.getReset = (req, res, next) => {
@@ -148,9 +135,7 @@ exports.getReset = (req, res, next) => {
 exports.postReset = (req, res, next) => {
   crypto.randomBytes(32, (err, buffer) => {
     if (err) {
-      const error = new Error(err);
-      error.httpStatusCode = 500;
-      return next(error);
+      errorHandler(err, next);
     }
     const token = buffer.toString("hex");
     User.findOne({ email: req.body.email })
@@ -164,13 +149,8 @@ exports.postReset = (req, res, next) => {
         }
         user.resetToken = token;
         user.tokenExpiration = Date.now() + 60 * 60 * 1000;
-        user.save().catch(err => {
-          const error = new Error(err);
-          error.httpStatusCode = 500;
-          return next(error);
-        });
-
-        transporter
+        user.save().then( saved=>{
+          transporter
           .sendMail({
             from: "samuelsonlineshop@online.com",
             to: user.email,
@@ -182,25 +162,21 @@ exports.postReset = (req, res, next) => {
             <br> Thank you `
           })
           .then(result => {
-            const error = new Error(
-              "Please Check your email inbox to reset your password"
-            );
-            error.httpStatusCode = 500;
-            return next(error);
-          })
-          .catch(err => {
-            const error = new Error(err);
-            error.httpStatusCode = 500;
-            return next(error);
-          });
-      })
-      .catch(err => {
-        const error = new Error(err);
-        error.httpStatusCode = 500;
-        return next(error);
-      });
-  });
+            let message=`Dear ${user.name},
+            A link has been sent to your email.Please click the link to reset your password`
+            return res.render("userFeedback", {
+              pageTitle: "Message",
+              path: "userMessage",
+              isAuthenticated: req.session.isLoggedIn,
+              isAdmin: req.session.isAdmin,
+             userMessage: message
+            });   
+        } )
+}).catch(err => errorHandler(err, next))
+}).catch(err => errorHandler(err, next))
+})
 };
+
 
 exports.getNewPassword = (req, res, next) => {
   User.findOne({
