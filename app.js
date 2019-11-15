@@ -109,7 +109,8 @@ app.use(errorController.get404);
 
 // error handlers should always be below the routes
 app.use((error, req, res, next) => {
-  res.status(error.httpStatusCode).render("errorPage", {
+  let statusCode=error.httpStatusCode||500;
+  res.status(statusCode).render("errorPage", {
     pageTitle: "Error!",
     path: "/500",
     isAuthenticated: req.session.isLoggedIn,
