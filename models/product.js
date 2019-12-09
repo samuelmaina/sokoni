@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const ProductSchema = new Schema({
+const productSchema = new Schema({
   title: {
     type: String,
     required: true
@@ -30,4 +30,12 @@ const ProductSchema = new Schema({
     required:true
   }
 });
-module.exports = mongoose.model("Product", ProductSchema);
+productSchema.methods.reduceQuantity=function (){
+    this.quantity--;
+   return this.save(); //so that we dont need to save again in the shop controller.
+}
+productSchema.methods.increaseQuantity= function (increaseBy){
+  this.quantity+=increaseBy;
+  return this.save()
+}
+module.exports = mongoose.model("Product", productSchema);

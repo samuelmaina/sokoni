@@ -7,4 +7,4 @@ const deletefile=(filepath)=>{
         }
     })
 }
-exports.deletefile=deletefile;
+module.exports=deletefile;

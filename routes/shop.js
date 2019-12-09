@@ -13,14 +13,14 @@ router.get('/products', shopController.getProducts);
 router.get('/products/:productId', shopController.getProduct);
 
 router.get('/cart', IsAuth,shopController.getCart);
-
 router.post('/cart', IsAuth,shopController.postCart);
 
 router.post('/cart-delete-item',IsAuth, shopController.postCartDeleteProduct);
 
+router.get("/orders", IsAuth, shopController.getOrders);
+
 router.post('/create-orders', IsAuth,shopController.postOrders);
 
-router.get('/orders', IsAuth,shopController.getOrders);
 
 router.get('/orders/:orderId',IsAuth,shopController.getInvoice);
 

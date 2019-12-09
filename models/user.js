@@ -4,17 +4,15 @@ const userSchema = new Schema({
   name: {
     type: String,
     required: true
-  },  
+  },
   email: {
     type: String,
     required: true
   },
-  password:{
-   type:String,
-   required:true
+  password: {
+    type: String,
+    required: true
   },
-  resetToken:String,
-  tokenExpiration:Date,
   cart: {
     items: [
       {
@@ -29,21 +27,20 @@ const userSchema = new Schema({
   }
 });
 
-
 // add a  product to the cart
 userSchema.methods.addToCart = function(product) {
   const cartProductIndex = this.cart.items.findIndex(cp => {
     return cp.productId.toString() === product._id.toString();
   });
   let newQuantity = 1;
-  const updatedCartItems = [...this.cart.items];//maintain the old cart,so that we dont introduce an existing productS
+  const updatedCartItems = [...this.cart.items]; //maintain the old cart,so that we dont introduce an existing productS
 
   // if the product has an indexed(it exists)
   if (cartProductIndex >= 0) {
-    newQuantity = this.cart.items[cartProductIndex].quantity + 1;//increment the previous quantity by one
-    updatedCartItems[cartProductIndex].quantity = newQuantity;//then update the quantity to incremented quantity
+    newQuantity = this.cart.items[cartProductIndex].quantity + 1; //increment the previous quantity by one
+    updatedCartItems[cartProductIndex].quantity = newQuantity; //then update the quantity to incremented quantity
   } else {
-    // product does not exist  so add it to the cart 
+    // product does not exist  so add it to the cart
     updatedCartItems.push({
       productId: product._id,
       quantity: newQuantity
@@ -57,9 +54,11 @@ userSchema.methods.addToCart = function(product) {
   return this.save();
 };
 
-
-
 userSchema.methods.deleteItemFromCart = function(prodId) {
+  const deletedProductIndex = this.cart.items.findIndex(cp => {
+    return cp.productId.toString() === prodId.toString();
+  });
+  const deletedQuantity = this.cart.items[deletedProductIndex].quantity;
   const updatedCartItems = this.cart.items.filter(cp => {
     return cp.productId.toString() !== prodId.toString();
   });
@@ -67,11 +66,9 @@ userSchema.methods.deleteItemFromCart = function(prodId) {
     items: updatedCartItems
   };
   this.cart = updatedCart;
-  return this.save();
+  this.save();
+ return deletedQuantity;
 };
-
-
-
 
 userSchema.methods.clearCart = function() {
   this.cart = [];

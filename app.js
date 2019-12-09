@@ -1,8 +1,7 @@
-// imports
+const express = require("express");
 const path = require("path");
 const multer = require("multer");
 const mongoose = require("mongoose");
-const express = require("express");
 const bodyParser = require("body-parser");
 const session = require("express-session");
 const MongoDBSession = require("connect-mongodb-session")(session);
@@ -10,44 +9,44 @@ const csurf = require("csurf");
 const flash = require("connect-flash");
 require("dotenv").config();
 
-//models
 const User = require("./models/user");
 
-// routes
+const errHandler = require("./util/errorHandler");
+
 const errorController = require("./controllers/error");
 const adminRoutes = require("./routes/admin");
 const shopRoutes = require("./routes/shop");
 const authRoutes = require("./routes/auth");
 
-// intialization
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI;
 const csurfProtection = csurf();
 
-// express setting
 app.set("view engine", "ejs");
 app.set("views", "views");
 
-// parsing and path joining
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/IMAGES", express.static(path.join(__dirname, "IMAGES")));
+app.use("/Data", express.static(path.join(__dirname, "Data")));
 
-// multer middleware for handling images
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "IMAGES");
+    cb(null, "Data/Images");
   },
   filename: (req, file, cb) => {
-    // math.random is used to create unique images names so that when deleting we dont delete images with the same names
+    // generate random numbers as image so as not to delete images with similar names incase user selects such images.
     cb(null, Math.random() + "-" + file.originalname);
   }
 });
 const filter = (req, file, cb) => {
-  const type = file.mimetype;
-  // checks if the uploaded item is an image
-  if (type === "image/png" || type === "image/jpg" || type === "image/jpeg") {
+  const fileType = file.mimetype;
+
+  if (
+    fileType === "image/png" ||
+    fileType === "image/jpg" ||
+    fileType === "image/jpeg"
+  ) {
     cb(null, true);
   } else {
     cb(null, false);
@@ -55,34 +54,35 @@ const filter = (req, file, cb) => {
 };
 app.use(multer({ storage: fileStorage, fileFilter: filter }).single("image"));
 
-// session middleware
 const store = new MongoDBSession({
   uri: MONGO_URI,
   collection: "sessions"
 });
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUnitialized: false,
-    store: store
+    store: store,
+    cookie: {
+      expires: Date.now() + 60 * 60 * 1000
+    }
   })
 );
 
 app.use((req, res, next) => {
   if (!req.session.user) {
-    return next(); //
+    return next();
   }
   User.findById(req.session.user._id)
     .then(user => {
-      // intiatiate a user in the req from the session and all his data.
+      //req user allows for user methods while ression does not.
       req.user = user;
       next();
     })
     .catch(err => {
-      const error = new Error(err);
-      error.httpStatusCode = 500;
-      return next(error);
+      errHandler(err, next);
     });
 });
 
@@ -90,9 +90,9 @@ app.use((req, res, next) => {
 body parser or multer would have already parsed the  data from body.
 */
 app.use(csurfProtection);
-app.use(flash()); //set flash in the session
+app.use(flash());
 
-// set authentication details for every response.
+//  authentication details for every response.
 app.use((req, res, next) => {
   res.locals.isAuthenticated = req.session.isLoggedIn;
   res.locals.isAdmin = req.session.isAdmin;
@@ -100,16 +100,18 @@ app.use((req, res, next) => {
   next();
 });
 
-// route handlers
 
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 app.use(errorController.get404);
+` 
+`
 
-// error handlers should always be below the routes
+
+//always at the end of the routes
 app.use((error, req, res, next) => {
-  let statusCode=error.httpStatusCode||500;
+  let statusCode = error.httpStatusCode || 500;
   res.status(statusCode).render("errorPage", {
     pageTitle: "Error!",
     path: "/500",
@@ -119,11 +121,15 @@ app.use((error, req, res, next) => {
   });
 });
 
-// connecting to the database
 mongoose
-  .connect(MONGO_URI)
+  .connect(MONGO_URI)//or createConnection()if you want mongoose to access multiple databases
   .then(result => {
+    //assignment: try to catch any connection error using the express next error handler.Research more
     app.listen(port);
     console.log("\t \t \t connected to the local database");
-})
-  .catch(err =>console.log(err) );
+  })
+  .catch(err => {
+    console.log(err);
+  });
+
+
