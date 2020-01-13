@@ -1,186 +1,205 @@
 const path = require("path");
 const fs = require("fs");
-const pdfGenerator = require("../util/pdfGenerator");
 
-const Admin=require('../models/admin');
-const Product = require("../models/product");
-const Order = require("../models/order");
+const generateInvoicePdf = require("../util/invoicePdfGenerator");
+
+const Order = require("../database/interfaces/orderForShop");
+const AdminSale = require("../database/interfaces/adminSaleForShop");
+const User = require("../database/interfaces/userForShop");
+const Product=require('../database/interfaces/productForShop');
 
 const errorHandler = require("../util/errorHandler");
 
-exports.getIndex = (req, res, next) => {
-  Product.find({ quantity: { $gt: 0 } })
-    .then(products => {
-      res.render("shop/index", {
-        prods: products,
-        pageTitle: "Shop",
-        path: "/"
-      });
-    })
-    .catch(err => errorHandler(err, next));
+
+exports.getIndex = async (req, res, next) => {
+  try {
+    const page = +req.query.page || 1;
+    const {
+      paginationData,
+      products
+    } = await Product.findProductsFor(page);
+    res.render("shop/index", {
+      prods: products,
+      pageTitle: "Shop",
+      path: "/",
+      paginationData: paginationData
+    });
+  } catch (error) {
+    errorHandler(error, next);
+  }
 };
 
-exports.getProducts = (req, res, next) => {
-  Product.find({quantity:{ $gt:0}})
-    .then(products => {
-      //ejs view will dispay 'no product' incase products is null.no need to check if null
-      res.render("shop/product-list", {
-        prods: products,
-        pageTitle: "All Products",
-        path: "/products"
-      });
-    })
-    .catch(err => errorHandler(err, next));
+exports.getProducts = async (req, res, next) => {
+  try {
+ const page = +req.query.page || 1;
+ const {
+   paginationData,
+   products
+ } = await Product.findProductsFor(page);
+    res.render("shop/product-list", {
+      prods: products,
+      pageTitle: "All Products",
+      path: "/products",
+      paginationData:paginationData
+    });
+  } catch (err) {
+    errorHandler(err, next);
+  }
 };
 
-exports.getProduct = (req, res, next) => {
-  const prodId = req.params.productId;
-  Product.findById({ _id: prodId })
-    .then(product => {
-      if (!product) {
-        return res.redirect("/");
+exports.getProduct = async (req, res, next) => {
+  try {
+    const prodId = req.params.productId;
+    const product = await Product.findById(prodId)
+    if (!product) {
+      return res.redirect("/");
+    }
+    res.render("shop/product-detail", {
+      product: product,
+      pageTitle: product.title,
+      path: "/product"
+    });
+  } catch (error) {
+    errorHandler(error, next);
+  }
+};
+
+exports.getCart = async (req, res, next) => {
+  try {
+    const {
+      total,
+      cartProducts
+    } = await User.findCartProductsAndTheirTotalForId(req.user._id);
+    req.session.total = total;
+    req.session.orderedProducts = cartProducts;
+    res.render("shop/cart", {
+      path: "/cart",
+      pageTitle: "Your Cart",
+      products: cartProducts,
+      total: total
+    });
+  } catch (error) {
+    errorHandler(error, next);
+    console.log(error);
+  }
+};
+
+exports.postToCart = async (req, res, next) => {
+  try {
+    const prodId = req.body.productId;
+    const product = await Product.findById(prodId);
+    if (product) {
+      await req.user.addToCart(product);
+      await product.reduceQuantity();
+    }
+    res.redirect("/products",);
+  } catch (error) {
+    errorHandler(error, next);
+  }
+};
+
+exports.postCartDeleteProduct = async (req, res, next) => {
+  try {
+    const prodId = req.body.productId;
+    const deletedCartProductQuantity = await req.user.deleteProductFromCart(
+      prodId
+    );
+    res.redirect("/cart");
+    const productToUpdateQuantity = await Product.findById(prodId);
+    await productToUpdateQuantity.increaseQuantity(deletedCartProductQuantity);
+  } catch (error) {
+    errorHandler(error, next);
+    console.log(error);
+  }
+};
+
+exports.getOrders = async (req, res, next) => {
+  try {
+    const orders = await Order.findAllForUserId(req.user._id);
+    res.render("shop/orders", {
+      path: "/orders",
+      pageTitle: "Your Orders",
+      orders: orders
+    });
+  } catch (error) {
+    errorHandler(error, next);
+  }
+};
+
+exports.createOrder = async (req, res, next) => {
+  try {
+    const orderedProducts = req.session.orderedProducts;
+    const productTotal = req.session.total;
+    const orderData = {
+      userId: req.user._id,
+      orderedProducts: orderedProducts,
+      totalPriceOfOrderedProducts: productTotal
+    };
+    await Order.createNew(orderData);
+    await req.user.clearCart();
+    res.redirect("/orders");
+  } catch (error) {
+    console.log(error)
+    errorHandler(error, next);
+  }
+};
+
+exports.createInvoicePdf = async (req, res, next) => {
+  try {
+    const orderId = req.params.orderId;
+    const invoiceName = "invoice-" + orderId + ".pdf";
+    const invoicePath = path.join("Data", "Invoices", invoiceName);
+    let order = await Order.findByIdWithDetails(orderId);
+    if (!order) {
+      throw new Error("Order does not exist");
+    }
+    if (!order.isOrderedById(req.user._id)) {
+      throw new Error("You are not authorized to operate on this order");
+    }
+    //to be used by the next middleware
+    req.invoiceName = invoiceName;
+    req.invoicePath = invoicePath;
+    req.orderedProducts = order.orderedProducts;
+    await generateInvoicePdf(order, invoicePath);
+    await Order.deleteById(orderId);
+    return next();
+  } catch (error) {
+    errorHandler(error, next);
+  }
+};
+
+const addToAdminSales = async (orderedProducts, next) => {
+  try {
+    for (const product of orderedProducts) {
+      const productDetails = product.productData;
+      let adminSales = await AdminSale.findSalesFor(
+        productDetails.adminId
+      );
+      if (!adminSales) {
+        adminSales = await AdminSale.createNew(productDetails.adminId);
       }
-      res.render("shop/product-detail", {
-        product: product,
-        pageTitle: product.title,
-        path: "/product"
-      });
-    })
-    .catch(err => errorHandler(err, next));
+      const saleDetails = {
+        quantity: product.quantity,
+        productId: productDetails._id,
+        soldAt: Date.now()
+      };
+      await adminSales.addOrderedProduct(saleDetails);
+      console.log(adminSales.getSoldProducts());
+    }
+  } catch (error) {
+    errorHandler(error, next);
+  }
 };
 
-exports.getCart = (req, res, next) => {
-  req.user
-    .populate("cart.items.productId ")
-    .execPopulate()
-    .then(user => {
-      //same as for products .no need for if null,ejs will display 'no products in cart'
-      const products = user.cart.items;
-      //  get the total price of all the products in the cart
-      let total = 0.0;
-      products.forEach(product => {
-        total += product.quantity * product.productId.price;
-      });
-
-      total = total.toFixed(2);
-      req.session.total = total;
-      res.render("shop/cart", {
-        path: "/cart",
-        pageTitle: "Your Cart",
-        products: products,
-        total: total
-      });
-    })
-    .catch(err => console.log(err));
-};
-
-exports.postCart = (req, res, next) => {
-  const prodId = req.body.productId;
-  Product.findById(prodId)
-    .then(product => {
-      if (product) {
-        req.user.addToCart(product);
-        product.reduceQuantity();
-      }
-    })
-    .then(result => {
-      res.redirect("/products");
-    })
-    .catch(err => console.log(err));
-};
-
-exports.postCartDeleteProduct = (req, res, next) => {
-  const prodId = req.body.productId;
-   const deletedCartQuantity=req.user
-    .deleteItemFromCart(prodId);
-
-      res.redirect("/cart");
-      Product.findById(prodId)
-        .then(productToUpdateQuantity => {
-          productToUpdateQuantity.increaseQuantity(deletedCartQuantity);
-        })
-        .catch(err => {
-          console.log(err);
-        }); //errorHandler(err,next))
-
-};
-
-exports.getOrders = (req, res, next) => {
-  Order.find({ "user.userId": req.user.id })
-    .then(orders => {
-      res.render("shop/orders", {
-        path: "/orders",
-        pageTitle: "Your Orders",
-        orders: orders
-      });
-    })
-    .catch(err => errorHandler(err, next));
-};
-
-exports.postOrders = (req, res, next) => {
-  req.user
-    .populate("cart.items.productId")
-    .execPopulate()
-    .then(user => {
-      const products = user.cart.items.map(i => {
-        return { quantity: i.quantity, productId: { ...i.productId._doc } };
-      });
-    
-      const order = new Order({
-        user: {
-          name: req.user.name,
-          userId: req.user
-        },
-        products: products,
-        total: req.session.total
-      });
-      return order.save().catch(err => errorHandler(err, next));
-    })
-    .then(result => {
-      return req.user.clearCart();
-    })
-    .then(() => {
-      res.redirect("/orders");
-    })
-    .catch(err => errorHandler(err, next));
-};
-
-
-exports.getInvoice = (req, res, next) => {
-  const orderId = req.params.orderId;
-  const invoiceName = "invoice-" + orderId+ ".pdf";
-  const invoicePath = path.join("Data", "Invoices", invoiceName);
-  Order.findById(orderId)
-    .then(order => {
-      if (!order) {
-        throw new Error("Order does not exist");
-      }
-      if (order.user.userId.toString() !== req.user._id.toString()) {
-        throw new Error("You are not authorized to operate on this order");
-      }
-      return pdfGenerator(order, invoicePath, req.user.name)
-        .then(done => {
-          if (done) {
-            res.setHeader("Content-Type", "application/pdf");
-            res.setHeader(
-              "Content-Disposition",
-              'inline; filename="' + invoiceName + '"'
-            );
-            const file = fs.createReadStream(invoicePath);
-            file.pipe(res);
-          order.products.forEach(product=>{
-            Admin.findById(product.productId.adminId).then(admin=>{
-              admin.addSoldProduct(product.productId);
-            }).catch(err=>errorHandler(err,next))
-          })
-            return Order.findByIdAndDelete(orderId).catch(err => {
-              errorHandler(err, next);
-            });
-          }
-        })
-        .catch(err => {
-          errorHandler(err, next);
-        });
-    })
-    .catch(err => errorHandler(err, next));
+exports.getInvoice = async (req, res, next) => {
+  const invoiceName = req.invoiceName;
+  const invoicePath = req.invoicePath;
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    'inline; filename="' + invoiceName + '"'
+  );
+  const file = fs.createReadStream(invoicePath);
+  file.pipe(res);
+  await addToAdminSales(req.orderedProducts, next);
 };

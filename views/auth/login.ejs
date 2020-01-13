@@ -4,8 +4,9 @@
 </head>
 
 <body>
+    <img src="logo/logo.png" alt="" height="40px" width="30px">
    <%- include('../includes/navigation.ejs') %>
-
+   
     <main>
    <%if(errorMessage){%>
     
@@ -14,18 +15,18 @@
     <% }%>
         <form class="login-form" action="<%= postPath%>" method="POST">
             <div class="form-control">
-                <label for="">email</label>
-                <input type="email" name="email" id="email" value="email">
+                <label for="">Email</label>
+                <input type="email" name="email" id="email" value="<% if (hasErrors) { %><%= previousData.email%><% } %>">
             </div>
             <div class="form-control">
-                <label for="password"> password </label>
-                <input type="password" name ="password" id="password"/>
+                <label for="password"> Password </label>
+                <input type="password" name ="password" id="password" value="<% if (hasErrors) { %><%= previousData.password%><% } %>"/>
             </div>
              <input type="hidden" name='_csrf' value='<%= csrfToken %>'>
             <input class="btn" type="submit" value="Login">
         </form>
         <div class='centered'>
-               <a href="/reset">Reset Password</a>
+               <a href="reset">Reset Password</a>
         </div>
     </main>
 <%- include('../includes/end.ejs') %>

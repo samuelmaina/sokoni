@@ -21,7 +21,7 @@
 
                                 <div class="card__content">
                                     <h2 class="product__price">
-                                       Price: $ <%= product.price %>
+                                       Price: Ksh <%= product.price %>
                                     </h2>
                                     <br>
 
@@ -50,6 +50,8 @@
                             </article>
                             <% } %>
                     </div>
+                    <%- include('../includes/pagination.ejs', {currentPage: paginationData.currentPage, nextPage: paginationData.nextPage, previousPage: paginationData.previousPage, lastPage: paginationData.lastPage, hasNextPage: paginationData.hasNextPage, hasPreviousPage: paginationData.hasPreviousPage}) %>
+
                     <% } else { %>
                         <h1>No Products Found!</h1>
                         <% } %>

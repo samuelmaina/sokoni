@@ -2,28 +2,33 @@ const IsAuth=require('../authmiddleware/userRoutesProtect')
 
 const express = require('express');
 
-const shopController = require('../controllers/shop');
+const shopControllers = require('../controllers/shop');
 
 const router = express.Router();
 
-router.get('/', shopController.getIndex);
+router.get('/', shopControllers.getIndex);
 
-router.get('/products', shopController.getProducts);
+router.get('/products', shopControllers.getProducts);
 
-router.get('/products/:productId', shopController.getProduct);
+router.get('/products/:productId', shopControllers.getProduct);
 
-router.get('/cart', IsAuth,shopController.getCart);
-router.post('/cart', IsAuth,shopController.postCart);
+router.get('/cart', IsAuth,shopControllers.getCart);
+router.post('/cart', IsAuth,shopControllers.postToCart);
 
-router.post('/cart-delete-item',IsAuth, shopController.postCartDeleteProduct);
+router.post('/cart-delete-item',IsAuth, shopControllers.postCartDeleteProduct);
 
-router.get("/orders", IsAuth, shopController.getOrders);
+router.get("/orders", IsAuth, shopControllers.getOrders);
 
-router.post('/create-orders', IsAuth,shopController.postOrders);
+router.post('/create-order', IsAuth,shopControllers.createOrder);
 
 
-router.get('/orders/:orderId',IsAuth,shopController.getInvoice);
+router.get(
+  "/orders/:orderId",
+  IsAuth,
+  shopControllers.createInvoicePdf,
+  shopControllers.getInvoice
+);
 
-// router.get('/checkout', shopController.getCheckout);
+// router.get('/checkout', shopControllers.getCheckout);
 
 module.exports = router;

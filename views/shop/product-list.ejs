@@ -19,7 +19,7 @@
                                     <img src="/<%= product.ImageUrl %>" alt="<%= product.title %>">
                                 </div>
                                 <div class="card__content">
-                                    <h2 class="product__price">$
+                                    <h2 class="product__price">Kshs 
                                         <%= product.price %>
                                     </h2>
                                     <p class="product__description">
@@ -28,13 +28,16 @@
                                 </div>
                                 <div class="card__actions">
                                     <a href="/products/<%= product.id %>" class="btn">Details</a>
-                                    <% if (isAuthenticated) { %>
+                                    <% if (isUserLoggedIn) { %>
                                         <%- include('../includes/add-to-cart.ejs', {product: product}) %>
+
                                         <% } %>
                                 </div>
                             </article>
                             <% } %>
                     </div>
+                                <%- include('../includes/pagination.ejs', {currentPage: paginationData.currentPage, nextPage: paginationData.nextPage, previousPage: paginationData.previousPage, lastPage: paginationData.lastPage, hasNextPage: paginationData.hasNextPage, hasPreviousPage: paginationData.hasPreviousPage}) %>
+
                     <% } else { %>
                         <h1>No Products Found!</h1>
                         <% } %>

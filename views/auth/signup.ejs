@@ -15,19 +15,19 @@
         <form class="login-form" action="<%= postPath%>" method="POST">
             <div class="form-control">
                 <label for="name">Name</label>
-                <input type='text' name="name" id="name" placeholder="name">
+                <input type='text' name="name" id="name" value="<% if (hasErrors) { %><%= previousData.name%><% } %>">
             </div>
             <div class="form-control">
                 <label for="email">Email</label>
-                <input type="email" name="email" id="email" placeholder="email">
+                <input type="email" name="email" id="email" value="<% if (hasErrors) { %><%= previousData.email%><% } %>">
             </div>
             <div class="form-control">
                 <label for="password"> Password </label>
-                <input type="password" name ="password" placeholder="password"/>
+                <input type="password" name ="password" value="<% if (hasErrors) { %><%= previousData.password%><% } %>"/>
             </div>
             <div class="form-control">
                 <label for="ConfirmPassword"> Confirm Password </label>
-                <input type="password" name ="ConfirmPassword" placeholder="password"/>
+                <input type="password" name ="ConfirmPassword" />
             </div>
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <input class="btn" type="submit" value="Sign Up">

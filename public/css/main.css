@@ -10,17 +10,16 @@ body {
   font-family: "Open Sans", sans-serif;
 }
 .error-message {
-  margin-top:20px;
-  padding:2px;
+  margin-top: 20px;
+  padding: 2px;
   text-align: center;
   width: 40vw;
-  height:3rem;
+  height: 3rem;
   margin-left: 30%;
   background-color: rgb(240, 203, 203);
   color: rgb(245, 10, 10);
-  border:3px solid red;
+  border: 3px solid red;
   border-radius: 12px;
-
 }
 main {
   padding: 1rem;
@@ -44,9 +43,10 @@ form {
 }
 
 .main-header {
+  margin-top: 10vh;
   width: 100%;
-  height: 3.5rem;
-  background-color: #00695c;
+  height: 4rem;
+  background-color: maroon;
   padding: 0 1.5rem;
   display: flex;
   align-items: center;
@@ -226,7 +226,23 @@ form {
   border-radius: 3px;
   cursor: pointer;
 }
-
+.pagination {
+  margin-top: 2rem;
+  text-align: center;
+}
+.pagination a {
+  text-decoration: none;
+  color: maroon;
+  padding: 0.5rem;
+  border: 1px solid maroon;
+  margin: 0 1rem;
+}
+.pagination a:hover,
+.pagination a:active,
+.pagination a.active{
+  background: maroon;
+  color: white
+}
 .btn:hover,
 .btn:active {
   background-color: #00695c;

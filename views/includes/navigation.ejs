@@ -11,7 +11,7 @@
           >Products</a
         >
       </li>
-      <% if (isAuthenticated) { %>
+      <% if (isUserLoggedIn) { %>
       <li class="main-header__item">
         <a class="<%= path === '/cart' ? 'active' : '' %>" href="/cart">Cart</a>
       </li>
@@ -20,7 +20,7 @@
           >Orders</a
         >
       </li>
-      <% } %> <% if (isAdmin&&!isAuthenticated) { %>
+      <% } %> <% if (isAdminLoggedIn&&!isUserLoggedIn) { %>
       <li class="main-header__item">
         <a
           class="<%= path === '/admin/add-product' ? 'active' : '' %>"
@@ -31,8 +31,8 @@
       <li class="main-header__item">
         <a
           class="<%= path === '/admin/products' ? 'active' : '' %>"
-          href="/admin/products"
-          >Admin Products
+          href="/admin/get-admin-sales"
+          >See Your Sales
         </a>
       </li>
       <% } %>
@@ -40,23 +40,23 @@
     <ul class="main-header__item-list">
       <!-- added the second agurment is not admin to make sure that admin dont get the login
       and sign up forms -->
-      <% if (!isAuthenticated&&!isAdmin) { %>
+      <% if (!isUserLoggedIn&&!isAdminLoggedIn) { %>
       <li class="main-header__item">
-        <a class="<%= path === '/login' ? 'active' : '' %>" href="/login"
+        <a class="<%= path === '/login' ? 'active' : '' %>" href="/user/auth/login"
           >Login</a
         >
       </li>
       <li class="main-header__item">
-        <a class="<%= path === '/signup' ? 'active' : '' %>" href="/signup"
+        <a class="<%= path === '/signup' ? 'active' : '' %>" href="/user/auth/signup"
           >Sign Up</a
         >
       </li>
       <% } %> 
-      <% if (!isAuthenticated&&!isAdmin) { %>
+      <% if (!isAdminLoggedIn&&!isUserLoggedIn) { %>
       <li class="main-header__item">
         <a
           class="<%= path === '/admin/login' ? 'active' : '' %>"
-          href="/admin/login"
+          href="/admin/auth/login"
         >
           Admin Login</a
         >
@@ -64,20 +64,20 @@
       <li class="main-header__item">
         <a
           class="<%= path === '/admin/signup' ? 'active' : '' %>"
-          href="/admin/signup"
+          href="/admin/auth/signup"
         >
           Admin Sign Up</a
         >
       </li>
-      <% } %> <% if (isAdmin||isAuthenticated) { %>
+      <% } %> <% if (isAdminLoggedIn||isUserLoggedIn) { %>
       <li class="main-header__item">
-        <form action="/logout" method="post">
-          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+        <form action="<% if (isAdminLoggedIn) { %>/admin/auth/logout<% } else { %>/user/auth/logout<% } %>" method="post">
+          <input type="hidden" name="_csrf" value="<%=csrfToken %>" />
           <button
             class="<%= path === '/logout' ? 'active' : '' %>"
             type="submit"
           >
-            logout
+            Logout
           </button>
         </form>
       </li>
@@ -99,7 +99,7 @@
       >
     </li>
 
-    <% if (!isAuthenticated&&!isAdmin) { %>
+    <% if (!isUserLoggedIn&&!isAdminLoggedIn) { %>
     <li class="mobile-nav__item">
       <a class="<%= path === '/login' ? 'active' : '' %>" href="/login"
         >Login</a
@@ -127,7 +127,7 @@
       >
     </li>
       <% } %>
-    <% if (isAuthenticated) { %>
+    <% if (isUserLoggedIn) { %>
     <li class="mobile-nav__item">
       <a class="<%= path === '/cart' ? 'active' : '' %>" href="/cart">Cart</a>
     </li>
@@ -138,7 +138,7 @@
     </li>
     
     <% } %> 
-    <% if (isAdmin) { %>
+    <% if (isAdminLoggedIn) { %>
     <li class="mobile-nav__item">
       <a
         class="<%= path === '/admin/add-product' ? 'active' : '' %>"
@@ -153,7 +153,7 @@
         >Admin Products
       </a>
     </li>
-    <% } %> <% if (isAdmin||isAuthenticated) { %>
+    <% } %> <% if (isAdminLoggedIn||isUserLoggedIn) { %>
     <li class="mobile-nav__item">
       <form action="/logout" method="post">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>" />

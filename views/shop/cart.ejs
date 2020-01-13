@@ -8,18 +8,18 @@
                 <ul>
                     <% products.forEach(p => { %>
                         <li>
-                            <p> Product Name:    <%= p.productId.title %> (<%= p.quantity %>)</p>
-                            <strong> Total:   (ksh :<%= (p.quantity*p.productId.price).toFixed(2) %>)</strong><br>
+                            <p> Product Name:    <%= p.productData.title %> (<%= p.quantity %>)</p>
+                            <strong> Total:   (ksh <%= (p.quantity*p.productData.price).toFixed(2) %>)</strong><br>
                             <form action="/cart-delete-item" method="POST">
-                                <input type="hidden" value="<%= p.productId.id %>" name="productId">
+                                <input type="hidden" value="<%= p.productData._id %>" name="productId">
                                 <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
                                 <input class="btn" type="submit" value='delete'>
                             </form>
                         </li>
                     <% }) %>
                 </ul>
-              <strong>Total Price ksh :<%=total %></strong> <br>
-                <form action="/create-orders" method="POST">
+              <strong>Total Price ksh <%= total %></strong> <br>
+                <form action="/create-order" method="POST">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                     <input class="btn" type="submit" value='Order Now!!'>
                 </form>
