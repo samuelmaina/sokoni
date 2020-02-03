@@ -3,15 +3,14 @@ const PDFDocument = require("pdfkit");
 const {User}= require('../database/interfaces/auth');
 
 
-
-module.exports = function createInvoice(orderdetails, invoicePath) {
+module.exports = function createInvoice(orderdetails, invoicePath,ordererName) {
   return new Promise((resolve, reject) => {
     try {
       let doc = new PDFDocument({
         margin: 50
       });
       generateHeader(doc);
-      generateCustomerInformation(doc, orderdetails);
+      generateCustomerInformation(doc, orderdetails,ordererName);
       generateFooter(doc);
       generateInvoiceTable(doc, orderdetails);
       doc.end();
@@ -51,12 +50,12 @@ function generateFooter(doc) {
     );
 }
 
- async function generateCustomerInformation(doc, orderdetails) {
+ async function generateCustomerInformation(doc, orderdetails,ordererName) {
   doc
     .text(`Invoice Number: ${orderdetails._id}`, 50, 200)
     .text(`Invoice Date: ${new Date()}`, 50, 215)
     .moveDown(3)
-    .text(`Purchaser : ${ await User.findById(orderdetails.userId).select('name')}  `, 50, 240)
+    .text(`Purchaser : ${ordererName}`, 50, 240)
     .moveDown(2);
 }
 
@@ -84,13 +83,13 @@ function generateInvoiceTable(doc, orderDetails) {
   const boughtProducts = orderDetails.orderedProducts;
   for (const product of boughtProducts) {
     const productDetails=product.productData;
-    const total =productDetails.price* product.quantity;
+    const total =productDetails.sellingPrice* product.quantity;
     currentRowPosition += 30;
     generateTableRow(
       doc,
       currentRowPosition,
       productDetails.title,
-      productDetails.price,
+      productDetails.sellingPrice,
       product.quantity,
       total.toFixed(2)
     );
