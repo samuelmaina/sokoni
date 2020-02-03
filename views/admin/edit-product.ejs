@@ -15,23 +15,33 @@
         <form class="product-form" action="/admin/<% if (editing) { %>edit-product<% } else { %>add-product<% }%>" method="POST" enctype="multipart/form-data">
             <div class="form-control">
                 <label for="title">Title</label>
-                <input type="text" name="title" id="title" value="<% if (editing) { %><%= product.title %><% } %>">
+                <input type="text" name="title" id="title" value="<% if (editing) { %><%= product.title %><% } %><% if (hasErrors) { %><%= previousData.title %><% } %>">
             </div>
             <div class="form-control">
                 <label for="file">Product Image</label>
-                <input type="file" name ="image" id="image" value="<% if (editing) { %><%= product.ImageUrl %><% } %>"/>
+                <input type="file" name ="image" id="image"/>
             </div>
             <div class="form-control">
-                <label for="price">Price</label>
-                <input type="number" name="price" id="price" step="0.01" value="<% if (editing) { %><%= product.price %><% } %>">
+                <label for="buyingPrice">buyingPrice</label>
+                <input type="number" name="buyingPrice" id="buyingPrice" step="0.01" value="<% if (editing) { %><%= product.buyingPrice %><% } %><% if (hasErrors) { %><%= previousData.buyingPrice%><% } %>">
             </div>
+            <div class="form-control">
+                <label for="percentageProfit">percentageProfit</label>
+                <input type="number" name="percentageProfit" id="percentageProfit" step="0.01"
+                    value="<% if (editing) { %><%= product.percentageProfit %><% } %><% if (hasErrors) { %><%= previousData.percentageProfit%><% } %>">
+            </div>
+                <div class="form-control">
+                    <label for="expirationPeriod">expirationPeriod</label>
+                    <input type="number" name="expirationPeriod" id="expirationPeriod"
+                        value="<% if (editing) { %><%= product.expirationPeriod %><% } %><% if (hasErrors) { %><%= previousData.expirationPeriod %><% } %>">
+                </div>
             <div class="form-control">
                 <label for="quantity">Quantity</label>
-                <input type="number" name="quantity" id="quantity" value="<% if (editing) { %><%= product.quantity %><% } %>">
+                <input type="number" name="quantity" id="quantity" value="<% if (editing) { %><%= product.quantity %><% } %><% if (hasErrors) { %><%= previousData.quantity %><% } %>">
             </div>
             <div class="form-control">
                 <label for="description"> Product Description</label>
-                <textarea name="description" id="description" rows="5"> <% if (editing) { %><%= product.description %><% } %></textarea>
+                <textarea name="description" id="description" rows="5"> <% if (editing) { %><%= product.description %><% } %><% if (hasErrors) { %><%= previousData.description %><% } %></textarea>
             </div>
             <% if (editing) { %>
                 <input type="hidden" value="<%= product.id %>" name="productId">
