@@ -27,9 +27,18 @@ exports.postSignUp = async (req, res, next) => {
       password
     };
     const validationErrors = validationErrorsIn(req);
-
+    const renderPageWithError = errorMessage => {
+      res.render("auth/signup", {
+        pageTitle: "User Sign Up",
+        path: "signup",
+        postPath: "signup",
+        hasErrors: true,
+        previousData: previousData,
+        errorMessage: errorMessage
+      });
+    };
     if (validationErrors) {
-      return;
+      return renderPageWithError(validationErrors);
     }
     User.createNew(req.body);
     res.redirect(routingPath + "login");
@@ -58,16 +67,6 @@ exports.postLogin = async (req, res, next) => {
       email,
       password
     };
-    const validationErrors = validationErrorsIn(req);
-    if (validationErrors) {
-      return renderPageWithError(validationErrors);
-    }
-
-    const user = await User.findOneWithCredentials(email, password);
-    if (!user) {
-      return renderPageWithError("Invalid Email or password");
-    }
-      
     const renderPageWithError = errorMessage => {
       res.render("auth/login", {
         pageTitle: "User Login",
@@ -78,8 +77,17 @@ exports.postLogin = async (req, res, next) => {
         errorMessage: errorMessage
       });
     };
-     req.session.isUserLoggedIn = true;
-     req.session.user = user;
+    const validationErrors = validationErrorsIn(req);
+    if (validationErrors) {
+      return renderPageWithError(validationErrors);
+    }
+
+    const user = await User.findOneWithCredentials(email, password);
+    if (!user) {
+      return renderPageWithError("Invalid Email or Password");
+    }
+
+    req.user = user;
     return next();
   } catch (error) {
     errorHandler(error, next);
@@ -87,7 +95,8 @@ exports.postLogin = async (req, res, next) => {
 };
 exports.initializeSession = (req, res, next) => {
   try {
-    console.log('About to intialize some session')
+    req.session.isUserLoggedIn = true;
+    req.session.user = req.user;
     req.session.save(err => {
       if (err) {
         throw new Error(err);
@@ -117,6 +126,16 @@ exports.postReset = async (req, res, next) => {
       email
     };
     const validationErrors = validationErrorsIn(req);
+    const renderPageWithError = errorMessage => {
+      res.render("auth/resetPassword", {
+        pageTitle: "Reset Password",
+        path: "reset",
+        postPath: "reset",
+        hasErrors: true,
+        previousData: previousData,
+        errorMessage: errorMessage
+      });
+    };
     if (validationErrors) {
       return renderPageWithError(validationErrors);
     }
@@ -143,16 +162,6 @@ exports.postReset = async (req, res, next) => {
       userMessage: `Dear ${user.name},
                 A link has been sent to your email.Please click the link to reset your password`
     });
-    const renderPageWithError = errorMessage => {
-      res.render("auth/resetPassword", {
-        pageTitle: "Reset Password",
-        path: "reset",
-        postPath: "reset",
-        hasErrors: true,
-        previousData: previousData,
-        errorMessage: errorMessage
-      });
-    };
   } catch (error) {
     errorHandler(error, next);
   }
@@ -161,6 +170,15 @@ exports.postReset = async (req, res, next) => {
 exports.getNewPassword = async (req, res, next) => {
   try {
     const token = req.params.token;
+    const renderPageWithError = errorMessage => {
+      res.render("auth/resetPassword", {
+        pageTitle: "Reset Password",
+        path: "reset",
+        postPath: "newPassword",
+        hasErrors: false,
+        errorMessage: errorMessage
+      });
+    };
     const tokenDetails = await TokenGenerator.findTokenDetailsWithValidity(
       token
     );
@@ -178,15 +196,6 @@ exports.getNewPassword = async (req, res, next) => {
       Id: resetUser._id,
       token: token
     });
-    const renderPageWithError = errorMessage => {
-      res.render("auth/resetPassword", {
-        pageTitle: "Reset Password",
-        path: "reset",
-        postPath: "newPassword",
-        hasErrors: false,
-        errorMessage: errorMessage
-      });
-    };
   } catch (error) {
     errorHandler(error, next);
   }
@@ -202,6 +211,18 @@ exports.postNewPassword = async (req, res, next) => {
       password
     };
     const validationErrors = validationErrorsIn(req);
+    const renderPageWithError = errorMessage => {
+      res.render("auth/newPassword", {
+        pageTitle: "New Password",
+        path: "new password",
+        postPath: "newPassword",
+        previousData: previousData,
+        hasErrors: true,
+        Id: userId,
+        token: token,
+        errorMessage: errorMessage
+      });
+    };
     if (validationErrors) {
       return renderPageWithError(validationErrors);
     }
@@ -219,18 +240,6 @@ exports.postNewPassword = async (req, res, next) => {
     await TokenGenerator.deleteTokenById(tokenDetails.getTokenId());
 
     res.redirect(routingPath + "login");
-    const renderPageWithError = errorMessage => {
-      res.render("auth/newPassword", {
-        pageTitle: "New Password",
-        path: "new password",
-        postPath: "newPassword",
-        previousData: previousData,
-        hasErrors: true,
-        Id: userId,
-        token: token,
-        errorMessage: errorMessage
-      });
-    };
   } catch (error) {
     errorHandler(error, next);
   }

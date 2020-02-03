@@ -2,29 +2,56 @@ const bodyParser = require("body-parser");
 const csurf = require("csurf");
 const flash = require("connect-flash");
 const multer = require("multer");
+const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoDBSession = require("connect-mongodb-session")(session);
 
-const {User} = require('./database/interfaces/auth');
+const { User } = require("./database/interfaces/auth");
 const errHandler = require("./util/errorHandler");
 require("dotenv").config();
 
+/**
+ * connect to the database using mongoose
+ * @return - a new connection to the database
+ */
+exports.connectToDb = mongoose.connect(process.env.MONGO_URI, {
+  useUnifiedTopology: true,
+  useNewUrlParser: true,
+  useFindAndModify: false
+});
 
+/**
+ * @param {number} validityPeriodInMs- the Time limit in which the
+ * session will valid in ms
+ */
+const validityPeriodInMs = 60 * 60 * 1000;
+/**
+ * @param {document} SessionCOllection- the collection name
+ * of the session in the database
+ */
+const dbStorage = "sessions";
 const store = new MongoDBSession({
   uri: process.env.MONGO_URI,
-  collection: "sessions"
+  collection: dbStorage
 });
+
+/**
+ * Configure Sessions
+ * @return Session Configuration to the database
+ *
+ */
+
 exports.sessionConfig = session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
   store: store,
   cookie: {
-    maxAge: 20 * 60 * 1000
+    maxAge: validityPeriodInMs
   }
 });
 
-
+// file uploader in the app
 
 const fileDestination = "Data/Images";
 const fileFieldName = "image";
@@ -53,19 +80,39 @@ const fileStorage = multer.diskStorage({
   }
 });
 const multerSettings = { storage: fileStorage, fileFilter: filter };
+/**
+ * @returns - returns a an image uploader for express app
+ */
 exports.fileUploader = multer(multerSettings).single(fileFieldName);
 
+/**
+ * Parse Url Encoded data
+ */
+exports.EnableParsingOfUrlEncodedData = bodyParser.urlencoded({
+  extended: false
+});
 
+/**
+ * Parse JSON data
+ */
+exports.EnableParsingOfJSON = bodyParser.json();
 
-exports.bodyParserConfig = {
-  parseUrlEncoded: bodyParser.urlencoded({ extended: false }),
-  parseJSON: bodyParser.json()
-};
-
+/**
+ * Configure flash to flash Message in the res
+ */
 exports.flashConfg = flash();
 
+/**
+ * Enables CSRUF protection of the user session
+ */
 exports.csurfProtectionconf = csurf();
 
+/**
+ * Append the current user in session to the request
+ * This enables the app to access the methods on the
+ *  user Model which otherwise would not be available in the req.session.user
+ *
+ */
 exports.appendSessionUserInReq = async (req, res, next) => {
   try {
     if (!req.session.user) {
@@ -78,6 +125,9 @@ exports.appendSessionUserInReq = async (req, res, next) => {
     errHandler(error, next);
   }
 };
+/**
+ * Handles all the errors in the app and display Error page to the user
+ */
 
 exports.errorHandlerMiddleware = (error, req, res, next) => {
   let statusCode = error.httpStatusCode || 500;
@@ -91,6 +141,9 @@ exports.errorHandlerMiddleware = (error, req, res, next) => {
   });
 };
 
+/**
+ * sets all the data that will be sent to every response
+ */
 exports.setResLocals = (req, res, next) => {
   res.locals.isUserLoggedIn = req.session.isUserLoggedIn;
   res.locals.isAdminLoggedIn = req.session.isAdminLoggedIn;

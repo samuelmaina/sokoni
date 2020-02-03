@@ -14,7 +14,10 @@ const orderSchema = new Schema({
     type: Number,
     required: true
   },
-  userId: { type: Schema.Types.ObjectId, required: true }
+  userId: { 
+    type: Schema.Types.ObjectId,
+    ref:'User',
+    required: true }
 });
 
 orderSchema.statics.createNew = function(orderData) {
@@ -32,14 +35,11 @@ orderSchema.statics.findAllforUserId = function(Id) {
 };
 orderSchema.statics.findByIdAndPopulateProductsDetails = function(Id) {
   return this.findById(Id)
-    .populate("orderedProducts.productData", "title price adminId")
+    .populate("orderedProducts.productData", "title sellingPrice adminId")
     .exec();
 };
-orderSchema.statics.deleteById = function(Id) {
-  return this.findByIdAndDelete(Id);
-};
+
 orderSchema.methods.isOrderedById = function(Id) {
-  console.log(this)
   return Id.toString() === this.userId.toString();
 };
 module.exports = mongoose.model("Order", orderSchema);

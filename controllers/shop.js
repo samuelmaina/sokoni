@@ -6,18 +6,16 @@ const generateInvoicePdf = require("../util/invoicePdfGenerator");
 const Order = require("../database/interfaces/orderForShop");
 const AdminSale = require("../database/interfaces/adminSaleForShop");
 const User = require("../database/interfaces/userForShop");
-const Product=require('../database/interfaces/productForShop');
+const Product = require("../database/interfaces/productForShop");
 
 const errorHandler = require("../util/errorHandler");
-
 
 exports.getIndex = async (req, res, next) => {
   try {
     const page = +req.query.page || 1;
-    const {
-      paginationData,
-      products
-    } = await Product.findProductsFor(page);
+    const { paginationData, products } = await Product.findProductsForPage(
+      page
+    );
     res.render("shop/index", {
       prods: products,
       pageTitle: "Shop",
@@ -30,17 +28,21 @@ exports.getIndex = async (req, res, next) => {
 };
 
 exports.getProducts = async (req, res, next) => {
+
   try {
- const page = +req.query.page || 1;
- const {
-   paginationData,
-   products
- } = await Product.findProductsFor(page);
+    const page = +req.query.page || 1;
+    const { paginationData, products } = await Product.findProductsForPage(
+      page
+    );
+    // res.status(200).json({
+    //   paginationData: paginationData,
+    //   prods: products
+    // });
     res.render("shop/product-list", {
       prods: products,
       pageTitle: "All Products",
       path: "/products",
-      paginationData:paginationData
+      paginationData: paginationData
     });
   } catch (err) {
     errorHandler(err, next);
@@ -50,7 +52,7 @@ exports.getProducts = async (req, res, next) => {
 exports.getProduct = async (req, res, next) => {
   try {
     const prodId = req.params.productId;
-    const product = await Product.findById(prodId)
+    const product = await Product.findById(prodId);
     if (!product) {
       return res.redirect("/");
     }
@@ -69,7 +71,7 @@ exports.getCart = async (req, res, next) => {
     const {
       total,
       cartProducts
-    } = await User.findCartProductsAndTheirTotalForId(req.user._id);
+    } = await User.findCartProductsAndTheirTotalsForUserId(req.user._id);
     req.session.total = total;
     req.session.orderedProducts = cartProducts;
     res.render("shop/cart", {
@@ -87,12 +89,12 @@ exports.getCart = async (req, res, next) => {
 exports.postToCart = async (req, res, next) => {
   try {
     const prodId = req.body.productId;
-    const product = await Product.findById(prodId);
+    const product =await  Product.findById(prodId);
     if (product) {
-      await req.user.addToCart(product);
-      await product.reduceQuantity();
+       req.user.addProductIdToCart(prodId);
+       await product.reduceQuantityByOne();
     }
-    res.redirect("/products",);
+    res.redirect("/products");
   } catch (error) {
     errorHandler(error, next);
   }
@@ -101,21 +103,19 @@ exports.postToCart = async (req, res, next) => {
 exports.postCartDeleteProduct = async (req, res, next) => {
   try {
     const prodId = req.body.productId;
-    const deletedCartProductQuantity = await req.user.deleteProductFromCart(
-      prodId
-    );
+    const deletedQuantity = await req.user.deleteProductIdFromCart(prodId);
     res.redirect("/cart");
-    const productToUpdateQuantity = await Product.findById(prodId);
-    await productToUpdateQuantity.increaseQuantity(deletedCartProductQuantity);
+    const product= await Product.findById(prodId);
+    await product.increaseQuantityBy(deletedQuantity);
   } catch (error) {
     errorHandler(error, next);
-    console.log(error);
   }
 };
 
 exports.getOrders = async (req, res, next) => {
   try {
     const orders = await Order.findAllForUserId(req.user._id);
+    console.log(orders);
     res.render("shop/orders", {
       path: "/orders",
       pageTitle: "Your Orders",
@@ -139,7 +139,7 @@ exports.createOrder = async (req, res, next) => {
     await req.user.clearCart();
     res.redirect("/orders");
   } catch (error) {
-    console.log(error)
+    console.log(error);
     errorHandler(error, next);
   }
 };
@@ -149,7 +149,7 @@ exports.createInvoicePdf = async (req, res, next) => {
     const orderId = req.params.orderId;
     const invoiceName = "invoice-" + orderId + ".pdf";
     const invoicePath = path.join("Data", "Invoices", invoiceName);
-    let order = await Order.findByIdWithDetails(orderId);
+    const order = await Order.findByIdWithDetails(orderId);
     if (!order) {
       throw new Error("Order does not exist");
     }
@@ -160,7 +160,7 @@ exports.createInvoicePdf = async (req, res, next) => {
     req.invoiceName = invoiceName;
     req.invoicePath = invoicePath;
     req.orderedProducts = order.orderedProducts;
-    await generateInvoicePdf(order, invoicePath);
+    await generateInvoicePdf(order, invoicePath,req.user.name);
     await Order.deleteById(orderId);
     return next();
   } catch (error) {
@@ -172,9 +172,7 @@ const addToAdminSales = async (orderedProducts, next) => {
   try {
     for (const product of orderedProducts) {
       const productDetails = product.productData;
-      let adminSales = await AdminSale.findSalesFor(
-        productDetails.adminId
-      );
+      let adminSales = await AdminSale.findSalesForAdminId(productDetails.adminId);
       if (!adminSales) {
         adminSales = await AdminSale.createNew(productDetails.adminId);
       }
@@ -183,8 +181,7 @@ const addToAdminSales = async (orderedProducts, next) => {
         productId: productDetails._id,
         soldAt: Date.now()
       };
-      await adminSales.addOrderedProduct(saleDetails);
-      console.log(adminSales.getSoldProducts());
+       adminSales.addOrderedProduct(saleDetails);
     }
   } catch (error) {
     errorHandler(error, next);
@@ -201,5 +198,5 @@ exports.getInvoice = async (req, res, next) => {
   );
   const file = fs.createReadStream(invoicePath);
   file.pipe(res);
-  await addToAdminSales(req.orderedProducts, next);
+  addToAdminSales(req.orderedProducts, next);
 };

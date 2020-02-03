@@ -1,4 +1,4 @@
-const IsAuth=require('../authmiddleware/userRoutesProtect')
+const ensureUserAuthenticated=require('../authmiddleware/userRoutesProtect')
 
 const express = require('express');
 
@@ -12,19 +12,19 @@ router.get('/products', shopControllers.getProducts);
 
 router.get('/products/:productId', shopControllers.getProduct);
 
-router.get('/cart', IsAuth,shopControllers.getCart);
-router.post('/cart', IsAuth,shopControllers.postToCart);
+router.get('/cart', ensureUserAuthenticated,shopControllers.getCart);
+router.post('/cart', ensureUserAuthenticated,shopControllers.postToCart);
 
-router.post('/cart-delete-item',IsAuth, shopControllers.postCartDeleteProduct);
+router.post('/cart-delete-item',ensureUserAuthenticated, shopControllers.postCartDeleteProduct);
 
-router.get("/orders", IsAuth, shopControllers.getOrders);
+router.get("/orders", ensureUserAuthenticated, shopControllers.getOrders);
 
-router.post('/create-order', IsAuth,shopControllers.createOrder);
+router.post('/create-order', ensureUserAuthenticated,shopControllers.createOrder);
 
 
 router.get(
   "/orders/:orderId",
-  IsAuth,
+  ensureUserAuthenticated,
   shopControllers.createInvoicePdf,
   shopControllers.getInvoice
 );

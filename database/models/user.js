@@ -34,10 +34,15 @@ userSchema.statics.findCartProductsAndTheirTotalForId = async function(Id) {
     total
   };
 };
+userSchema.statics.findUserByIdAndPopulateCartProductsDetails = function(Id) {
+  return this.findById(Id)
+    .populate("cart.products.productData", "sellingPrice title")
+    .exec();
+};
 
-userSchema.methods.addToCart = function(product) {
+userSchema.methods.addProductIdToCart = function(prodId) {
   const cartProductIndex = this.cart.products.findIndex(cp => {
-    return cp.productData.toString() === product._id.toString();
+    return cp.productData.toString() === prodId.toString();
   });
   let newQuantity = 1;
   const updatedCartProducts = [...this.cart.products];
@@ -46,7 +51,7 @@ userSchema.methods.addToCart = function(product) {
     updatedCartProducts[cartProductIndex].quantity = newQuantity;
   } else {
     updatedCartProducts.push({
-      productData: product._id,
+      productData: prodId,
       quantity: newQuantity
     });
   }
@@ -57,7 +62,7 @@ userSchema.methods.addToCart = function(product) {
   return this.save();
 };
 
-userSchema.methods.deleteProductFromCart = async function(prodId) {
+userSchema.methods.deleteProductIdFromCart = async function(prodId) {
   const deletedProductIndex = this.cart.products.findIndex(cp => {
     return cp.productData.toString() === prodId.toString();
   });

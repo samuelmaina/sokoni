@@ -3,6 +3,7 @@ require("dotenv").config();
 const transporter = require("../../util/emailSender");
 
 const { Admin } = require("../../database/interfaces/auth");
+const TokenGenerator=require('../../database/models/tokenGenerator');
 
 const errorHandler = require("../../util/errorHandler");
 const validationErrorsIn = require("../../util/validationResults");
@@ -33,8 +34,18 @@ exports.postAdminSignUp = async (req, res, next) => {
       password
     };
     const validationErrors = validationErrorsIn(req);
+    const renderPageWithError = errorMessage => {
+      res.render("auth/signup", {
+        pageTitle: "Administrator Sign In",
+        path: "signup",
+        postPath: "signup",
+        hasErrors: true,
+        errorMessage: errorMessage,
+        previousData: previousData
+      });
+    };
     if (validationErrors) {
-      renderPageWithError(validationErrors);
+      return renderPageWithError(validationErrors);
     }
     Admin.createNew(req.body);
     res.redirect("login");
@@ -47,18 +58,7 @@ exports.postAdminSignUp = async (req, res, next) => {
       .Login to do the following:
        </strong><br><p>add products<br><p>edit products</p><br>
        <p>And do much more as an admin</p>`
-    });
-
-    const renderPageWithError = errorMessage => {
-      res.render("auth/signup", {
-        pageTitle: "Administrator Sign In",
-        path: "signup",
-        postPath: "signup",
-        hasErrors: true,
-        errorMessage: errorMessage,
-        previousData: previousData
-      });
-    };
+    });  
   } catch (error) {
     errorHandler(error, next);
   }
@@ -77,6 +77,16 @@ exports.postLogin = async (req, res, next) => {
       password
     };
     const validationErrors = validationErrorsIn(req);
+     const renderPageWithError = errorMessage => {
+       res.render("auth/login", {
+         pageTitle: "Administrator Login",
+         path: "login",
+         postPath: "login",
+         previousData: previousData,
+         hasErrors: true,
+         errorMessage: errorMessage
+       });
+     };
     if (validationErrors) {
       return renderPageWithError(validationErrors);
     }
@@ -84,18 +94,8 @@ exports.postLogin = async (req, res, next) => {
     if (!admin) {
       return renderPageWithError("Invalid Email or Password");
     }
-    const renderPageWithError = errorMessage => {
-      res.render("auth/login", {
-        pageTitle: "Administrator Login",
-        path: "login",
-        postPath: "login",
-        previousData: previousData,
-        hasErrors: true,
-        errorMessage: errorMessage
-      });
-    };
-      req.session.isAdminLoggedIn = true;
-      req.session.admin = admin;
+   
+    req.admin=admin;
     return next()
   } catch (error) {
     errorHandler(error, next);
@@ -104,6 +104,8 @@ exports.postLogin = async (req, res, next) => {
 
 exports.initializeSession = (req, res, next) => {
   try {
+      req.session.isAdminLoggedIn = true;
+      req.session.admin = req.admin;
     return req.session.save(err => {
       if (err) throw new Error(err);
       res.redirect("/admin/products");
@@ -131,16 +133,27 @@ exports.postReset = async (req, res, next) => {
       email
     };
     const validationErrors = validationErrorsIn(req);
+    const renderPageWithError = errorMessage => {
+      res.render("auth/resetPassword", {
+        pageTitle: "Admin resetPassword",
+        path: "reset",
+        postPath: "reset",
+        hasErrors: true,
+        previousData: previousData,
+        errorMessage: errorMessage
+      });
+    };
     if (validationErrors) {
       return renderPageWithError(validationErrors);
     }
     const resetAdmin = await Admin.findByEmail(email);
     if (!resetAdmin) {
-      return renderPageWithError("No user by that name exists");
+      return renderPageWithError("No Admin by that name exists");
     }
-    const token = await Admin.createTokenForId(resetAdmin._id);
+    const token = await TokenGenerator.createTokenForId(resetAdmin._id);
+    console.log(token);
     transporter.sendMail({
-      //http://localhost:3000/admin/auth/newPassword/5bf00349db8c7f2f801287e75b26a84c788da55c184829e1e398ec295400da67
+      //http://localhost:3000/admin/auth/newPassword/efbba6090b5afba6c290e20b6fc36423e16c5470a2660c3f58db9211d7c6e1f8
       from: "samuelsonlineshop@online.com",
       to: resetAdmin.email,
       subject: "Reset Password",
@@ -158,16 +171,7 @@ exports.postReset = async (req, res, next) => {
                 A link has been sent to your email.
                 Please click the link to reset your password`
     });
-    const renderPageWithError = errorMessage => {
-      res.render("auth/resetPassword", {
-        pageTitle: "Admin resetPassword",
-        path: "reset",
-        postPath: "reset",
-        hasErrors: true,
-        previousData: previousData,
-        errorMessage: errorMessage
-      });
-    };
+    
   } catch (error) {
     errorHandler(error, next);
   }
@@ -176,9 +180,19 @@ exports.postReset = async (req, res, next) => {
 exports.getNewPassword = async (req, res, next) => {
   try {
     const tokenString = req.params.token;
-    const tokenDetails = await TokenGenerator.findTokenDetailsWithValidity(
+     const renderPageWithError = errorMessage => {
+       res.render("auth/resetPassword", {
+         pageTitle: "Reset Password",
+         path: "reset",
+         postPath: "reset",
+         hasErrors: false,
+         errorMessage: errorMessage
+       });
+     };
+    const tokenDetails = await TokenGenerator.findTokenDetails(
       tokenString
     );
+
     if (!tokenDetails) {
       return renderPageWithError("Too late for the reset. Please try again");
     }
@@ -193,15 +207,7 @@ exports.getNewPassword = async (req, res, next) => {
       Id: admin._id,
       token: tokenString
     });
-    const renderPageWithError = errorMessage => {
-      res.render("auth/resetPassword", {
-        pageTitle: "Reset Password",
-        path: "reset",
-        postPath: "reset",
-        hasErrors: false,
-        errorMessage: errorHandler
-      });
-    };
+   
   } catch (error) {
     errorHandler(error, next);
   }
@@ -216,18 +222,6 @@ exports.postNewPassword = async (req, res, next) => {
       password
     };
     const validationErrors = validationErrorsIn(req);
-    if (validationErrors) {
-      return renderPageWithError(validationErrors);
-    }
-    const token = await TokenGenerator.findTokenDetailsWithValidity(bodyToken);
-    const resetAdmin = await Admin.findById(token.getRequesterId());
-    if (!resetAdmin) {
-      return renderPageWithError("You are not authorised to change Password");
-    }
-    await resetAdmin.resetPasswordTo(password);
-    await Token.deleteTokenById(token.id);
-    res.redirect("/admin/auth/login");
-
     const renderPageWithError = errorMessage => {
       res.render("auth/newPassword", {
         pageTitle: "New Password",
@@ -240,6 +234,19 @@ exports.postNewPassword = async (req, res, next) => {
         token: bodyToken
       });
     };
+    if (validationErrors) {
+      return renderPageWithError(validationErrors);
+    }
+    const token = await TokenGenerator.findTokenDetails(bodyToken);
+    const resetAdmin = await Admin.findById(token.getRequesterId());
+    if (!resetAdmin) {
+      return renderPageWithError("You are not authorised to change Password");
+    }
+    await resetAdmin.resetPasswordTo(password);
+    await Token.deleteTokenById(token.id);
+    res.redirect("/admin/auth/login");
+
+    
   } catch (error) {
     errorHandler(error, next);
   }
