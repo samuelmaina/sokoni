@@ -1,30 +1,42 @@
 <%- include('../includes/head.ejs') %>
-    </head>
+<link rel="stylesheet" href="/css/cart.css">
+</head>
 
-    <body>
-        <%- include('../includes/navigation.ejs') %>
-        <main>
-            <% if (products.length > 0) { %>
-                <ul>
-                    <% products.forEach(p => { %>
-                        <li>
-                            <p> Product Name:    <%= p.productData.title %> (<%= p.quantity %>)</p>
-                            <strong> Total:   (ksh <%= (p.quantity*p.productData.sellingPrice).toFixed(2) %>)</strong><br>
-                            <form action="/cart-delete-item" method="POST">
-                                <input type="hidden" value="<%= p.productData._id %>" name="productId">
-                                <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-                                <input class="btn" type="submit" value='delete'>
-                            </form>
-                        </li>
-                    <% }) %>
-                </ul>
-              <strong>Total Price ksh <%= total %></strong> <br>
-                <form action="/create-order" method="POST">
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <input class="btn" type="submit" value='Order Now!!'>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <article class="container cart__item-list">
+        <% if (products.length > 0) { %>
+        <ul>
+            <div class="grid cart__item  header">
+                <h1>Product</h1>
+                <h1>Quantity</h1>
+                <h1>Total</h1>
+                <h1>Action</h1>
+            </div>
+            <% products.forEach(p => { %>
+            <li class="grid cart__item ">
+                <h1> <%= p.productData.title %> </h1>
+                <h1><%= p.quantity %></h1>
+                <h1> ksh
+                    <%= (p.quantity*p.productData.sellingPrice).toFixed(2) %></h1>
+                <form action="/cart-delete-item" method="POST">
+                    <input type="hidden" value="<%= p.productData._id %>" name="productId">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <input class="btn delete" type="submit" value='delete'>
                 </form>
-            <% } else { %>
-                <h1>No Products in Cart!</h1>
-            <% } %>
-        </main>
-        <%- include('../includes/end.ejs') %>
+            </li>
+            <% }) %>
+        </ul>
+        <strong class="grid cart__item ">Total Price <span class="total">ksh <%= total %></span></strong> <br>
+        <form action="/create-order" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input class="btn cart__item " type="submit" value='Order Now!!'>
+        </form>
+
+        <% } else { %>
+        <h1>No Products in Cart!</h1>
+        <% } %>
+    </article>
+    </main>
+    <%- include('../includes/end.ejs') %>

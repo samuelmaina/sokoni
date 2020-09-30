@@ -1,20 +1,27 @@
 const fs = require("fs");
 const PDFDocument = require("pdfkit");
-const {User}= require('../database/interfaces/auth');
+const { User } = require("../database/interfaces/auth");
 
+const shopEmail = "samuelmainaonlineshop@gmail.com";
+const shopName = "SM Online Shop.";
+const shopMotto = "Online shop you can trust.";
+const shopLogo = "public/logos/logo.png",
+  footer = "Payment is due within 15 days. Thank you for shopping with us.";
 
-module.exports = function createInvoice(orderdetails, invoicePath,ordererName) {
+module.exports = async function (orderdetails, invoicePath, res) {
+  const userDetails = await User.findById(orderdetails.getUserId());
+  const ordererName = userDetails.getName();
   return new Promise((resolve, reject) => {
     try {
       let doc = new PDFDocument({
-        margin: 50
+        margin: 50,
       });
+      doc.pipe(res);
       generateHeader(doc);
-      generateCustomerInformation(doc, orderdetails,ordererName);
+      generateCustomerInformation(doc, orderdetails, ordererName);
       generateFooter(doc);
       generateInvoiceTable(doc, orderdetails);
       doc.end();
-      doc.pipe(fs.createWriteStream(invoicePath));
       resolve((done = true));
     } catch (error) {
       reject(new Error(error));
@@ -24,17 +31,17 @@ module.exports = function createInvoice(orderdetails, invoicePath,ordererName) {
 
 function generateHeader(doc) {
   doc
-    .image("public/logo/logo.png", 50, 45, {
-      width: 50
+    .image(shopLogo, 50, 45, {
+      width: 50,
     })
     .fillColor("#444444")
     .fontSize(20)
-    .text("SM Online Shop.", 110, 57)
+    .text(shopName, 110, 57)
     .fontSize(10)
-    .text("samuelmainaonlineshop@gmail.com", 200, 65, { align: "right" })
+    .text(shopEmail, 200, 65, { align: "right" })
     .fontSize(8)
-    .text("Online shop you can trust.", 200, 80, {
-      align: "right"
+    .text(shopMotto, 200, 80, {
+      align: "right",
     })
     .moveDown();
 }
@@ -42,18 +49,13 @@ function generateFooter(doc) {
   doc
     .fontSize(10)
     .font("Times-Roman")
-    .text(
-      "Payment is due within 15 days. Thank you for shopping with us.",
-      50,
-      730,
-      { align: "center", width: 500 }
-    );
+    .text(footer, 50, 730, { align: "center", width: 500 });
 }
 
- async function generateCustomerInformation(doc, orderdetails,ordererName) {
+async function generateCustomerInformation(doc, orderdetails, ordererName) {
   doc
     .text(`Invoice Number: ${orderdetails._id}`, 50, 200)
-    .text(`Invoice Date: ${new Date()}`, 50, 215)
+    .text(`Invoice Date: ${new Date().toDateString()}`, 50, 215)
     .moveDown(3)
     .text(`Purchaser : ${ordererName}`, 50, 240)
     .moveDown(2);
@@ -80,10 +82,10 @@ function generateInvoiceTable(doc, orderDetails) {
     .text("Quantity", 280, currentRowPosition, { width: 90, align: "right" })
     .text("Total", 370, currentRowPosition, { width: 90, align: "right" })
     .moveDown(0.5);
-  const boughtProducts = orderDetails.orderedProducts;
+  const boughtProducts = orderDetails.getOrderedProducts();
   for (const product of boughtProducts) {
-    const productDetails=product.productData;
-    const total =productDetails.sellingPrice* product.quantity;
+    const productDetails = product.productData;
+    const total = productDetails.sellingPrice * product.quantity;
     currentRowPosition += 30;
     generateTableRow(
       doc,
@@ -95,7 +97,7 @@ function generateInvoiceTable(doc, orderDetails) {
     );
   }
   doc.text(
-    `Total Payment: Kshs ${orderDetails.total}`,
+    `Total Payment: Kshs ${orderDetails.getTotal()}`,
     200,
     currentRowPosition + 30,
     { align: "center" }

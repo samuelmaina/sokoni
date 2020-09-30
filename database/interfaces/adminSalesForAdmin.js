@@ -1,12 +1,14 @@
-const AdminSales=require('../models/adminSale');
+const { AdminSales } = require("../models/index");
 class AdminSalesForAdmin {
   constructor(Model) {
     this.Model = Model;
   }
+  wipeProductWhenItsDeletedByAdmin() {
+    AdminSales.findOneAndDelete();
+  }
   /**
    *
    * Get all the sales within a period for an admin with the provided Id
-   * @param {Number} adminId -the admin to get product
    * @param {Date} fromTime -the time from which to count
    * @param {Date} ToTime -to the time to  of the interval
    */
@@ -19,7 +21,7 @@ class AdminSalesForAdmin {
   }
   /**
    *Deletes all the sales for an admin with the given Id
-   * @param {Number} adminId -delete sales for an admin
+   * @param {Number} adminId
    */
   deleteSalesForAdminId(adminId) {
     return this.Model.findOneAndRemove({ adminId });
@@ -27,44 +29,44 @@ class AdminSalesForAdmin {
   /**
    *Finds all the profits and losses for an admin with the provided Id within a period of t
    time
-   * @param {Number} adminId -the admin to get product
+   * @param {Number} adminId
    * @param {Date} fromTime -the time from which to count
-   * @param {Date} ToTime -to the time to  of the interval
-   * the function return the profit for an interval
+   * @param {Date} ToTime -the end of time range
+   * @returns returns an array of products and their profits
+   * for the time range
    */
-  async modifyWithinAnIntervalForAdminId(adminId, fromTime, ToTime) {
+  async salesWithinAnIntervalForAdminId(adminId, fromTime, ToTime) {
     const productsAndTheirProfits = [];
     const adminSales = await this.getSalesForAdminIdWithinAnInterval(
       adminId,
       fromTime,
       ToTime
     );
-    for (const product of adminSales) {
-      console.log(product);
-      const expirationPeriod =
-        product.productData.expirationPeriod * 24 * 60 * 60 * 1000;
-      const timestamp = product.productData.timestamp;
-      console.log(expirationPeriod);
-      console.log(Date.now() - expirationPeriod);
-      console.log(Date.now());
-      let profit = 0.0;
-      let counter = 0;
-      for (const sale of product.productSales) {
-        console.log(counter);
-        counter++;
-        if (Date.now() - expirationPeriod <= timestamp) {
-          profit += sale.quantity * product.productData.sellingPrice;
-        } else {
-          return "running at a loss";
-        }
-      }
-      profit = profit.toFixed(2);
-      productsAndTheirProfits.push({
-        productId: product.productData._id,
-        profit: profit
+    if (adminSales) {
+      adminSales.forEach((product) => {
+        let profit = 0.0;
+        let totalSales = 0.0;
+        product.productSales.forEach((sale) => {
+          const quantity = sale.quantity;
+          const sellingPrice = product.productData.sellingPrice;
+          const buyingPrice = product.productData.buyingPrice;
+          totalSales += quantity * sellingPrice;
+          profit += quantity * (sellingPrice - buyingPrice);
+        });
+        profit = profit.toFixed(2);
+        totalSales = totalSales.toFixed(2);
+        productsAndTheirProfits.push({
+          title: product.productData.title,
+          profit: profit,
+          totalSales: totalSales,
+          imageUrl: product.productData.imageUrl,
+        });
+      });
+      productsAndTheirProfits.sort((el1, el2) => {
+        return el1.profit <= el2.profit;
       });
       return productsAndTheirProfits;
-    }
+    } else return [];
   }
 }
-module.exports=new AdminSalesForAdmin(AdminSales);
+module.exports = new AdminSalesForAdmin(AdminSales);

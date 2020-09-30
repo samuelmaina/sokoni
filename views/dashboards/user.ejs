@@ -1,0 +1,56 @@
+<%- include('../includes/head.ejs') %>
+<style>
+    .container {
+        width: 40%;
+        height: 20rem;
+        margin: auto;
+    }
+
+    .label {
+        color: rgb(27, 143, 77);
+        font-size: 20px;
+    }
+
+    .user-info {
+        width: fit-content;
+        margin: auto;
+        padding: 2rem 0;
+    }
+</style>
+</head>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <div class="grid">
+        <article class="card  container">
+            <div class="user-info">
+                <div>
+                    <span class="card label">Current_Account_Balance
+                    </span>: Kshs <%= userData.currentBalance%>
+                </div>
+                <br>
+                <div>
+                    <span class=" card label">Email
+                    </span>: <%= userData.email%>
+                </div>
+                <br>
+                <div>
+                    <span class="card label">Name</span>: <%= userData.name %>
+                </div>
+            </div>
+            <div class="grid">
+                <a class="btn" href="<%=navigationData.changeDetailsPath%>">
+                    Change Details
+                </a>
+                <a class="btn" href="<%=navigationData.changePasswordPath%>">
+                    Change Password
+                </a>
+                <a class="btn" href="<%=navigationData.depositPath%>">
+                    Deposit into the Account
+                </a>
+            </div>
+
+        </article>
+    </div>
+    </main>
+    <%- include('../includes/end.ejs') %>

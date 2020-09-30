@@ -1,4 +1,4 @@
-const Product= require('../models/product');
+const { Product } = require("../models/index");
 class ProductForAdmin {
   constructor(Model) {
     this.Model = Model;
@@ -43,4 +43,4 @@ class ProductForAdmin {
     return this.Model.deleteById(Id);
   }
 }
-module.exports=new ProductForAdmin(Product)
+module.exports = new ProductForAdmin(Product);

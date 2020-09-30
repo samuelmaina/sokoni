@@ -1,59 +1,56 @@
 <%- include('../includes/head.ejs') %>
-    <link rel="stylesheet" href="/css/product.css">
-    </head>
+<link rel="stylesheet" href="/css/product.css">
+</head>
 
-    <body>
-        <%- include('../includes/navigation.ejs') %>
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <% if (prods.length > 0) { %>
+    <div class="grid">
+        <% for (let product of prods) { %>
+        <article class="card product-item">
+            <header class="card__header">
+                <h1 class="product__title">
+                </h1>
+                <h1 class="product__title">
+                    Name: <%= product.title %>
+                </h1>
+            </header>
+            <div class="card__image">
+                <img src="/<%= product.imageUrl %>" alt="<%= product.title %>">
+            </div>
 
-            <main>
-                <% if (prods.length > 0) { %>
-                    <div class="grid">
-                        <% for (let product of prods) { %>
-                            <article class="card product-item">
-                                <header class="card__header">
-                                    <h1 class="product__title">
-                                        Name:  <%= product.title %>
-                                    </h1>
-                                </header>
-                                <div  class="card__image" >
-                                    <img src="/<%= product.imageUrl %>" alt="<%= product.title %>">
-                                </div>
+            <div class="card__content">
+                <h2 class="product__price">
+                    Price: Ksh <%= product.sellingPrice%>
+                </h2>
+                <br>
 
-                                <div class="card__content">
-                                    <h2 class="product__price">
-                                       Price: Ksh <%= product.sellingPrice%>
-                                    </h2>
-                                    <br>
+                <p class="product__description">
+                    <strong>Description:</strong> <%= product.description %>
+                </p>
+                <br>
+                <br>
+                <p class="product__description">
+                    <strong>Quantity:</strong><%= product.quantity %>
+                </p>
+                <br>
+            </div>
+            <div class="card__actions">
+                <a href="/admin/edit-product/<%= product.id %>?edit=true" class="btn">Edit</a>
 
-                                    <p class="product__description">
-                                        <strong>Description:</strong> <%= product.description %>
-                                    </p>
-                                    <br>
-                                    <br>
-                                    <p class="product__description">
-                                        <strong>Quantity:</strong><%= product.quantity %>
-                                    </p>
-                                    <br>
-                                    <p class="product__price">
-                                       <strong>Managed By:</strong>     <%= product.adminName %>
-                                    </p>
-                                </div>
-                                <div class="card__actions">
-                                    <a href="/admin/edit-product/<%= product.id %>?edit=true" class="btn">Edit</a>
-                                    <form action="/admin/delete-product" method="POST">
-                                        <input type="hidden" value="<%= product.id %>" name="productId">
-                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                                        <button class="btn" type="submit">Delete</button>
-                                    </form>
+                <input type="hidden" value="<%= product.id %>" name="productId">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button class="btn" type="submit" onclick="deleteProduct(this)">Delete</button>
+            </div>
+        </article>
+        <% } %>
+    </div>
+    <%- include('../includes/pagination.ejs', {currentPage: paginationData.currentPage, nextPage: paginationData.nextPage, previousPage: paginationData.previousPage, lastPage: paginationData.lastPage, hasNextPage: paginationData.hasNextPage, hasPreviousPage: paginationData.hasPreviousPage}) %>
 
-                                </div>
-                            </article>
-                            <% } %>
-                    </div>
-                    <%- include('../includes/pagination.ejs', {currentPage: paginationData.currentPage, nextPage: paginationData.nextPage, previousPage: paginationData.previousPage, lastPage: paginationData.lastPage, hasNextPage: paginationData.hasNextPage, hasPreviousPage: paginationData.hasPreviousPage}) %>
-
-                    <% } else { %>
-                        <h1>No Products Found!</h1>
-                        <% } %>
-            </main>
-            <%- include('../includes/end.ejs') %>
+    <% } else { %>
+    <h1>No Products Found!</h1>
+    <% } %>
+    </main>
+    <%- include('../includes/end.ejs') %>
+    <script src="/js/admin.js">
+    </script>

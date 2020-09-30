@@ -5,6 +5,9 @@
 .form-control label,
 .form-control input,
 .form-control textarea {
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-size: 1.5rem;
+  color: rgba(8, 1, 1, 0.911);
   display: block;
   width: 100%;
   margin-bottom: 0.25rem;
@@ -19,5 +22,5 @@
 
 .form-control input:focus,
 .form-control textarea:focus {
-  outline-color: #00695c;
+  outline-color: rgba(34, 34, 33, 0.911);
 }

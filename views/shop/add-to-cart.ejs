@@ -1,0 +1,27 @@
+<%- include('../includes/head.ejs') %>
+<link rel="stylesheet" href="/css/orders.css">
+</head>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <div class="card orders__item">
+        <div class="grid">
+            <div>
+                <h1 class="order_header" style="font-size: 25px;"><%= product.title %></h1><br>
+                <img src="<%= product.imageUrl %>" alt=" <%= product.title %>" style="width:20rem;height:25rem;">
+            </div>
+        </div>
+        <form action="/cart" method="post">
+            <label for="quantity"
+                style="font-size: 4rem;font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;"></label>Quantity</label>
+            <input class="btn" type="number" name="quantity" id="quantity" value="<%= previousData.quantity%>">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input class="btn" type="submit" value="Add to Cart">
+            <input type="hidden" value="<%=page %>" name="page">
+            <input type="hidden" name="productId" value="<%= product.id %>">
+        </form>
+        <a class="btn" href="/products/?page=<%=page%>">Continue Shopping</a>
+    </div>
+    </main>
+    <script src="/js/calculator.js"></script>
+</body>

@@ -1,45 +1,63 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const orderSchema = new Schema({
+const Order = new Schema({
   orderedProducts: [
     {
       productData: {
         type: Schema.Types.ObjectId,
-        ref: "Product"
+        ref: "Product",
       },
-      quantity: { type: Number }
-    }
+      quantity: { type: Number },
+    },
   ],
   total: {
     type: Number,
-    required: true
+    required: true,
   },
-  userId: { 
+  userId: {
     type: Schema.Types.ObjectId,
-    ref:'User',
-    required: true }
+    ref: "User",
+    required: true,
+  },
+  time: {
+    type: Date,
+    default: Date.now(),
+  },
 });
 
-orderSchema.statics.createNew = function(orderData) {
+Order.statics.createNew = function (orderData) {
   const order = new this({
     userId: orderData.userId,
     orderedProducts: orderData.orderedProducts,
-    total: orderData.totalPriceOfOrderedProducts
+    total: orderData.total,
   });
   return order.save();
 };
-orderSchema.statics.findAllforUserId = function(Id) {
-  return this.find({ userId: Id })
-    .populate("orderedProducts.productData", "title price")
+const byDescendingOrderTime = { time: -1 };
+Order.statics.findAllforUserId = function (userId) {
+  return this.find({ userId: userId })
+    .populate("orderedProducts.productData", "title sellingPrice")
+    .sort(byDescendingOrderTime)
     .exec();
 };
-orderSchema.statics.findByIdAndPopulateProductsDetails = function(Id) {
+Order.statics.findByIdAndPopulateProductsDetails = function (Id) {
   return this.findById(Id)
     .populate("orderedProducts.productData", "title sellingPrice adminId")
+    .sort(byDescendingOrderTime)
     .exec();
 };
 
-orderSchema.methods.isOrderedById = function(Id) {
+Order.methods.isOrderedById = function (Id) {
   return Id.toString() === this.userId.toString();
 };
-module.exports = mongoose.model("Order", orderSchema);
+Order.methods.getOrderedProducts = function () {
+  return this.orderedProducts;
+};
+Order.methods.getTotal = function () {
+  return this.total;
+};
+Order.methods.getUserId = function () {
+  return this.userId;
+};
+
+module.exports = mongoose.model("Order", Order);

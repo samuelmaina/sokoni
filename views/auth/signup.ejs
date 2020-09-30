@@ -1,38 +1,33 @@
 <%- include('../includes/head.ejs') %>
-    <link rel="stylesheet" href="/css/forms.css">
-    <link rel="stylesheet" href="/css/auth.css">
+<link rel="stylesheet" href="/css/forms.css">
+<link rel="stylesheet" href="/css/auth.css">
 </head>
 
 <body>
-   <%- include('../includes/navigation.ejs') %>
-   <%if(errorMessage){%>
-    
-         <div class='error-message'> <%= errorMessage %> </div>
-
-    <% }%>
-
-    <main>
-        <form class="login-form" action="<%= postPath%>" method="POST">
-            <div class="form-control">
-                <label for="name">Name</label>
-                <input type='text' name="name" id="name" value="<% if (hasErrors) { %><%= previousData.name%><% } %>">
-            </div>
-            <div class="form-control">
-                <label for="email">Email</label>
-                <input type="email" name="email" id="email" value="<% if (hasErrors) { %><%= previousData.email%><% } %>">
-            </div>
-            <div class="form-control">
-                <label for="password"> Password </label>
-                <input type="password" name ="password" value="<% if (hasErrors) { %><%= previousData.password%><% } %>"/>
-            </div>
-            <div class="form-control">
-                <label for="ConfirmPassword"> Confirm Password </label>
-                <input type="password" name ="ConfirmPassword" />
-            </div>
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <input class="btn" type="submit" value="Sign Up">
-        </form>
+    <%- include('../includes/navigation.ejs') %>
+    <div class="grid">
+        <article class="card">
+            <form class="login-form" action="<%= postPath%>" method="POST">
+                <div class="form-control">
+                    <label for="name">Name</label>
+                    <input type='text' name="name" id="name" value="<%= previousData.name%>">
+                </div>
+                <div class="form-control">
+                    <label for="email">Email</label>
+                    <input type="email" name="email" id="email" value="<%= previousData.email%>">
+                </div>
+                <div class="form-control">
+                    <label for="password"> Password </label>
+                    <input type="password" name="password" value="<%= previousData.password%>" />
+                </div>
+                <div class="form-control">
+                    <label for="ConfirmPassword"> Confirm Password </label>
+                    <input type="password" name="ConfirmPassword" />
+                </div>
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input class="btn" type="submit" value="Sign Up">
+            </form>
+        </article>
+    </div>
     </main>
-<%- include('../includes/end.ejs') %>
-
-    
+    <%- include('../includes/end.ejs') %>

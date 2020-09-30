@@ -4,68 +4,89 @@ const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
 const baseOptions = {
   discrimatorKeys: "memberToAuth",
-  collection: ""
+  collection: "",
 };
 
-const baseSchema = new Schema(
+const Base = new Schema(
   {
     name: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
     },
     email: {
       type: String,
       required: true,
       trim: true,
-      lowercase: true
+      lowercase: true,
+    },
+    tel: {
+      type: Number,
+      required: true,
+      default: 700000000,
     },
     password: {
       type: String,
       required: true,
-      trim: true
-    }
+      trim: true,
+    },
   },
   baseOptions
 );
 
-const hashPassword = password => {
+const hashPassword = (password) => {
   return bcrypt.hash(password, 12);
 };
 
-baseSchema.statics.createNew = async function(memberData) {
-  const hashedPassword= await hashPassword(memberData.password)
+/**
+ * same as at the native create function of the model,but the password
+ * is hashed before being stored.
+ */
+Base.statics.createNew = async function (memberData) {
+  const hashedPassword = await hashPassword(memberData.password);
   const newMember = new this({
-    name:memberData.name,
-    email:memberData.email,
-    password:hashedPassword
+    name: memberData.name,
+    email: memberData.email,
+    password: hashedPassword,
   });
   return newMember.save();
 };
 
-baseSchema.statics.findByEmail = function(email) {
-  return this.findOne({ email: email });
+Base.statics.findByEmail = function (email) {
+  return this.findOne({ email });
 };
-baseSchema.statics.findOneWithCredentials = async function(email, password) {
-  const admin = await this.findByEmail(email);
-  if (!admin) {
+Base.statics.findOneWithCredentials = async function (email, password) {
+  const member = await this.findByEmail(email);
+  if (!member) {
     return null;
   }
-  const isValid = await admin.checkIfPasswordIsValid(password);
-  if (isValid) return admin;
+  const isValid = await member.checkIfPasswordIsValid(password);
+  if (isValid) return member;
   else return null;
 };
 
-baseSchema.methods.resetPasswordTo = async function(password){
+Base.methods.resetPasswordTo = async function (password) {
   const hashedPassword = await hashPassword(password);
-  this.password=hashedPassword;
+  this.password = hashedPassword;
   return this.save();
 };
 
-baseSchema.methods.checkIfPasswordIsValid = async function(password) {
+Base.methods.checkIfPasswordIsValid = async function (password) {
   const isPwdValid = await bcrypt.compare(password, this.password);
   return isPwdValid;
 };
+Base.methods.updateNameAndEmail = function (data) {
+  //todos:check if the object has name and password property.
+  this.name = data.name;
+  this.email = data.email;
+  return this.save();
+};
+Base.methods.getName = function () {
+  return this.name;
+};
+Base.methods.getEmail = function () {
+  return this.email;
+};
 
-const Admin = mongoose.model("Base", baseSchema);
-module.exports = Admin;
+const Member = mongoose.model("Base", Base);
+module.exports = Member;

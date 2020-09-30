@@ -1,61 +1,59 @@
 const mongoose = require("mongoose");
 const crypto = require("crypto");
 
-const Schema =mongoose.Schema;
+const Schema = mongoose.Schema;
 
-const tokenValidityPeriodInMs=1000*60*60;
+const tokenValidityPeriodInMs = 1000 * 60 * 60;
 const tokenGenerator = new Schema({
   requesterId: {
     type: String,
-    required: true
+    required: true,
   },
   token: {
-    type: String
+    type: String,
   },
   expiryTime: {
     type: Date,
-    default: Date.now() + tokenValidityPeriodInMs
-  }
+    default: Date.now() + tokenValidityPeriodInMs,
+  },
 });
 
-
-tokenGenerator.statics.createNewForId = async function(Id)  {
-  const token = new this ({
-    requesterId: Id
+tokenGenerator.statics.createNewForId = async function (Id) {
+  const token = new this({
+    requesterId: Id,
   });
   await token.generateToken();
   return token.getToken();
 };
 
-tokenGenerator.statics.findTokenDetails = async function(token) {
+tokenGenerator.statics.findTokenDetails = async function (token) {
   const tokenDetails = await this.findOne({
-    token: token,
-    expiryTime: { $gt: Date.now() }
+    token,
+    expiryTime: { $gt: Date.now() },
   });
-  return tokenDetails
+  return tokenDetails;
 };
 
-tokenGenerator.statics.getRequesterIdforToken= async function(token){
-  const tokenDetails= await this.findOne({token:token});
-  if(!tokenDetails) return null;
+tokenGenerator.statics.getRequesterIdforToken = async function (token) {
+  const tokenDetails = await this.findOne({ token });
+  if (!tokenDetails) return null;
   return await tokenDetails.getRequesterId();
-}
-tokenGenerator.statics.deleteTokenById = function(tokenId){
+};
+tokenGenerator.statics.deleteTokenById = function (tokenId) {
   return this.findByIdAndDelete(tokenId);
 };
-tokenGenerator.methods.generateToken=  function(){
-  this.token=crypto.randomBytes(32).toString('hex');
+tokenGenerator.methods.generateToken = function () {
+  this.token = crypto.randomBytes(32).toString("hex");
   return this.save();
-}
-tokenGenerator.methods.getRequesterId=function(){
+};
+tokenGenerator.methods.getRequesterId = function () {
   return this.requesterId;
-}
-tokenGenerator.methods.getToken = function() {
+};
+tokenGenerator.methods.getToken = function () {
   return this.token;
 };
-tokenGenerator.methods.getTokenId=function(){
-  return this._id
-}
+tokenGenerator.methods.getTokenId = function () {
+  return this._id;
+};
 
-
-module.exports = mongoose.model("TokenGenerator", tokenGenerator);
+module.exports = mongoose.model("Token", tokenGenerator);

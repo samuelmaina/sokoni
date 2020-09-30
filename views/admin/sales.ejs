@@ -1,0 +1,42 @@
+<%- include('../includes/head.ejs') %>
+<link rel="stylesheet" href="/css/sales.css">
+<link rel="stylesheet" href="/css/product.css">
+</head>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <div class="container">
+        <% if (sales.length > 0) { %>
+        <div class="grid">
+            <% for (let product of sales) { %>
+            <article class="card product-item">
+                <header class="card__header">
+                    <p>
+                        <%= product.title %>
+                    </p>
+                </header>
+                <div class="card__image">
+                    <img src="/<%= product.imageUrl %>" alt="<%= product.title %>">
+                </div>
+                <div class="card__content">
+                    <h3>Profit</h3>
+                    <p style="color:rgb(134, 133, 133);">Kshs
+                        <%= product.profit %></p>
+
+
+                    <h3>Total Sale</h3>
+                    <p style="color:rgb(134, 133, 133);">Kshs
+                        <%= product.totalSales %></p>
+
+                </div>
+            </article>
+            <% } %>
+        </div>
+        <% } else { %>
+        <h1 class=" centered">No Sales Yet!</h1>
+        <% } %>
+    </div>
+    </main>
+</body>
+
+</html>

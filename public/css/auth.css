@@ -1,6 +1,8 @@
 .login-form {
   width: 20rem;
+  height: auto;
   max-width: 90%;
   margin: auto;
   display: block;
+  padding: 2%;
 }

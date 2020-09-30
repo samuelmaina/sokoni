@@ -1,15 +1,46 @@
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:400,700");
 
 * {
-  box-sizing: border-box;
+  margin: 0;
 }
 
 body {
-  padding: 0;
-  margin: 0;
   font-family: "Open Sans", sans-serif;
+  background-color: rgb(228, 222, 228);
+}
+
+body > header > h1 {
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-weight: 300;
+  margin: 20px 30px;
+  color: rgb(161, 161, 161);
+}
+.main-header {
+  border-bottom: 3px solid black;
+  position: fixed;
+  width: 100%;
+  background: rgba(33, 33, 34, 0.911);
+  box-shadow: 2px 5px 20px rgb(102, 101, 101);
+  height: auto;
+  top: 0;
+}
+.main-header::before {
+  content: "";
+  height: 40px;
+  width: 10px;
+  position: absolute;
+  background-color: black;
+}
+.main-header::after {
+  content: "";
+  height: 40px;
+  width: 10px;
+  position: absolute;
+  background-color: black;
 }
 .error-message {
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-size: 20px;
   margin-top: 20px;
   padding: 2px;
   text-align: center;
@@ -17,12 +48,32 @@ body {
   height: 3rem;
   margin-left: 30%;
   background-color: rgb(240, 203, 203);
-  color: rgb(245, 10, 10);
-  border: 3px solid red;
+  color: rgb(252, 23, 23);
+  border: 3px solid rgb(250, 21, 21);
+  box-shadow: 2px 5px 20px rgba(248, 7, 7, 0.5);
   border-radius: 12px;
+  margin-bottom: 20px;
 }
+
+.info {
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-size: 1.2rem;
+  margin-top: 20px;
+  padding: 2px;
+  text-align: center;
+  width: 40vw;
+  min-height: 2rem;
+  margin-left: 30%;
+  background-color: rgb(238, 252, 244);
+  color: rgb(12, 134, 12);
+  border: 3px solid rgb(6, 221, 42);
+  box-shadow: 2px 5px 20px rgba(21, 228, 39, 0.5);
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
 main {
-  padding: 1rem;
+  padding-top: 18vh;
   margin: auto;
 }
 
@@ -42,19 +93,9 @@ form {
   height: 100%;
 }
 
-.main-header {
-  margin-top: 10vh;
-  width: 100%;
-  height: 4rem;
-  background-color: maroon;
-  padding: 0 1.5rem;
-  display: flex;
-  align-items: center;
-}
-
 .main-header__nav {
-  height: 100%;
-  width: 100%;
+  height: 60%;
+  width: 80%;
   display: none;
   align-items: center;
   justify-content: space-between;
@@ -74,11 +115,12 @@ form {
 
 .main-header__item a,
 .main-header__item button {
-  font: inherit;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 20px;
   background: transparent;
   border: none;
   text-decoration: none;
-  color: white;
+  color: rgb(121, 121, 122);
   cursor: pointer;
 }
 
@@ -87,7 +129,7 @@ form {
 .main-header__item a.active,
 .main-header__item button:hover,
 .main-header__item button:active {
-  color: #ffeb3b;
+  color: white;
 }
 
 .mobile-nav {
@@ -97,7 +139,7 @@ form {
   position: fixed;
   left: 0;
   top: 0;
-  background: white;
+  background: rgb(121, 121, 122);
   z-index: 10;
   padding: 2rem 1rem 1rem 2rem;
   transform: translateX(-100%);
@@ -138,8 +180,8 @@ form {
 .mobile-nav__item a.active,
 .mobile-nav__item button:hover,
 .mobile-nav__item button:active {
-  background: #00695c;
-  color: white;
+  background: rgba(34, 34, 33, 0.911);
+  color: rgb(121, 121, 122);
   border-radius: 3px;
 }
 
@@ -159,8 +201,8 @@ form {
 
 #side-menu-toggle:active,
 #side-menu-toggle:hover {
-  color: #ffeb3b;
-  border-color: #ffeb3b;
+  color: white;
+  border-color: white;
 }
 
 .backdrop {
@@ -179,10 +221,11 @@ form {
   flex-wrap: wrap;
   justify-content: space-around;
   align-items: stretch;
+  margin-bottom: 2rem;
 }
 
 .card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.26);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .card__header,
@@ -216,37 +259,37 @@ form {
 }
 
 .btn {
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
   display: inline-block;
   padding: 0.25rem 1rem;
   text-decoration: none;
-  font: inherit;
-  border: 1px solid #00695c;
-  color: #00695c;
-  background: white;
+  border: 1px solid rgba(34, 34, 33, 0.911);
+  color: rgba(34, 34, 33, 0.911);
+  font-size: 20px;
+  background: rgb(228, 222, 228);
   border-radius: 3px;
   cursor: pointer;
 }
 .pagination {
-  margin-top: 2rem;
   text-align: center;
 }
 .pagination a {
   text-decoration: none;
-  color: maroon;
+  color: rgba(34, 34, 33, 0.911);
   padding: 0.5rem;
-  border: 1px solid maroon;
+  border: 1px solid rgba(34, 34, 33, 0.911);
   margin: 0 1rem;
 }
 .pagination a:hover,
 .pagination a:active,
-.pagination a.active{
-  background: maroon;
-  color: white
+.pagination a.active {
+  background: rgba(34, 34, 33, 0.911);
+  color: rgb(202, 197, 197);
 }
 .btn:hover,
 .btn:active {
-  background-color: #00695c;
-  color: white;
+  background-color: rgba(34, 34, 33, 0.911);
+  color: rgb(196, 191, 191);
 }
 
 .btn.danger {
