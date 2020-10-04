@@ -33,17 +33,19 @@ Order.statics.createNew = function (orderData) {
   });
   return order.save();
 };
-const byDescendingOrderTime = { time: -1 };
+const byAscendingOrderTime = { time: -1 };
+
 Order.statics.findAllforUserId = function (userId) {
-  return this.find({ userId: userId })
+  return this.find({ userId })
     .populate("orderedProducts.productData", "title sellingPrice")
-    .sort(byDescendingOrderTime)
+    .sort(byAscendingOrderTime)
     .exec();
 };
+
 Order.statics.findByIdAndPopulateProductsDetails = function (Id) {
   return this.findById(Id)
     .populate("orderedProducts.productData", "title sellingPrice adminId")
-    .sort(byDescendingOrderTime)
+    .sort(byAscendingOrderTime)
     .exec();
 };
 

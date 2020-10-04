@@ -2,14 +2,6 @@ const bcrypt = require("bcrypt");
 
 const { connectToDb, closeConnectionToBd } = require("../config");
 
-const personData = {
-  name: "samuel Maina",
-  email: "samuelmayna@gmail.com",
-  password: "Smaina1234?",
-};
-
-const { name, email, password } = personData;
-
 const confirmPassword = async (password, hash) => {
   try {
     return await bcrypt.compare(password, hash);
@@ -17,72 +9,84 @@ const confirmPassword = async (password, hash) => {
     throw new Error(error);
   }
 };
+const hashPassword = async (password) => {
+  return await bcrypt.hash(password, 12);
+};
+
+const data = {
+  name: "Samuel Maina",
+  email: "samuelmayna@gmail.com",
+  password: "Smainachez900??((",
+};
+const { name, email, password } = data;
 
 module.exports = (Model) => {
-  const create = async () => {
-    try {
-      return await Model.createNew(personData);
-    } catch (error) {
-      throw new Error(error);
-    }
-  };
-
-  const deleteDocument = async (email) => {
-    try {
-      return await Model.findOneAndDelete({ email });
-    } catch (error) {
-      throw new Error(error);
-    }
-  };
-  beforeEach(async () => {
+  beforeAll(async () => {
     await connectToDb();
   });
-  afterEach(async () => {
+  afterAll(async () => {
     await closeConnectionToBd();
   });
 
-  it("create a new document", async () => {
-    const document = await create();
-    expect(document.name).toEqual(personData.name);
-    expect(document.email).toEqual(personData.email);
+  it("createNew creates a new document", async () => {
+    const document = await Model.createNew(data);
+    await Model.findByIdAndDelete(document.id);
+    expect(document.name).toEqual(name);
+    expect(document.email).toEqual(email);
     const passWordCorrectlyHashed = await confirmPassword(
       password,
       document.password
     );
     expect(passWordCorrectlyHashed).toBeTruthy();
-    await Model.findByIdAndDelete(document._id);
   });
-  describe("performs methods after creation", () => {
+  describe("After creatiion", () => {
     let document;
-    beforeEach(async () => {
-      document = await create();
+
+    beforeAll(async () => {
+      try {
+        const person = {
+          name: data.name,
+          email: data.email,
+          password: await hashPassword(password),
+        };
+
+        document = new Model(person);
+        document = await document.save();
+      } catch (error) {
+        throw new Error(error);
+      }
     });
-    afterEach(async () => {
-      await deleteDocument(email);
+    afterAll(async () => {
+      await Model.findByIdAndDelete(document.id);
     });
-    describe(" static methods for the Model", () => {
-      it("finds document by email", async () => {
-        const document = await Model.findByEmail(personData.email);
-        expect(document.email).toEqual(personData.email);
+    describe("Static Methods", () => {
+      it("findByEmail finds document by email", async () => {
+        const emailDoc = await Model.findByEmail(email);
+        expect(emailDoc.email).toEqual(email);
       });
-      it("finds a document matching the email and password", async () => {
-        const document = await Model.findOneWithCredentials(
-          personData.email,
-          personData.password
+      it("findOneWithCredentials finds a document matching the email and password", async () => {
+        const findOneDocument = await Model.findOneWithCredentials(
+          email,
+          password
         );
-        expect(document.email).toEqual(personData.email);
-        expect(document.name).toEqual(personData.name);
+        expect(findOneDocument.email).toEqual(email);
+        expect(findOneDocument.name).toEqual(name);
       });
     });
     describe(" instance methods for a document", () => {
       it("resetPasswordTo function reset the document's password", async () => {
         const newPassword = "Smainachez!2345?";
-        const document2 = await document.resetPasswordTo(newPassword);
-        const passwordChanged = await confirmPassword(
+        await document.resetPasswordTo(newPassword);
+        let passwordChanged = await confirmPassword(
           newPassword,
-          document2.password
+          document.password
         );
         expect(passwordChanged).toBeTruthy();
+        passwordChanged = await confirmPassword(password, document.password);
+        expect(passwordChanged).toBeFalsy();
+        //reset the document;
+        document.password = await hashPassword(password);
+        document = await document.save();
       });
 
       it("checkIfPasswordIsValid checks password validity", async () => {
@@ -96,19 +100,14 @@ module.exports = (Model) => {
           name: name2,
           email: email2,
         };
-        const document2 = await document.updateNameAndEmail(data);
-        expect(document2.email).toEqual(email2);
-        expect(document2.name).toEqual(name2);
-        await deleteDocument(email2);
-      });
+        await document.updateNameAndEmail(data);
+        expect(document.name).toEqual(name2);
+        expect(document.email).toEqual(email2);
 
-      it("getName retrieves the document's name", async () => {
-        const name1 = document.getName(name);
-        expect(name).toEqual(name1);
-      });
-      it("getEmail retrieves the document's email", async () => {
-        const email1 = document.getEmail(name);
-        expect(email).toEqual(email1);
+        //reset the document;
+        document.name = name;
+        document.email = email;
+        document = await document.save();
       });
     });
   });

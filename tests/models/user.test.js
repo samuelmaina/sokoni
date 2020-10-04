@@ -1,57 +1,77 @@
-const { User, Product, Admin } = require("../../database/models/index");
+const { User, Admin } = require("../../database/models");
+const {
+  createNewUser,
+  createTestProducts,
+  createNewAdmin,
+  deleteAllProducts,
+  deleteAdmin,
+  deleteUser,
+} = require("../utils");
+
 const baseTest = require("./baseAdminAndUser");
 
-let name = "samuel Maina";
-let password = "Smainachez6891?";
-let email = "samuelmayna@gmail.com";
-let user;
 describe("----User Database", () => {
+  let user;
+  let admin;
   baseTest(User);
-  let trials = 10;
-  const products = [];
+  const trials = 10;
+  let products = [];
+  const resetCart = async () => {
+    user.cart = [];
+    user = await user.save();
+  };
+
+  const addProductToCart = async (productId, quantity) => {
+    const userCart = user.cart;
+    const productIndex = userCart.findIndex((product) => {
+      return product.productData.toString() === productId.toString();
+    });
+    const data = {
+      productData: productId,
+      quantity,
+    };
+    if (productIndex < 0) {
+      userCart.push(data);
+    } else {
+      userCart[productIndex].quantity += quantity;
+    }
+    user.cart = userCart;
+    user = await user.save();
+  };
+
+  const addSomeProductsToCart = async () => {
+    for (let index = 0; index < trials; index++) {
+      await addProductToCart(products[index].id, trials);
+    }
+  };
+
   describe(" Purchase Tests", () => {
-    beforeEach(async () => {
-      user = await User.createNew({ name, email, password });
-      const admin = await Admin.createNew({
-        name: "Samuel Maina",
-        email,
-        password: "Smaichez*55",
-      });
-      for (let index = 0; index < trials; index++) {
-        products[index] = await Product.createNew({
-          title: ` test ${Math.floor(Math.random() * 100)}`,
-          imageUrl: `to/${Math.floor(Math.random() * 100)}some/path.jpeg`,
-          buyingPrice: Math.floor(Math.random() * 100),
-          percentageProfit: Math.floor(Math.random() * 100),
-          expirationPeriod: Math.floor(Math.random() * 100),
-          description: `the first user test at  ${Math.floor(
-            Math.random() * 100
-          )} `,
-          quantity: Math.floor(Math.random() * 100),
-          adminId: admin._id,
-          category: `category ${Math.floor(Math.random() * 100)}`,
-          brand: `brand ${Math.floor(Math.random() * 100)}`,
-        });
-      }
+    beforeAll(async () => {
+      user = await createNewUser();
+      admin = await createNewAdmin();
+      products = await createTestProducts(admin.id, trials);
+    });
+    afterAll(async () => {
+      await deleteAdmin(admin.id);
+      await deleteUser(user.id);
+      await deleteAllProducts(products);
     });
     afterEach(async () => {
-      await Admin.findOneAndDelete({ email });
-      await User.findByIdAndDelete(user.id);
-      for (let index = 0; index < trials; index++) {
-        const id = products[index].id;
-        await Product.findByIdAndDelete(id);
-      }
+      await resetCart();
     });
     describe(" Cart Operations", () => {
       it("addProductIdToCart add products to cart", async () => {
         for (let index = 0; index < trials; index++) {
           await user.addProductIdToCart(products[index].id, trials);
         }
+        const userCart = user.cart;
         let product;
         for (let index = 0; index < trials; index++) {
-          product = user.cart[index];
+          product = userCart[index];
+          expect(product.productData.toString()).toEqual(
+            products[index].id.toString()
+          );
           expect(product.quantity).toEqual(trials);
-          expect(product.productData).toEqual(products[index]._id);
         }
       });
       it("addProductIdToCart only increases quantity when productId is in cart ", async () => {
@@ -59,18 +79,17 @@ describe("----User Database", () => {
           await user.addProductIdToCart(products[index].id, trials);
         }
         let product;
+        let userCart = user.cart;
         for (let index = 0; index < trials; index++) {
-          product = user.cart[index];
+          product = userCart[index];
           await user.addProductIdToCart(products[index].id, trials);
           expect(product.quantity).toEqual(2 * trials);
           //ensure that no other product id is added to the cart when we add the same product ids
-          expect(user.cart.length).toEqual(trials);
+          expect(userCart.length).toEqual(trials);
         }
       });
       it("deleteProductIdFromCart deletes product Id from cart and returns the deleted quantity ", async () => {
-        for (let index = 0; index < trials; index++) {
-          await user.addProductIdToCart(products[index].id, trials);
-        }
+        await addSomeProductsToCart();
         let cartProducts = user.cart;
         for (let index = 0; index < trials; index++) {
           const productQuantity = cartProducts[index].quantity;
@@ -99,30 +118,25 @@ describe("----User Database", () => {
         expect(user.cart.length).toEqual(0);
       });
       it("clearCart clears the cart", async () => {
-        for (let index = 0; index < trials; index++) {
-          await user.addProductIdToCart(products[index].id, trials);
-        }
+        await addSomeProductsToCart();
         await user.clearCart();
         expect(user.cart.length).toEqual(0);
       });
       it("getCartProducts  returns the user cart proroducts", async () => {
-        for (let index = 0; index < trials; index++) {
-          await user.addProductIdToCart(products[index].id, trials);
-        }
+        await addSomeProductsToCart();
         let cartProducts = user.cart;
         const returnedProducts = user.getCartProducts();
         expect(cartProducts).toEqual(returnedProducts);
       });
     });
     it("findCartProductsAndTheirTotalForId finds carts products and their totals for", async () => {
+      await addSomeProductsToCart();
       let expectedTotal = 0.0;
-
       for (let index = 0; index < trials; index++) {
         let selligPrice = products[index].getSellingPrice();
-        await user.addProductIdToCart(products[index].id, trials);
         expectedTotal += selligPrice * trials;
       }
-      expectedTotal = expectedTotal.toFixed(2);
+      expectedTotal = Number(expectedTotal.toFixed(2));
       const {
         cartProducts,
         total,

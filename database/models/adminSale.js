@@ -7,26 +7,21 @@ const AdminSales = new Schema({
     ref: "Admin",
     required: true,
   },
-  soldProducts: {
-    products: [
-      {
-        productData: {
-          type: Schema.Types.ObjectId,
-          ref: "Product",
-        },
-        productSales: [
-          {
-            quantity: { type: Number },
-            soldAt: { type: Date },
-          },
-        ],
+  products: [
+    {
+      productData: {
+        type: Schema.Types.ObjectId,
+        ref: "Product",
       },
-    ],
-  },
+      productSales: [
+        {
+          quantity: { type: Number },
+          soldAt: { type: Date },
+        },
+      ],
+    },
+  ],
 });
-AdminSales.statics.deleteById = function (Id) {
-  return this.findByIdAndDelete(Id);
-};
 
 AdminSales.statics.createNew = function (adminId) {
   const adminSale = new this({
@@ -36,12 +31,10 @@ AdminSales.statics.createNew = function (adminId) {
 };
 
 AdminSales.statics.findOneForAdminId = function (adminId) {
-  return this.findOne({ adminId })
-    .populate(
-      "soldProducts.products.productData",
-      "title sellingPrice buyingPrice imageUrl"
-    )
-    .sort({ "soldProductsproducts.productData": -1 });
+  return this.findOne({ adminId }).populate(
+    "products.productData",
+    "title sellingPrice buyingPrice imageUrl"
+  );
 };
 
 AdminSales.statics.getSalesForAdminIdWithinAnInterval = async function (
@@ -58,7 +51,9 @@ AdminSales.statics.getSalesForAdminIdWithinAnInterval = async function (
 
   return productsToDisplay;
 };
-
+AdminSales.statics.deleteById = function (Id) {
+  return this.findByIdAndDelete(Id);
+};
 AdminSales.methods.findSalesWithinAnInterval = function (
   fromTime = Date.now() - 1000 * 60 * 60 * 24 * 7,
   toTIme = Date.now()
@@ -78,7 +73,7 @@ AdminSales.methods.findSalesWithinAnInterval = function (
 };
 
 AdminSales.methods.addOrderedProduct = async function (saleDetails) {
-  const soldProducts = this.soldProducts.products;
+  const soldProducts = this.products;
   const productIndex = soldProducts.findIndex((product) => {
     return (
       product.productData._id.toString() === saleDetails.productId.toString()
@@ -109,11 +104,11 @@ AdminSales.methods.addOrderedProduct = async function (saleDetails) {
 };
 
 AdminSales.methods.getSoldProducts = function () {
-  return this.soldProducts.products;
+  return this.products;
 };
 
 AdminSales.methods.clearSoldProducts = async function () {
-  this.soldProducts.products = [];
+  this.products = [];
   return await this.save();
 };
 

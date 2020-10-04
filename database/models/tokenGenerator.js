@@ -6,11 +6,12 @@ const Schema = mongoose.Schema;
 const tokenValidityPeriodInMs = 1000 * 60 * 60;
 const tokenGenerator = new Schema({
   requesterId: {
-    type: String,
+    type: Schema.Types.ObjectId,
     required: true,
   },
   token: {
     type: String,
+    default: crypto.randomBytes(32).toString("hex"),
   },
   expiryTime: {
     type: Date,
@@ -22,8 +23,8 @@ tokenGenerator.statics.createNewForId = async function (Id) {
   const token = new this({
     requesterId: Id,
   });
-  await token.generateToken();
-  return token.getToken();
+  await token.save();
+  return token;
 };
 
 tokenGenerator.statics.findTokenDetails = async function (token) {
@@ -41,10 +42,6 @@ tokenGenerator.statics.getRequesterIdforToken = async function (token) {
 };
 tokenGenerator.statics.deleteTokenById = function (tokenId) {
   return this.findByIdAndDelete(tokenId);
-};
-tokenGenerator.methods.generateToken = function () {
-  this.token = crypto.randomBytes(32).toString("hex");
-  return this.save();
 };
 tokenGenerator.methods.getRequesterId = function () {
   return this.requesterId;

@@ -22,13 +22,13 @@ exports.postAddProduct = async (req, res, next) => {
     let image = req.file;
     const validationErrors = validationErrorsIn(req);
     const previousData = req.body;
-    if (!image) {
-      req.flash("error", "Please select an image for your product");
+    if (validationErrors) {
+      req.flash("error", validationErrors);
       req.flash("previous-data", previousData);
       return res.redirect("add-product");
     }
-    if (validationErrors) {
-      req.flash("error", validationErrors);
+    if (!image) {
+      req.flash("error", "Please select an image for your product");
       req.flash("previous-data", previousData);
       return res.redirect("add-product");
     }
@@ -78,7 +78,9 @@ exports.postEditProduct = async (req, res, next) => {
     editMode = true;
 
     const adminId = req.session.admin._id;
-    productData.image = image;
+    if (image) {
+      productData.imageUrl = image.path;
+    }
     const validationErrors = validationErrorsIn(req);
     if (validationErrors) {
       return res.render("admin/edit-product", {

@@ -16,7 +16,8 @@ const passwordValidator = body(
 )
   .isLength({ min: 8 })
   .not()
-  .isAlphanumeric();
+  .isAlphanumeric()
+  .matches();
 
 const confirmPasswordValidator = body("ConfirmPassword").custom(
   (value, { req }) => {

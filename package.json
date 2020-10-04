@@ -4,7 +4,7 @@
   "description": "Online shop",
   "main": "app.js",
   "scripts": {
-    "test": " jest",
+    "test": "jest ",
     "start": "nodemon app.js"
   },
   "author": "Samuel Maina",
@@ -35,6 +35,8 @@
     "multer": "^1.4.2",
     "nodemailer": "^6.3.1",
     "pdfkit": "^0.10.0",
-    "supertest": "^4.0.2"
+    "supertest": "^4.0.2",
+    "chai": "^4.2.0",
+    "mocha": "^7.0.1"
   }
 }

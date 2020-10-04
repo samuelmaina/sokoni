@@ -163,8 +163,8 @@ class Auth {
           .appendPreviousData(previousData)
           .redirect(this.routes.reset);
       }
-      const token = await TokenGenerator.createNewForId(document._id);
-      console.log(token);
+      const tokenDetails = await TokenGenerator.createNewForId(document._id);
+      console.log(tokenDetails.token);
       // transporter.send({
       //   //http://localhost:3000/auth/admin/new-password/3be67eb7255a6f445942c97ccbb349af069aa737d76689cea6c58c4e04b4b209
       //   from: "samuelsonlineshop@online.com",

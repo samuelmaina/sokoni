@@ -7,67 +7,75 @@ const imageDeleter = require("../../util/deletefile");
 const PRODUCTS_PER_PAGE = parseInt(process.env.PRODUCTS_PER_PAGE);
 const Schema = mongoose.Schema;
 
-const Product = new Schema(
-  {
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    imageUrl: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    buyingPrice: {
-      type: Number,
-      required: true,
-    },
-    percentageProfit: {
-      type: Number,
-      min: 0,
-    },
-    expirationPeriod: {
-      type: Number,
-    },
-    sellingPrice: {
-      type: Number,
-    },
-
-    description: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    quantity: {
-      type: Number,
-      required: true,
-    },
-    adminId: {
-      type: String,
-      required: true,
-    },
-    category: {
-      type: String,
-      maxlength: 20,
-      minlength: 3,
-      required: true,
-    },
-    brand: {
-      type: String,
-      maxlength: 20,
-      minlength: 3,
-      required: true,
-    },
+const productSchema = {
+  title: {
+    type: String,
+    required: true,
+    trim: true,
   },
-  {
-    timestamps: true,
-  }
-);
+  imageUrl: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  buyingPrice: {
+    type: Number,
+    required: true,
+  },
+  percentageProfit: {
+    type: Number,
+    min: 0,
+  },
+  expirationPeriod: {
+    type: Number,
+  },
+  sellingPrice: {
+    type: Number,
+  },
+
+  description: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  quantity: {
+    type: Number,
+    required: true,
+  },
+  adminId: {
+    type: String,
+    required: true,
+  },
+  category: {
+    type: String,
+    maxlength: 20,
+    minlength: 3,
+    required: true,
+  },
+  brand: {
+    type: String,
+    maxlength: 20,
+    minlength: 3,
+    required: true,
+  },
+};
+
+const Product = new Schema(productSchema, {
+  timestamps: true,
+});
 
 const quantityGreaterThanZero = { quantity: { $gt: 0 } };
 
 Product.statics.createNew = function (productData) {
+  //check if all the properties are there.
+  for (const key in productSchema) {
+    if (productSchema.hasOwnProperty(key)) {
+      if (key === "sellingPrice") continue;
+      if (!productData[key]) {
+        throw new Error(`${key} is expected`);
+      }
+    }
+  }
   productData.sellingPrice = (
     (1 + productData.percentageProfit / 100.0) *
     productData.buyingPrice
@@ -78,6 +86,13 @@ Product.statics.createNew = function (productData) {
 };
 
 Product.statics.getTotalNumberOfProducts = function (criterion = {}) {
+  for (const key in criterion) {
+    if (criterion.hasOwnProperty(key)) {
+      if (!productSchema[key]) {
+        throw new Error("can not query a non-existent property");
+      }
+    }
+  }
   for (const property in quantityGreaterThanZero) {
     criterion[property] = quantityGreaterThanZero[property];
   }
@@ -98,6 +113,9 @@ const calculatePaginationData = (total, page) => {
 Product.statics.getProductsWhoseQuantityIsGreaterThanZero = async function (
   page = 1
 ) {
+  if (!Number.isInteger(page) || page < 1) {
+    throw new Error("page must be a positive whole number");
+  }
   const total = await this.getTotalNumberOfProducts();
   const paginationData = calculatePaginationData(total, page);
 
@@ -184,7 +202,8 @@ Product.methods.getSellingPrice = function () {
 };
 
 Product.methods.updateDetails = function (productData) {
-  let image = productData.image;
+  let image = productData.imageUrl;
+
   if (image) {
     const imagePath = path.resolve(this.imageUrl);
     fs.exists(imagePath, (exists) => {

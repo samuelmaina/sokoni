@@ -32,7 +32,7 @@ userSchema.statics.findCartProductsAndTheirTotalForId = async function (Id) {
   cartProducts.forEach((product) => {
     total += product.productData.getSellingPrice() * product.quantity;
   });
-  total = total.toFixed(2);
+  total = Number(total.toFixed(2));
   return {
     cartProducts,
     total,
