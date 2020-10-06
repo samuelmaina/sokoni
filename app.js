@@ -50,4 +50,6 @@ errorHandler(app);
 //connect to db.
 connectToBb(app);
 
+//--runInBand --detectOpenHandles
+
 module.exports = app;

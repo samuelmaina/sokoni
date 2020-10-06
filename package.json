@@ -4,7 +4,7 @@
   "description": "Online shop",
   "main": "app.js",
   "scripts": {
-    "test": "jest ",
+    "test": "jest --verbose ",
     "start": "nodemon app.js"
   },
   "author": "Samuel Maina",

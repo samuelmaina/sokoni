@@ -2,9 +2,11 @@ const mongoose = require("mongoose");
 const path = require("path");
 const fs = require("fs");
 
+require("dotenv").config();
+
 const imageDeleter = require("../../util/deletefile");
 
-const PRODUCTS_PER_PAGE = parseInt(process.env.PRODUCTS_PER_PAGE);
+const PRODUCTS_PER_PAGE = Number(process.env.PRODUCTS_PER_PAGE);
 const Schema = mongoose.Schema;
 
 const productSchema = {
@@ -64,7 +66,7 @@ const Product = new Schema(productSchema, {
   timestamps: true,
 });
 
-const quantityGreaterThanZero = { quantity: { $gt: 0 } };
+const quantityGreaterThanZero = {quantity: {$gt: 0}};
 
 Product.statics.createNew = function (productData) {
   //check if all the properties are there.
@@ -110,9 +112,7 @@ const calculatePaginationData = (total, page) => {
   };
   return paginationData;
 };
-Product.statics.getProductsWhoseQuantityIsGreaterThanZero = async function (
-  page = 1
-) {
+Product.statics.getProductsWhoseQuantityIsGreaterThanZero = async function (page = 1) {
   if (!Number.isInteger(page) || page < 1) {
     throw new Error("page must be a positive whole number");
   }
@@ -132,7 +132,7 @@ Product.statics.getProductsWhoseQuantityIsGreaterThanZero = async function (
 Product.statics.findPageProductsForAdminId = async function (adminId, page) {
   const total = await this.getTotalAdminProducts(adminId);
   const paginationData = calculatePaginationData(total, page);
-  const products = await this.find({ adminId })
+  const products = await this.find({adminId})
     .skip((page - 1) * PRODUCTS_PER_PAGE)
     .limit(PRODUCTS_PER_PAGE);
   return {
@@ -157,10 +157,10 @@ Product.statics.getPresentCategories = async function () {
 };
 
 Product.statics.findCategoryProducts = async function (category, page = 1) {
-  const categoryQuery = { category };
+  const categoryQuery = {category};
   const total = await this.getTotalNumberOfProducts(categoryQuery);
   const paginationData = calculatePaginationData(total, page);
-  const products = await this.find({ category })
+  const products = await this.find({category})
     .skip((page - 1) * PRODUCTS_PER_PAGE)
     .limit(PRODUCTS_PER_PAGE);
   return {
@@ -172,7 +172,7 @@ Product.statics.deleteById = function (prodId) {
   return this.findByIdAndDelete(prodId);
 };
 Product.statics.getTotalAdminProducts = function (adminId) {
-  return this.find({ adminId }).countDocuments();
+  return this.find({adminId}).countDocuments();
 };
 
 Product.methods.isCreatedByAdminId = function (adminId) {
@@ -187,8 +187,7 @@ Product.methods.increaseQuantityBy = function (quantity) {
 };
 Product.methods.reduceQuantityBy = async function (quantity) {
   let currentQuantity = this.quantity;
-  if (currentQuantity < quantity)
-    throw new Error("can not reduce such a quantity");
+  if (currentQuantity < quantity) throw new Error("can not reduce such a quantity");
   currentQuantity -= quantity;
   this.quantity = currentQuantity;
   await this.save();

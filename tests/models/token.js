@@ -1,13 +1,13 @@
-const { connectToDb, closeConnectionToBd } = require("../config");
+const {connectToDb, closeConnectionToBd} = require("../config");
 const {
   createNewAdmin,
-  deleteAdmin,
+  deleteAdminById,
   createTestProducts,
   createNewUser,
-  deleteUser,
-} = require("../utils");
+  deleteUserById,
+} = require("../utils/generalUtils");
 
-const { TokenGenerator } = require("../../database/models");
+const {TokenGenerator} = require("../../database/models");
 
 const VALIDITY_PERIOS_IN_MS = 1 * 60 * 60 * 1000;
 
@@ -30,13 +30,10 @@ describe("Token Generator", () => {
 
   it("createNeWForId creates a new token which is for an id", async () => {
     const user = await createNewUser();
-    await deleteUser(user.id);
-    const {
-      requesterId,
-      token,
-      expiryTime,
-      _id,
-    } = await TokenGenerator.createNewForId(user.id);
+    await deleteUserById(user.id);
+    const {requesterId, token, expiryTime, _id} = await TokenGenerator.createNewForId(
+      user.id
+    );
 
     expect(requesterId.toString()).toEqual(user.id.toString());
     expect(token.length).toEqual(64);
@@ -49,7 +46,7 @@ describe("Token Generator", () => {
       let user;
       beforeEach(async () => {
         user = await createNewUser();
-        await deleteUser(user.id);
+        await deleteUserById(user.id);
         tokenDetails = await createToken(user.id);
       });
       afterEach(async () => {
@@ -58,16 +55,14 @@ describe("Token Generator", () => {
       });
 
       it("findTokenDetails  returns tokenDetails", async () => {
-        const { requesterId, token } = await TokenGenerator.findTokenDetails(
+        const {requesterId, token} = await TokenGenerator.findTokenDetails(
           tokenDetails.token
         );
         expect(requesterId.toString()).toEqual(user.id.toString());
 
         tokenDetails.expiryTime = Date.now() - VALIDITY_PERIOS_IN_MS;
         await tokenDetails.save();
-        const expiredToken = await TokenGenerator.findTokenDetails(
-          tokenDetails.token
-        );
+        const expiredToken = await TokenGenerator.findTokenDetails(tokenDetails.token);
         expect(expiredToken).toBeNull();
       });
 

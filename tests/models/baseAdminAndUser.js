@@ -1,19 +1,16 @@
 const bcrypt = require("bcrypt");
+const assert = require("assert");
 
-const { connectToDb, closeConnectionToBd } = require("../config");
+const {clearDataFromAModel} = require("../utils/generalUtils");
 
-const TRIALS = 10;
+const TRIALS = 2;
 
 const MAX_WAITING_TIME_IN_MS = 50000;
 
 const baseAuthTest = (Model) => {
-  beforeAll(async () => {
-    await connectToDb();
-  });
   afterAll(async () => {
-    await closeConnectionToBd();
+    await clearDataFromAModel(Model);
   });
-
   it("createNew creates a new document", async () => {
     const data = {
       name: "John Doe",
@@ -21,7 +18,6 @@ const baseAuthTest = (Model) => {
       password: "johndoe@4899.???",
     };
     const document = await Model.createNew(data);
-
     expect(document.name).toEqual(data.name);
     expect(document.email).toEqual(data.email);
 
@@ -32,42 +28,50 @@ const baseAuthTest = (Model) => {
       document.password
     );
     expect(passWordCorrectlyHashed).toBeTruthy();
+
     await Model.findByIdAndDelete(document.id);
   });
   describe("After creatiion", () => {
     describe("Static Methods", () => {
-      let documents = [];
-      beforeAll(async () => {
+      let searchData = [];
+      beforeAll(
+        async () => {
+          //clear existing data from model before creating TRIAL no of doc
+          //.This is helpful for search operations.if previous data meets out creterion
+          //the test fail.
+          await clearDataFromAModel(Model);
+          searchData = await createTrialDocumentsAndReturnSearchData();
+        },
         //in each document creation ,there is hashing of password which computation intensive,
         // so we need to allocate more time to it.
-        documents = await createTRIALNumberOfDocuments();
-      }, MAX_WAITING_TIME_IN_MS);
+        MAX_WAITING_TIME_IN_MS
+      );
       afterAll(async () => {
-        await deleteAll(documents);
+        //search data contains the ids of the created documents.we will use it to delete
+        //the created documents.
+        await deleteAllDocumentsUsing(searchData);
       });
       it("findByEmail finds document by email", async () => {
-        const searchEmail = documents[randomIndex()].email;
+        const searchEmail = searchData[randomIndex()].email;
         const emailDoc = await Model.findByEmail(searchEmail);
         expect(emailDoc.email).toEqual(searchEmail);
       });
       it("findOneWithCredentials finds a document matching the email and password", async () => {
-        const { password, email } = documents[randomIndex()];
-        const findOneDocument = await Model.findOneWithCredentials(
-          email,
-          password
-        );
-        expect(findOneDocument.email).toEqual(email);
-        expect(
-          await confirmPassword(password, findOneDocument.password)
-        ).toBeTruthy();
+        const {password, email} = searchData[randomIndex()];
+        const documents = await Model.find();
+        console.log(documents);
+        console.log(searchData);
+        const verifiedDoc = await Model.findOneWithCredentials(email, password);
+        expect(verifiedDoc.email).toEqual(email);
+        expect(await confirmPassword(password, verifiedDoc.password)).toBeTruthy();
       });
     });
-    describe(" instance methods for a document", () => {
+    describe("Instance methods", () => {
       let document;
       let hashedPassword;
       const password = "johndoe84775??((e8r";
       beforeAll(async () => {
-        //hashing is a computation intensive.So we will use one hashedPassword for each of the test.
+        //hashing is computation intensive.So we will use one hashedPassword for all the test..
         hashedPassword = await hashPassword(password);
       });
 
@@ -80,10 +84,7 @@ const baseAuthTest = (Model) => {
       it("resetPasswordTo function reset the document's password", async () => {
         const newPassword = "johndoes@!2345?";
         await document.resetPasswordTo(newPassword);
-        const passwordChanged = await confirmPassword(
-          newPassword,
-          document.password
-        );
+        const passwordChanged = await confirmPassword(newPassword, document.password);
         expect(passwordChanged).toBeTruthy();
       });
 
@@ -113,7 +114,7 @@ const baseAuthTest = (Model) => {
   };
 
   const randomIndex = () => {
-    return Math.ceil(Math.random() * TRIALS - 1);
+    return Math.floor(Math.random() * (TRIALS - 1));
   };
 
   const createOneDocument = async (hashedPassword) => {
@@ -130,31 +131,33 @@ const baseAuthTest = (Model) => {
     return document;
   };
 
-  const createTRIALNumberOfDocuments = async () => {
-    const documents = [];
+  /**
+   * The search data is the data that was used to create the documents.
+   * It will be used during querying in the tests and verfication of test results.
+   */
+  const createTrialDocumentsAndReturnSearchData = async () => {
+    const searchData = [];
     for (let index = 0; index < TRIALS; index++) {
-      const randomPassword = `Smaihz${Math.ceil(
+      const randomPassword = `Smaihz${Math.ceil(Math.random() * 1000)}??8${Math.ceil(
         Math.random() * 1000
-      )}??8${Math.ceil(Math.random() * 1000)}`.trim();
+      )}`.trim();
 
       const name = `John Doe ${Math.floor(Math.random() * 10000)}`;
       const password = await hashPassword(randomPassword);
-      const email = `johndoe${Math.ceil(
-        Math.random() * 1000
-      )}@gmail.com`.trim();
+      const email = `johndoe${Math.ceil(Math.random() * 1000)}@gmail.com`.trim();
 
-      let document = new Model({ name, email, password });
+      let document = new Model({name, email, password});
       await document.save();
 
       const id = document.id;
-      documents.push({ email, password: randomPassword, id });
+      searchData.push({email, password: randomPassword, id});
     }
-    return documents;
+    return searchData;
   };
 
-  const deleteAll = async (documents = []) => {
+  const deleteAllDocumentsUsing = async (searchData = []) => {
     for (let index = 0; index < TRIALS; index++) {
-      await Model.findByIdAndDelete(documents[index].id);
+      await Model.findByIdAndDelete(searchData[index].id);
     }
   };
 };

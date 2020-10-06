@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const Models = require("../database/models/index");
 
+const {clearDataFromAModel} = require("./utils/generalUtils");
+
 require("dotenv").config();
 
 const connectToDb = async () => {
@@ -18,13 +20,9 @@ const connectToDb = async () => {
       count = count.length;
       if (count > 0) {
         console.log(
-          `model ${Model.modelName} has some data.We'll clear it before running the test.
-          Check to see that all test data is cleared after testing even if the test fail or errors are thrown`
+          `model ${Model.modelName} has some data.We'll clear it before running the test.`
         );
-        const documents = await Model.find();
-        documents.forEach(async (element) => {
-          await Model.findByIdAndDelete(element.id);
-        });
+        await clearDataFromAModel(Model);
       }
     }
   } catch (error) {
