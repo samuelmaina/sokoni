@@ -5,22 +5,16 @@
 
 <body>
     <%- include('../includes/navigation.ejs') %>
-    <div class="grid">
+    <div class=" form grid">
         <article class="card">
             <form class="login-form" action="<%= postPath%>" method="POST">
-                <div class="form-control">
-                    <label for="">Email</label>
-                    <input type="email" name="email" id="email" value="<%= previousData.email%>">
-                </div>
-                <div class="form-control">
-                    <label for="password"> Password </label>
-                    <input type="password" name="password" id="password" value="<%= previousData.password%>" />
-                </div>
-                <input type="hidden" name='_csrf' value='<%= csrfToken %>'>
-                <input class="btn" type="submit" value="Login">
+                <%- include('./textFields/email.ejs') %>
+                <%- include('./textFields/password.ejs') %>
+                <%- include('./textFields/csurf.ejs') %>
+                <input class="btn" id="login" type="submit" value="Login">
             </form>
             <div class='centered'>
-                <a href="reset">Reset Password</a>
+                <a id='reset' href="reset">Reset Password</a>
             </div>
         </article>
     </div>

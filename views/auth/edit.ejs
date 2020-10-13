@@ -8,15 +8,9 @@
     <div class="grid">
         <article class="card">
             <form class="product-form" action="/<%= postPath %>" method="POST" enctype="multipart/form-data">
-                <div class="form-control">
-                    <label for="title">Name</label>
-                    <input type="text" name="name" id="name" value="<%= previousData.name %>">
-                </div>
-                <div class=" form-control">
-                    <label for="title">Email</label>
-                    <input type="email" name="email" id="title" value="<%= previousData.email %>">
-                </div>
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <%- include('./textFields/name.ejs') %>
+                <%- include('./textFields/email.ejs') %>
+                <%- include('./textFields/csurf.ejs') %>
                 <input class="btn" type="submit" value="Change Details">
             </form>
         </article>

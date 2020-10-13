@@ -1,19 +1,21 @@
 const express = require("express");
 const router = express.Router();
-const validators = require("../../util/validators/auth");
+let {validators} = require("../../util");
+const updateValidators = validators.auth;
 
-const userEditController = require("../../controllers/edit/user");
+const {edit} = require("../../controllers");
+const userEditController = edit.user;
 
 router.get("/change-details", userEditController.getEditDetails);
 router.post(
   "/change-details",
-  validators.changeDetailsValidator,
+  updateValidators.changeDetailsValidator,
   userEditController.postEditDetails
 );
 router.get("/change-password", userEditController.getChangePassword);
 router.post(
   "/change-password",
-  validators.newPasswordValidator,
+  updateValidators.newPasswordValidator,
   userEditController.postChangePassword
 );
 module.exports = router;

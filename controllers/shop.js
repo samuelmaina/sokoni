@@ -1,29 +1,32 @@
 const path = require("path");
 
-const pipeInvoicePdf = require("../util/invoicePdfGenerator");
+const {Flash, Renderer, pipeInvoicePdf} = require("../util");
 
-const Order = require("../database/interfaces/orderForShop");
-const AdminSale = require("../database/interfaces/adminSaleForShop");
-const User = require("../database/interfaces/userForShop");
-const Product = require("../database/interfaces/productForShop");
+const {
+  ProductForShop,
+  UserForShop,
+  OrderForShop,
+} = require("../database/interfaces");
 
-const errorHandler = require("../util/errorHandler");
 exports.getProductPerCategory = async (req, res, next) => {
   try {
-    const page = req.query.page || 1;
+    const page = +req.query.page || 1;
     const category = req.params.category;
-    const categories = await Product.Model.getPresentCategories();
+    const categories = await ProductForShop.getPresentCategories();
     const {
       paginationData,
       products,
-    } = await Product.Model.findCategoryProducts(category, page);
-    res.render("shop/index", {
-      prods: products,
-      pageTitle: "Shop",
-      path: "/",
-      paginationData,
-      categories,
-    });
+    } = await ProductForShop.findCategoryProducts(category, page);
+    return new Renderer(res)
+      .templatePath("shop/index")
+      .pageTitle("Shop")
+      .options({
+        prods: products,
+        paginationData,
+        categories,
+      })
+      .activePath("/")
+      .render();
   } catch (error) {
     next(error);
   }
@@ -31,18 +34,21 @@ exports.getProductPerCategory = async (req, res, next) => {
 
 exports.getIndex = async (req, res, next) => {
   try {
-    const categories = await Product.Model.getPresentCategories();
-    const page = req.query.page || 1;
-    const { paginationData, products } = await Product.findProductsForPage(
+    const categories = await ProductForShop.getPresentCategories();
+    const page = +req.query.page || 1;
+    const {paginationData, products} = await ProductForShop.findProductsForPage(
       page
     );
-    res.render("shop/index", {
-      prods: products,
-      pageTitle: "Shop",
-      path: "/",
-      paginationData,
-      categories,
-    });
+    new Renderer(res)
+      .templatePath("shop/index")
+      .pageTitle("Shop")
+      .activePath("/")
+      .options({
+        prods: products,
+        paginationData,
+        categories,
+      })
+      .render();
   } catch (error) {
     next(error);
   }
@@ -50,22 +56,20 @@ exports.getIndex = async (req, res, next) => {
 exports.getProducts = async (req, res, next) => {
   try {
     const page = +req.query.page || 1;
-    const { paginationData, products } = await Product.findProductsForPage(
+    const {paginationData, products} = await ProductForShop.findProductsForPage(
       page
     );
-
-    // res.status(200).json({
-    //   paginationData: paginationData,
-    //   prods: products
-    // });
-    res.render("shop/product-list", {
-      prods: products,
-      pageTitle: "All Products",
-      path: "/products",
-      paginationData: paginationData,
-    });
+    new Renderer(res)
+      .templatePath("shop/product-list")
+      .pageTitle("All Products")
+      .activePath("/products")
+      .options({
+        paginationData,
+        prods: products,
+      })
+      .render();
   } catch (err) {
-    errorHandler(err, next);
+    next(err);
   }
 };
 
@@ -73,84 +77,81 @@ exports.getProduct = async (req, res, next) => {
   try {
     const prodId = req.params.productId;
     const page = +req.query.page || 1;
-    const product = await Product.findById(prodId);
+    const product = await ProductForShop.findById(prodId);
     if (!product) {
       return res.redirect("/");
     }
-    res.render("shop/product-detail", {
-      product,
-      pageTitle: product.title,
-      path: "/product",
-      currentPage: page,
-    });
+    new Renderer(res)
+      .templatePath("shop/product-detail")
+      .pageTitle(product.title)
+      .activePath("/product")
+      .options({
+        product,
+        currentPage: page,
+      })
+      .render();
   } catch (error) {
     next(error);
   }
 };
-const addToCartPage = async (req, res, product, previousData, error, info) => {
-  const { page } = req.body;
-  if (product) {
-    res.render("shop/add-to-cart", {
-      pageTitle: "Add product",
-      path: "/add/to-cart",
-      product,
-      page,
-      error,
-      previousData,
-      info,
-    });
-  }
-};
 
 exports.getAddToCart = async (req, res, next) => {
-  const { productId } = req.body;
-  const product = await Product.findById(productId);
-  return addToCartPage(
-    req,
-    res,
-    product,
-    req.body,
-    "",
-    "Thank you for adding it"
-  );
+  const {productId, page} = req.body;
+  const product = await ProductForShop.findById(productId);
+  new Renderer(res)
+    .templatePath("shop/add-to-cart")
+    .pageTitle("Add product")
+    .options({
+      product,
+      page,
+    })
+    .render();
 };
 exports.postToCart = async (req, res, next) => {
   try {
-    let { page, quantity, productId } = req.body;
+    let {page, quantity, productId} = req.body;
     const previousData = req.body;
     let errorMessage, info;
-    const product = await Product.findById(productId);
+    const renderer = new Renderer(res)
+      .templatePath("shop/add-to-cart")
+      .pageTitle("Add product")
+      .options({
+        page,
+        previousData,
+      });
+
+    const product = await ProductForShop.findById(productId);
+    renderer.options({
+      product,
+    });
     if (quantity < 1) {
       errorMessage = "add 1 or more products as quantity";
-      return addToCartPage(req, res, product, previousData, errorMessage, "");
+      return renderer.appendError(errorMessage).render();
+    }
+    const currentQuantity = product.getQuantity();
+    if (currentQuantity < quantity) {
+      info = `On stock quantity is ${currentQuantity}.Please request less quantity`;
+      return renderer.appendInfo(info).render();
     }
     if (product) {
       const total = product.sellingPrice * quantity;
       const currentBalance = req.user.getCurrentBalance();
       if (!(currentBalance >= total)) {
-        info = `Dear customer you don't have enough balance to complete
+        errorMessage = `Dear customer you don't have enough balance to complete
          this transaction. Please reduce your quantity or  recharge Kshs ${(
            total - currentBalance
          ).toFixed(2)} in your account and try again.`;
-        return addToCartPage(req, res, product, previousData, "", info);
+        return renderer.appendError(errorMessage).render();
       } else {
         await req.user.reduceBalance(total);
       }
 
-      const currentQuantity = product.getQuantity();
-      if (currentQuantity < quantity) {
-        info = `On stock quantity is ${currentQuantity}.Please request less quantity`;
-        return addToCartPage(req, res, product, previousData, "", info);
-      }
       await req.user.addProductIdToCart(productId, quantity);
       await product.reduceQuantityBy(quantity);
     }
-    // res.status(200).json({
-    //   paginationData: paginationData,
-    //   prods: products
-    // });
-    req.flash("info", "Product successfully added to the cart");
-    res.redirect(`products?page=${page}`);
+    new Flash(req, res)
+      .appendInfo("Product successfully added to the cart")
+      .redirect(`products?page=${page}`);
   } catch (error) {
     next(error);
   }
@@ -160,15 +161,19 @@ exports.getCart = async (req, res, next) => {
     const {
       cartProducts,
       total,
-    } = await User.findCartProductsAndTheirTotalsForUserId(req.user._id);
+    } = await UserForShop.findCartProductsAndTheirTotalsForUserId(req.user._id);
     req.session.total = total;
     req.session.orderedProducts = cartProducts;
-    res.render("shop/cart", {
-      path: "/cart",
-      pageTitle: "Your Cart",
-      products: cartProducts,
-      total,
-    });
+
+    new Renderer(res)
+      .templatePath("shop/cart")
+      .pageTitle("Your Cart")
+      .options({
+        products: cartProducts,
+        total,
+      })
+      .activePath("/cart")
+      .render();
   } catch (error) {
     next(error);
   }
@@ -179,7 +184,7 @@ exports.postCartDeleteProduct = async (req, res, next) => {
     const prodId = req.body.productId;
     const deletedQuantity = await req.user.deleteProductIdFromCart(prodId);
     res.redirect("/cart");
-    const product = await Product.findById(prodId);
+    const product = await ProductForShop.findById(prodId);
     //increase the quantity earlier deleted since the product(s) were rejected
     await product.increaseQuantityBy(deletedQuantity);
     // refund the customer
@@ -200,10 +205,10 @@ exports.createOrder = async (req, res, next) => {
       orderedProducts: orderedProducts,
       total: productTotal,
     };
-    const order = await Order.createNew(orderData);
+    const order = await OrderForShop.createNew(orderData);
     await req.user.clearCart();
     res.redirect("/orders");
-    const populatedOrder = await Order.findByIdWithDetails(order._id);
+    const populatedOrder = await OrderForShop.findByIdWithDetails(order._id);
     await addToAdminSales(populatedOrder.orderedProducts, next);
   } catch (error) {
     next(error);
@@ -211,14 +216,16 @@ exports.createOrder = async (req, res, next) => {
 };
 exports.getOrders = async (req, res, next) => {
   try {
-    const orders = await Order.findAllForUserId(req.user._id);
+    const orders = await OrderForShop.findAllForUserId(req.user._id);
     if (orders)
-      res.render("shop/orders", {
-        path: "/orders",
-        pageTitle: "Your Orders",
-        orders: orders,
-        errorMessage: "",
-      });
+      new Renderer(res)
+        .templatePath("shop/orders")
+        .pageTitle("Your Orders")
+        .activePath("/orders")
+        .options({
+          orders,
+        })
+        .render();
   } catch (error) {
     next(error);
   }
@@ -226,21 +233,32 @@ exports.getOrders = async (req, res, next) => {
 
 exports.createInvoicePdf = async (req, res, next) => {
   try {
+    const flash = new Flash(req, res);
     const orderId = req.params.orderId;
     const invoiceName = "invoice-" + orderId + ".pdf";
     const invoicePath = path.join("Data", "Invoices", invoiceName);
-    const order = await Order.findByIdWithDetails(orderId);
+    const order = await OrderForShop.findByIdWithDetails(orderId);
     if (!order) {
-      req.flash("error", "No such order exists");
-      return res.redirect("/orders");
+      return flash.appendError("No such order exists").redirect("/orders");
     }
     if (!order.isOrderedById(req.user._id)) {
-      throw new Error("You are not authorized to operate on this order");
+      return flash
+        .appendError("You are not authorized to operate on this order")
+        .redirect("/orders");
     }
+    setHeaderForPiping(res, invoiceName);
     pipeInvoicePdf(order, invoicePath, res);
   } catch (error) {
     next(error);
   }
+};
+
+const setHeaderForPiping = (res, invoiceName) => {
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    'inline; filename="' + invoiceName + '"'
+  );
 };
 
 const addToAdminSales = async (orderedProducts, next) => {

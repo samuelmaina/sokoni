@@ -139,7 +139,7 @@ form {
   position: fixed;
   left: 0;
   top: 0;
-  background: rgb(121, 121, 122);
+  background: rgb(251, 251, 252);
   z-index: 10;
   padding: 2rem 1rem 1rem 2rem;
   transform: translateX(-100%);
@@ -181,7 +181,7 @@ form {
 .mobile-nav__item button:hover,
 .mobile-nav__item button:active {
   background: rgba(34, 34, 33, 0.911);
-  color: rgb(121, 121, 122);
+  color: rgb(239, 239, 245);
   border-radius: 3px;
 }
 
@@ -219,9 +219,8 @@ form {
 .grid {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-around;
+  justify-content: space-evenly;
   align-items: stretch;
-  margin-bottom: 2rem;
 }
 
 .card {
@@ -304,16 +303,6 @@ form {
 }
 
 @media (min-width: 768px) {
-  .main-header__nav {
-    display: flex;
-  }
-
-  #side-menu-toggle {
-    display: none;
-  }
-}
-
-@media (min-width: 725px) {
   .main-header__nav {
     display: flex;
   }

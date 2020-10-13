@@ -3,12 +3,13 @@ const express = require("express");
 const router = express.Router();
 
 const BaseRouting = require("./base");
-const { user } = require("../../controllers/auth/index");
+const {auth} = require("../../controllers");
+const user = auth.user;
 
-const ensureAuth = require("../../authmiddleware/userRoutesProtect");
+const {userRoutesProtect} = require("../../authmiddleware");
 
 const userAuth = new BaseRouting(router, user)
-  .addGet("/dashboard", [ensureAuth], user.getDashboard)
+  .addGet("/dashboard", [userRoutesProtect], user.getDashboard)
   .getRouter();
 
 module.exports = userAuth;

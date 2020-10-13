@@ -1,10 +1,13 @@
-const { User, Admin } = require("../../database/interfaces/auth");
+const {User, Admin} = require("../../database/interfaces/auth");
 
 const body = require("express-validator/").check;
 
-const nameValidator = body("name")
-  .isLength({ min: 6, max: 20 })
-  .withMessage("Invalid name.Name should be 6-20 characters long");
+const nameValidator = body(
+  "name",
+  "Name too short or it contains symbols.Enter only alphanumerics."
+)
+  .isLength({min: 6, max: 20})
+  .isString();
 
 const emailValidator = body("email")
   .isEmail()
@@ -12,27 +15,26 @@ const emailValidator = body("email")
 
 const passwordValidator = body(
   "password",
-  "The password should be 8 or more character and should be alphanumeric!"
+  "The password should be 8 or more character and should be must contain symbols"
 )
-  .isLength({ min: 8 })
+  .isLength({min: 8})
   .not()
-  .isAlphanumeric()
-  .matches();
+  .isAlphanumeric();
 
-const confirmPasswordValidator = body("ConfirmPassword").custom(
-  (value, { req }) => {
+const confirmPasswordValidator = body("confirmPassword").custom(
+  (value, {req}) => {
     if (value !== req.body.password) {
       throw new Error("Passwords do not match!");
     }
     return true;
   }
 );
-const signUpEmailValidator = (Model) => {
+const signUpEmailValidator = Model => {
   return body("email")
     .isEmail()
     .withMessage("Please enter a valid email")
-    .custom((value) => {
-      return Model.findByEmail(value).then((document) => {
+    .custom(value => {
+      return Model.findByEmail(value).then(document => {
         if (document) {
           return Promise.reject(
             `The email already exists.Please try another one`

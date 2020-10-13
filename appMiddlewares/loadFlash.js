@@ -1,5 +1,5 @@
 const flash = require("connect-flash");
 
-module.exports = (app) => {
+module.exports = app => {
   app.use(flash());
 };

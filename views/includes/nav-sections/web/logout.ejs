@@ -1,0 +1,8 @@
+<li class="main-header__item">
+    <form action="<% if (isAdminLoggedIn) { %>/auth/admin/logout<% } else { %>/auth/user/logout<% } %>" method="post">
+        <input type="hidden" name="_csrf" value="<%=csrfToken %>" />
+        <button id='logout' class="<%= path === '/logout' ? 'active' : '' %>" type="submit">
+            Logout
+        </button>
+    </form>
+</li>

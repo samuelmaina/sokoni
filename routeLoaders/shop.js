@@ -1,5 +1,5 @@
-const shopRoutes = require("../routes/shop/shop");
+const {shop} = require("../routes");
 
-module.exports = (app) => {
-  app.use(shopRoutes);
+module.exports = app => {
+  app.use(shop);
 };

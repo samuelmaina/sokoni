@@ -1,6 +1,6 @@
-const accountingRoutes = require("../routes/account/index");
+const {account} = require("../routes");
 const path = "/account";
 
-module.exports = (app) => {
-  app.use(path, accountingRoutes);
+module.exports = app => {
+  app.use(path, account);
 };

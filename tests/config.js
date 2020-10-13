@@ -12,19 +12,6 @@ const connectToDb = async () => {
       useNewUrlParser: true,
       useFindAndModify: false,
     });
-
-    //make sure that all the Models we are using are empty before testing.
-    for (const ModelName in Models) {
-      const Model = Models[ModelName];
-      let count = await Model.find();
-      count = count.length;
-      if (count > 0) {
-        console.log(
-          `model ${Model.modelName} has some data.We'll clear it before running the test.`
-        );
-        await clearDataFromAModel(Model);
-      }
-    }
   } catch (error) {
     throw new Error(error);
   }

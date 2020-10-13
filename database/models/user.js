@@ -10,7 +10,7 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Product",
       },
-      quantity: { type: Number },
+      quantity: {type: Number},
     },
   ],
   currentBalance: {
@@ -29,7 +29,7 @@ userSchema.statics.findCartProductsAndTheirTotalForId = async function (Id) {
   }
   const cartProducts = userWithPopulatedCart.getCartProducts();
   let total = 0.0;
-  cartProducts.forEach((product) => {
+  cartProducts.forEach(product => {
     total += product.productData.getSellingPrice() * product.quantity;
   });
   total = Number(total.toFixed(2));
@@ -40,11 +40,11 @@ userSchema.statics.findCartProductsAndTheirTotalForId = async function (Id) {
 };
 
 userSchema.methods.addProductIdToCart = function (prodId, quantity) {
-  const cartProductIndex = this.cart.findIndex((cp) => {
+  const cartProductIndex = this.cart.findIndex(cp => {
     return cp.productData.toString() === prodId.toString();
   });
-  let newQuantity = parseInt(quantity);
-  if (!Number.isInteger(quantity) || quantity < 1) {
+  let newQuantity = Number(quantity);
+  if (!Number.isInteger(newQuantity) || newQuantity < 1) {
     throw new Error("Can only add quantity  greater than zero");
   }
   const updatedCartProducts = [...this.cart];
@@ -62,11 +62,11 @@ userSchema.methods.addProductIdToCart = function (prodId, quantity) {
 };
 
 userSchema.methods.deleteProductIdFromCart = async function (prodId) {
-  const deletedProductIndex = this.cart.findIndex((cp) => {
+  const deletedProductIndex = this.cart.findIndex(cp => {
     return cp.productData.toString() === prodId.toString();
   });
   const deletedQuantity = this.cart[deletedProductIndex].quantity;
-  const updatedCartProducts = this.cart.filter((cp) => {
+  const updatedCartProducts = this.cart.filter(cp => {
     return cp.productData.toString() !== prodId.toString();
   });
 

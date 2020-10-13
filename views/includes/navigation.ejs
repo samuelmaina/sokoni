@@ -4,72 +4,40 @@
   <button id="side-menu-toggle">Menu</button>
   <nav class="main-header__nav">
     <ul class="main-header__item-list">
-      <li class="main-header__item">
-        <a class="<%= path === '/' ? 'active' : '' %>" href="/">Shop</a>
-      </li>
-
+      <%- include('./nav-sections/web/general.ejs') %>
       <% if (isUserLoggedIn) { %>
-      <li class="main-header__item">
-        <a class="<%= path === '/products' ? 'active' : '' %>" href="/products">Products</a>
-      </li>
-      <li class="main-header__item">
-        <a class="<%= path === '/cart' ? 'active' : '' %>" href="/cart">Cart</a>
-      </li>
-      <li class="main-header__item">
-        <a class="<%= path === '/orders' ? 'active' : '' %>" href="/orders">Orders</a>
-      </li>
-      <li class="main-header__item">
-        <a class="<%= path === '/orders' ? 'active' : '' %>" href="/auth/user/dashboard">My Dashboard</a>
-      </li>
+      <%- include('./nav-sections/web/userLoggedIn.ejs') %>
       <% } %> <% if (isAdminLoggedIn&&!isUserLoggedIn) { %>
-      <li class="main-header__item">
-        <a class="<%= path === '/admin/add-product' ? 'active' : '' %>" href="/admin/add-product">Add Product
-        </a>
-      </li>
-      <li class="main-header__item">
-        <a class="<%= path === '/admin/products' ? 'active' : '' %>" href="/admin/products">View Products
-        </a>
-      </li>
-      <li class="main-header__item">
-        <a class="<%= path === '/admin/products' ? 'active' : '' %>" href="/admin/get-admin-sales">See Your Sales
-        </a>
-      </li>
+      <%- include('./nav-sections/web/adminLoggedIn.ejs') %>
       <% } %>
     </ul>
     <ul class="main-header__item-list">
-      <!-- added the second agurment is not admin to make sure that admin dont get the login
-      and sign up forms -->
       <% if (!isUserLoggedIn&&!isAdminLoggedIn) { %>
-      <li class="main-header__item">
-        <a class="<%= path === '/login' ? 'active' : '' %>" href="/auth/user/log-in">Login</a>
-      </li>
-      <li class="main-header__item">
-        <a class="<%= path === '/signup' ? 'active' : '' %>" href="/auth/user/sign-up">Sign Up</a>
-      </li>
+      <%- include('./nav-sections/web/guest.ejs') %>
       <% } %>
-      <% if (!isAdminLoggedIn&&!isUserLoggedIn) { %>
-      <li class="main-header__item">
-        <a class="<%= path === '/admin/login' ? 'active' : '' %>" href="/auth/admin/log-in">
-          Admin Login</a>
-      </li>
-      <li class="main-header__item">
-        <a class="<%= path === '/admin/signup' ? 'active' : '' %>" href="/auth/admin/sign-up">
-          Admin Sign Up</a>
-      </li>
-      <% } %> <% if (isAdminLoggedIn||isUserLoggedIn) { %>
-      <li class="main-header__item">
-        <form action="<% if (isAdminLoggedIn) { %>/auth/admin/logout<% } else { %>/auth/user/logout<% } %>"
-          method="post">
-          <input type="hidden" name="_csrf" value="<%=csrfToken %>" />
-          <button class="<%= path === '/logout' ? 'active' : '' %>" type="submit">
-            Logout
-          </button>
-        </form>
-      </li>
+      <% if (isAdminLoggedIn||isUserLoggedIn) { %>
+      <%- include('./nav-sections/web/logout.ejs') %>
       <% } %>
     </ul>
   </nav>
 </header>
+<!-- the mobile view navigation setting -->
+<nav class="mobile-nav">
+  <ul class="mobile-nav__item-list">
+    <%- include('./nav-sections/mobile/general.ejs') %>
+    <% if (isUserLoggedIn) { %>
+    <%- include('./nav-sections/mobile/userLoggedIn.ejs') %>
+    <% } %> <% if (isAdminLoggedIn&&!isUserLoggedIn) { %>
+    <%- include('./nav-sections/mobile/adminLoggedIn.ejs') %>
+    <% } %>
+    <% if (!isUserLoggedIn&&!isAdminLoggedIn) { %>
+    <%- include('./nav-sections/mobile/guest.ejs') %>
+    <% } %>
+    <% if (isAdminLoggedIn||isUserLoggedIn) { %>
+    <%- include('./nav-sections/mobile/logout.ejs') %>
+    <% } %>
+  </ul>
+</nav>
 <main>
   <%if(error){%>
   <div class='error-message'> <%= error %> </div>
@@ -77,63 +45,3 @@
   <%if(info){%>
   <div class='info'> <%= info %> </div>
   <% }%>
-
-
-
-  <!-- the mobile view navigation setting -->
-
-  <nav class="mobile-nav">
-    <ul class="mobile-nav__item-list">
-      <li class="mobile-nav__item">
-        <a class="<%= path === '/' ? 'active' : '' %>" href="/">Shop</a>
-      </li>
-      <li class="mobile-nav__item">
-        <a class="<%= path === '/products' ? 'active' : '' %>" href="/products">Products</a>
-      </li>
-
-      <% if (!isUserLoggedIn&&!isAdminLoggedIn) { %>
-      <li class="mobile-nav__item">
-        <a class="<%= path === '/login' ? 'active' : '' %>" href="/login">Login</a>
-      </li>
-      <li class="mobile-nav__item">
-        <a class="<%= path === '/signup' ? 'active' : '' %>" href="/signup">Sign Up</a>
-      </li>
-      <li class="mobile-nav__item">
-        <a class="<%= path === '/admin/signup' ? 'active' : '' %>" href="/admin/signup">
-          Admin Sign Up</a>
-      </li>
-      <li class="mobile-nav__item">
-        <a class="<%= path === '/admin/login' ? 'active' : '' %>" href="/admin/login">
-          Admin Login</a>
-      </li>
-      <% } %>
-      <% if (isUserLoggedIn) { %>
-      <li class="mobile-nav__item">
-        <a class="<%= path === '/cart' ? 'active' : '' %>" href="/cart">Cart</a>
-      </li>
-      <li class="mobile-nav__item">
-        <a class="<%= path === '/orders' ? 'active' : '' %>" href="/orders">Orders</a>
-      </li>
-
-      <% } %>
-      <% if (isAdminLoggedIn) { %>
-      <li class="mobile-nav__item">
-        <a class="<%= path === '/admin/add-product' ? 'active' : '' %>" href="/admin/add-product">Add Product
-        </a>
-      </li>
-      <li class="mobile-nav__item">
-        <a class="<%= path === '/admin/products' ? 'active' : '' %>" href="/admin/products">Admin Products
-        </a>
-      </li>
-      <% } %> <% if (isAdminLoggedIn||isUserLoggedIn) { %>
-      <li class="mobile-nav__item">
-        <form action="/logout" method="post">
-          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
-          <button class="<%= path === '/logout' ? 'active' : '' %>" type="submit">
-            logout
-          </button>
-        </form>
-      </li>
-      <% } %>
-    </ul>
-  </nav>

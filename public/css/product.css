@@ -7,9 +7,9 @@
 }
 
 .product-item {
-  width: 20rem;
+  width: 25rem;
   max-width: 95%;
-  margin: 0.5rem;
+  margin: 1.5rem;
 }
 
 .product__title {

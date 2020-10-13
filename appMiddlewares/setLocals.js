@@ -19,16 +19,16 @@ const loadInfo = (req, res) => {
 const loadPreviosData = (req, res) => {
   const previousData = req.flash("previous-data");
   if (previousData.length > 0) res.locals.previousData = previousData[0];
-  else res.locals.previousData = {};
+  else res.locals.previousData = null;
 };
 
-module.exports = (app) => {
+module.exports = app => {
   const setResLocals = (req, res, next) => {
-    loadAuth(req, res);
     loadCsurfToken(req, res);
     loadErrors(req, res);
     loadInfo(req, res);
     loadPreviosData(req, res);
+    loadAuth(req, res);
     next();
   };
   app.use(setResLocals);

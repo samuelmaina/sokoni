@@ -1,8 +1,24 @@
-const { Product } = require("../models/index");
+const {Product} = require("../models/index");
 
 class ProductForShop {
   constructor(Model) {
     this.Model = Model;
+  }
+
+  /**
+   * return all the products in the database
+   */
+  getPresentCategories() {
+    return this.Model.getPresentCategories();
+  }
+
+  /**
+   *
+   * @param {Object} category
+   * @param {Number} page
+   */
+  findCategoryProducts(category, page) {
+    return this.Model.findCategoryProducts(category, page);
   }
 
   /**

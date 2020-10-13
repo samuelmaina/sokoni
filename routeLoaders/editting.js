@@ -1,6 +1,6 @@
-const editingRoutes = require("../routes/edit/index");
+const {edit} = require("../routes");
 const path = "/edit";
 
-module.exports = (app) => {
-  app.use(path, editingRoutes);
+module.exports = app => {
+  app.use(path, edit);
 };

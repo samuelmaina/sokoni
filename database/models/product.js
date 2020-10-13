@@ -4,7 +4,7 @@ const fs = require("fs");
 
 require("dotenv").config();
 
-const imageDeleter = require("../../util/deletefile");
+const imageDeleter = require("../../util/deleteFile");
 
 const PRODUCTS_PER_PAGE = Number(process.env.PRODUCTS_PER_PAGE);
 const Schema = mongoose.Schema;
@@ -82,7 +82,6 @@ Product.statics.createNew = function (productData) {
     (1 + productData.percentageProfit / 100.0) *
     productData.buyingPrice
   ).toFixed(2);
-
   const product = new this(productData);
   return product.save();
 };
@@ -112,7 +111,9 @@ const calculatePaginationData = (total, page) => {
   };
   return paginationData;
 };
-Product.statics.getProductsWhoseQuantityIsGreaterThanZero = async function (page = 1) {
+Product.statics.getProductsWhoseQuantityIsGreaterThanZero = async function (
+  page = 1
+) {
   if (!Number.isInteger(page) || page < 1) {
     throw new Error("page must be a positive whole number");
   }
@@ -146,7 +147,7 @@ Product.statics.getPresentCategories = async function () {
   const products = await this.find(quantityGreaterThanZero).exec();
   for (const product of products) {
     let prodCategory = product.category;
-    const categoryIndex = categories.findIndex((c) => {
+    const categoryIndex = categories.findIndex(c => {
       return c === prodCategory;
     });
     if (categoryIndex < 0) {
@@ -187,7 +188,8 @@ Product.methods.increaseQuantityBy = function (quantity) {
 };
 Product.methods.reduceQuantityBy = async function (quantity) {
   let currentQuantity = this.quantity;
-  if (currentQuantity < quantity) throw new Error("can not reduce such a quantity");
+  if (currentQuantity < quantity)
+    throw new Error("can not reduce such a quantity");
   currentQuantity -= quantity;
   this.quantity = currentQuantity;
   await this.save();
@@ -201,16 +203,13 @@ Product.methods.getSellingPrice = function () {
 };
 
 Product.methods.updateDetails = function (productData) {
-  let image = productData.imageUrl;
-
-  if (image) {
+  if (this.imageUrl !== productData.imageUrl) {
     const imagePath = path.resolve(this.imageUrl);
-    fs.exists(imagePath, (exists) => {
+    fs.exists(imagePath, exists => {
       if (exists) {
         imageDeleter(imagePath);
       }
     });
-    this.imageUrl = image.path;
   }
   productData.sellingPrice = (
     (1 + productData.percentageProfit / 100.0) *

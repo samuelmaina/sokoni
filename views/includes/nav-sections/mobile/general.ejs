@@ -1,0 +1,6 @@
+<!-- link should be not be viewed by an admin -->
+<% if (!isAdminLoggedIn) { %>
+<li class="mobile-nav__item">
+    <a class="<%= path === '/' ? 'active' : '' %>" href="/">Shop</a>
+</li>
+<% } %>

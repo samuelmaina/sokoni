@@ -1,6 +1,5 @@
-const fs = require("fs");
 const PDFDocument = require("pdfkit");
-const { User } = require("../database/interfaces/auth");
+const {User} = require("../database/interfaces/auth");
 
 const shopEmail = "samuelmainaonlineshop@gmail.com";
 const shopName = "SM Online Shop.";
@@ -38,7 +37,7 @@ function generateHeader(doc) {
     .fontSize(20)
     .text(shopName, 110, 57)
     .fontSize(10)
-    .text(shopEmail, 200, 65, { align: "right" })
+    .text(shopEmail, 200, 65, {align: "right"})
     .fontSize(8)
     .text(shopMotto, 200, 80, {
       align: "right",
@@ -49,7 +48,7 @@ function generateFooter(doc) {
   doc
     .fontSize(10)
     .font("Times-Roman")
-    .text(footer, 50, 730, { align: "center", width: 500 });
+    .text(footer, 50, 730, {align: "center", width: 500});
 }
 
 async function generateCustomerInformation(doc, orderdetails, ordererName) {
@@ -67,9 +66,9 @@ function generateTableRow(doc, y, c1, c2, c3, c4, c5) {
     .fontSize(10)
     .text(c1, 50, y)
     .text(c2, 150, y)
-    .text(c3, 280, y, { width: 90, align: "right" })
-    .text(c4, 370, y, { width: 90, align: "right" })
-    .text(c5, 0, y, { align: "right" });
+    .text(c3, 280, y, {width: 90, align: "right"})
+    .text(c4, 370, y, {width: 90, align: "right"})
+    .text(c5, 0, y, {align: "right"});
 }
 
 function generateInvoiceTable(doc, orderDetails) {
@@ -79,8 +78,8 @@ function generateInvoiceTable(doc, orderDetails) {
     .font("Times-Bold")
     .text("Title", 50, currentRowPosition)
     .text("Price", 150, currentRowPosition)
-    .text("Quantity", 280, currentRowPosition, { width: 90, align: "right" })
-    .text("Total", 370, currentRowPosition, { width: 90, align: "right" })
+    .text("Quantity", 280, currentRowPosition, {width: 90, align: "right"})
+    .text("Total", 370, currentRowPosition, {width: 90, align: "right"})
     .moveDown(0.5);
   const boughtProducts = orderDetails.getOrderedProducts();
   for (const product of boughtProducts) {
@@ -100,6 +99,6 @@ function generateInvoiceTable(doc, orderDetails) {
     `Total Payment: Kshs ${orderDetails.getTotal()}`,
     200,
     currentRowPosition + 30,
-    { align: "center" }
+    {align: "center"}
   );
 }

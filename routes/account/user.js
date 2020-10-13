@@ -1,7 +1,8 @@
 const express = require("express");
 const router = express.Router();
 
-const controller = require("../../controllers/account/user");
+const {account} = require("../../controllers");
+const controller = account.user;
 
 const accountValidator = require("../../util/validators/accounting");
 

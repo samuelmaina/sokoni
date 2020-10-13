@@ -10,7 +10,7 @@ const filter = (req, file, cb) => {
     cb(null, false);
   }
 };
-const isImage = (fileType) => {
+const isImage = fileType => {
   return (
     fileType === "image/png" ||
     fileType === "image/jpg" ||
@@ -26,10 +26,11 @@ const fileStorage = multer.diskStorage({
     cb(null, Math.random() + "-" + file.originalname);
   },
 });
-const multerSettings = { storage: fileStorage, fileFilter: filter };
+const multerSettings = {storage: fileStorage, fileFilter: filter};
 /**
  * @returns - returns an image uploader for express app
  */
-module.exports = (app) => {
-  app.use(multer(multerSettings).single(fileFieldName));
+const fileUploader = multer(multerSettings).single(fileFieldName);
+module.exports = app => {
+  app.use(fileUploader);
 };

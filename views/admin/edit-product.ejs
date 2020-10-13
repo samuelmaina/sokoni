@@ -65,7 +65,9 @@
                                 rows="5"> <%= previousData.description%></textarea>
                         </div>
                         <% if (editing) { %>
-                        <input type="hidden" value="<%=previousData.id %>" name="productId">
+                        <input type="hidden" value="<%=previousData.id %>" name="id">
+                        <input type="hidden" value="<%=page %>" name="page">
+                        <input type="hidden" value="<%=previousData.imageUrl %>" name="imageUrl">
                         <% } %>
                         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <input class="btn" type="submit"

@@ -1,47 +1,31 @@
-const ensureUserAuthenticated = require("../../authmiddleware/userRoutesProtect");
+const {userRoutesProtect} = require("../../authmiddleware");
 
 const express = require("express");
 
-const shopController = require("../../controllers/shop");
+const {shop} = require("../../controllers");
 
 const router = express.Router();
 
-router.get("/", shopController.getIndex);
+router.get("/", shop.getIndex);
 
-router.get("/products", shopController.getProducts);
+router.get("/products", shop.getProducts);
 
-router.get("/product/:productId", shopController.getProduct);
-router.get("/category/:category", shopController.getProductPerCategory);
-router.post(
-  "/add-to-cart",
-  ensureUserAuthenticated,
-  shopController.getAddToCart
-);
+router.get("/product/:productId", shop.getProduct);
+router.get("/category/:category", shop.getProductPerCategory);
+router.post("/add-to-cart", userRoutesProtect, shop.getAddToCart);
 router
   .route("/cart")
-  .get(ensureUserAuthenticated, shopController.getCart)
-  .post(ensureUserAuthenticated, shopController.postToCart);
+  .get(userRoutesProtect, shop.getCart)
+  .post(userRoutesProtect, shop.postToCart);
 
-router.post(
-  "/cart-delete-item",
-  ensureUserAuthenticated,
-  shopController.postCartDeleteProduct
-);
+router.post("/cart-delete-item", userRoutesProtect, shop.postCartDeleteProduct);
 
-router.get("/orders", ensureUserAuthenticated, shopController.getOrders);
+router.get("/orders", userRoutesProtect, shop.getOrders);
 
-router.post(
-  "/create-order",
-  ensureUserAuthenticated,
-  shopController.createOrder
-);
+router.post("/create-order", userRoutesProtect, shop.createOrder);
 
-router.get(
-  "/orders/:orderId",
-  ensureUserAuthenticated,
-  shopController.createInvoicePdf
-);
+router.get("/orders/:orderId", userRoutesProtect, shop.createInvoicePdf);
 
-// router.get('/checkout', shopController.getCheckout);
+// router.get('/checkout', shop.getCheckout);
 
 module.exports = router;

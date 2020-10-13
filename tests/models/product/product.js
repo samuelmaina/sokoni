@@ -1,8 +1,4 @@
-const {throws} = require("assert");
-
 const {Product} = require("../../../database/models/index");
-
-const TRIALS = 100;
 
 const {
   verifyIDs,
@@ -13,8 +9,6 @@ const {
 
 const {connectToDb, closeConnectionToBd} = require("../../config");
 const {
-  getRandomProductData,
-  createTestProducts,
   createNewAdmin,
   deleteAdminById,
   deleteAllProducts,
@@ -25,8 +19,11 @@ const {
   setTRIAL,
   setAdminId,
   setProducts,
+  createNewAdmin,
   createNewProduct,
-  getRandomProductDataWithoutADataItem,
+  createTestProducts,
+  getRandomProductData,
+  verifyErrorsAreThrownWhenProductDataMisses,
   hasWellCalculatedSellingPrice,
   calculatePaginationData,
   ensureThatTheRenderProductsAreWithinMAX_PRODUCT_PER_PAGE,
@@ -36,21 +33,15 @@ const {
   getRandomProductDataWithNoImageUrl,
 } = require("./products");
 
-let admin;
-
-setTRIAL(TRIALS);
 describe("--Product ", () => {
   beforeAll(async () => {
     await connectToDb();
-    admin = await createNewAdmin();
-    setAdminId(admin.id);
   });
   afterAll(async () => {
-    await deleteAdminById(admin.id);
     await closeConnectionToBd();
   });
   it("createNew create a complete product with sellingPrice added to it", async () => {
-    const productData = getRandomProductData(admin.id);
+    const productData = getRandomProductData();
     //the productData has sellingPrice added to it by createNew.so we need to
     //copy(by destructuring) it so that we can maintain its previous properties.
     const productCopy = {...productData};
@@ -66,23 +57,7 @@ describe("--Product ", () => {
     }
 
     verifyTruthy(hasWellCalculatedSellingPrice(product));
-    let message;
-    for (const key in productCopy) {
-      {
-        message = `${key} is expected`;
-        const trial = getRandomProductDataWithoutADataItem("buyingPrice");
-        Product.createNew(trial);
-        // throws(
-        //   () => {
-        //     Product.createNew(trial).catch((err) => {
-        //       throw new Error(err);
-        //     });
-        //   },
-        //   {message}
-        // );
-      }
-    }
-
+    verifyErrorsAreThrownWhenProductDataMisses();
     await Product.findByIdAndDelete(product.id);
   });
   describe("After Creation", () => {
@@ -91,8 +66,7 @@ describe("--Product ", () => {
       beforeEach(async () => {
         //incase previous test failed before deleting the data they created.
         await clearDataFromAModel(Product);
-        products = await createTestProducts(admin.id, TRIALS);
-        setProducts(products);
+        products = await createTestProducts;
       });
       afterEach(async () => {
         await deleteAllProducts(products);

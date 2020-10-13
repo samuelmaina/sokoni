@@ -1,5 +1,5 @@
 const bodyParser = require("body-parser");
-module.exports = (app) => {
+module.exports = app => {
   const conf = bodyParser.urlencoded({
     extended: false,
     limit: "50MB",

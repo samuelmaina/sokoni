@@ -30,13 +30,13 @@ tokenGenerator.statics.createNewForId = async function (Id) {
 tokenGenerator.statics.findTokenDetails = async function (token) {
   const tokenDetails = await this.findOne({
     token,
-    expiryTime: { $gt: Date.now() },
+    expiryTime: {$gt: Date.now()},
   });
   return tokenDetails;
 };
 
 tokenGenerator.statics.getRequesterIdforToken = async function (token) {
-  const tokenDetails = await this.findOne({ token });
+  const tokenDetails = await this.findOne({token});
   if (!tokenDetails) return null;
   return await tokenDetails.getRequesterId();
 };

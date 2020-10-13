@@ -5,7 +5,7 @@ const MongoDBSession = require("connect-mongodb-session")(session);
  * @param {number} validityPeriodInMs- the Time limit in which the
  * session will valid in ms
  */
-const validityPeriodInMs = 60 * 60 * 1000;
+const validityPeriodInMs = 5 * 60 * 1000;
 /**
  * @param {document} SessionCOllection- the collection name
  * for the session in the database
@@ -21,7 +21,7 @@ const store = new MongoDBSession({
  * @return Session Configuration in the database
  *
  */
-module.exports = (app) => {
+module.exports = app => {
   app.use(
     session({
       secret: process.env.SESSION_SECRET,

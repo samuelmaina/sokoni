@@ -1,27 +1,28 @@
-const validationErrorsIn = require("../../util/validationResults");
+const {Flash, Renderer, validationResults} = require("../../util");
 
 const DASHBOARD_PATH = "/auth/user/dashboard";
 
 exports.getDeposit = (req, res, next) => {
-  res.render("accounting/deposit", {
-    pageTitle: "Deposit the funds",
-    path: "user/deposit",
-    postPath: "deposit",
-  });
+  return new Renderer(res)
+    .templatePath("accounting/deposit")
+    .pageTitle("Deposit the funds")
+    .activePath("/dashboard")
+    .pathToPost("deposit")
+    .render();
 };
 exports.postDeposit = async (req, res, next) => {
   try {
-    const { amount, paymentMode } = req.body;
-    const validationErrors = validationErrorsIn(req);
+    const flash = new Flash(req, res).appendPreviousData(req.body);
+    const {amount, paymentMode} = req.body;
+    const validationErrors = validationResults(req);
     if (validationErrors) {
-      req.flash("error", validationErrors);
-      req.flash("previous-data", req.body);
-      return res.redirect("deposit");
+      return flash.appendError(validationErrors).redirect("deposit");
     }
 
     await req.user.incrementAccountBalance(amount);
-    req.flash("info", `${amount} successfully credited into your account`);
-    res.redirect(DASHBOARD_PATH);
+    flash
+      .appendInfo(`${amount} successfully credited into your account`)
+      .redirect(DASHBOARD_PATH);
   } catch (error) {
     next(error);
   }

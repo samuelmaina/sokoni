@@ -1,13 +1,11 @@
 const {connectToDb, closeConnectionToBd} = require("../config");
 const {
   createNewAdmin,
-  deleteAdminById,
-  deleteUserById,
   createTestProducts,
   createNewUser,
-  deleteAllProducts,
-  clearDataFromAModel,
+  clearTheDb,
 } = require("../utils/generalUtils");
+const {verifyIDsAreEqual, verifyEqual} = require("../utils/testsUtils.test");
 
 const {Order} = require("../../database/models");
 
@@ -22,90 +20,83 @@ describe("Order ", () => {
     admin = await createNewAdmin();
     user = await createNewUser();
   });
+  afterEach(async () => {
+    await clearTheDb();
+  });
   afterAll(async () => {
-    await clearDataFromAModel(Order);
     await closeConnectionToBd();
   });
   it("createNew creates a new Order", async () => {
-    const {order} = await createOrderData();
-    const expectedOrder = order;
+    const products = await createTestProducts(admin.id, 4);
+    const expectedOrder = await createOrderData(products);
     const createdOrder = await Order.createNew(expectedOrder);
+    ensureOrderedProductsHasTheRightData(
+      createdOrder.orderedProducts,
+      expectedOrder.orderedProducts
+    );
     verifyUserIdCreatedOrder(createdOrder, expectedOrder.userId);
-    for (const prop in expectedOrder) {
-      if (expectedOrder.hasOwnProperty(prop)) {
-        if (prop == "orderedProducts") {
-          const expectedOrderedProducts = expectedOrder[prop];
-          createdOrder[prop].forEach((element, index) => {
-            expect(element.productData.toString()).toEqual(
-              expectedOrderedProducts[index].productData.toString()
-            );
-          });
-          continue;
-        }
-        expect(expectedOrder[prop]).toEqual(createdOrder[prop]);
-      }
-    }
-    expect(createdOrder.total).toEqual(expectedOrder.total);
-
-    //since order is created.We delete  all the data that was used to create the createdOrder.
-    await Order.findByIdAndDelete(createdOrder.id);
-    await deleteAdminById(admin.id);
-    await deleteUserById(user.id);
-    await deleteAllProducts(products);
+    verifyEqual(createdOrder.total, expectedOrder.total);
   });
 
-  // describe("After Creation", () => {
-  //   let orders;
-  //   let ordersData;
-  //   beforeAll(async () => {
-  //     admin = await createNewAdmin();
-  //     user = await createNewUser();
-  //     ordersData = await createSomeOrders(TRIALS);
-  //   });
-  //   beforeEach(() => {
-  //     orders = ordersData.createdOrders;
-  //     products = ordersData.products;
-  //   });
-  //   afterAll(async () => {
-  //     await deleteAdminById(admin.id);
-  //     await deleteUserById(user.id);
-  //     await deleteAllProducts(products);
-  //     await deleteAllOrders(orders);
-  //   });
-  //   describe("Static Methods", () => {
-  //     it("findAllforUserId  returns populated  orders sorted by ascending order time", async () => {
-  //       const populatedOrders = await Order.findAllforUserId(user.id);
-  //       ensureOrdersInDescendingTime(populatedOrders);
-  //       populatedOrders.forEach((order) => {
-  //         verifyUserIdCreatedOrder(order, user.id);
-  //       });
-  //     });
-  //     it(`findByIdAndPopulateProductsDetails finds
-  //         an order with the given id with title and selling price
-  //         of ordered products calculated`, async () => {
-  //       for (let index = 0; index < orders.length; index++) {
-  //         orderId = orders[index].id;
-  //         const populatedOrder = await Order.findByIdAndPopulateProductsDetails(orderId);
-
-  //         //ensure that the ordered products have both title,sellingPrice and adminId populated
-  //         let productData;
-  //         //
-  //       }
-  //     });
-  //   });
-  // });
+  describe("After Creation", () => {
+    let orders;
+    let ordersData;
+    beforeAll(async () => {
+      admin = await createNewAdmin();
+      user = await createNewUser();
+    });
+    beforeEach(async () => {
+      ordersData = await createSomeOrders(TRIALS);
+      orders = ordersData.createdOrders;
+      products = ordersData.products;
+    });
+    afterEach(async () => {
+      await clearTheDb();
+    });
+    describe("Static Methods", () => {
+      it("findAllforUserId  returns populated  orders sorted by ascending order time", async () => {
+        const populatedOrders = await Order.findAllforUserId(user.id);
+        ensureOrdersAreInDescendingTime(populatedOrders);
+        populatedOrders.forEach(order => {
+          verifyUserIdCreatedOrder(order, user.id);
+          verifyOrderedProductsHaveProperties(order.orderedProducts, [
+            "title",
+            "sellingPrice",
+          ]);
+        });
+      });
+      it(`findByIdAndPopulateProductsDetails finds
+          an order with the given id with title and selling price
+          of ordered products calculated`, async () => {
+        for (let index = 0; index < orders.length; index++) {
+          orderId = orders[index].id;
+          const populatedOrder = await Order.findByIdAndPopulateProductsDetails(
+            orderId
+          );
+          verifyUserIdCreatedOrder(populatedOrder, user.id);
+          verifyOrderedProductsHaveProperties(populatedOrder.orderedProducts, [
+            "title",
+            "sellingPrice",
+            "adminId",
+          ]);
+        }
+      });
+    });
+  });
 });
 
-const deleteAllOrders = async (orders = []) => {
-  for (let index = 0; index < orders.length; index++) {
-    const id = orders[index].id;
-    await Order.findByIdAndDelete(id);
-  }
-  orders = [];
+const ensureOrderedProductsHasTheRightData = (
+  orderedProducts,
+  expectedOrderedProducts
+) => {
+  orderedProducts.forEach((product, index) => {
+    const expectedProduct = expectedOrderedProducts[index];
+    verifyIDsAreEqual(product.productData, expectedProduct.productData);
+    verifyEqual(product.quantity, expectedProduct.quantity);
+  });
 };
 
-const createOrderData = async () => {
-  const products = await createTestProducts(admin.id, 4);
+const createOrderData = async (products = []) => {
   const testOrderedProducts = [
     {
       productData: products[0].id,
@@ -136,41 +127,44 @@ const createOrderData = async () => {
     orderedProducts: testOrderedProducts,
     total,
   };
-  return {
-    order,
-    products,
-  };
+  return order;
 };
 
-const createSomeOrders = async (TRIALS) => {
+const createSomeOrders = async TRIALS => {
   const createdOrders = [];
   let order;
-  let products;
-  for (let index = 0; index < TRIALS; index++) {
-    const orderData = await createOrderData();
-    order = orderData.order;
-    products = orderData.products;
-    createdOrders[index] = await new Order(order).save();
-  }
+  const products = await createTestProducts(admin.id, 4);
+
+  order = await createOrderData(products);
+
+  order = await new Order(order).save();
+  createdOrders.push(order);
   return {createdOrders, products};
 };
 
 const verifyUserIdCreatedOrder = (order, userId) => {
-  expect(order.userId.toString()).toEqual(user.id.toString());
+  verifyIDsAreEqual(order.userId, user.id);
 };
-const ensureOrdersInDescendingTime = (orders) => {
-  orders.forEach((orders, index) => {
-    if (index < populatedOrders.length - 1) {
+const ensureOrdersAreInDescendingTime = orders => {
+  orders.forEach((order, index) => {
+    if (index < orders.length - 1) {
       expect(order.time >= orders[index + 1].time).toBeTruthy();
     }
   });
 };
 
-const verifyOrderedProductsHasProperties = (orderedProducts, properties = []) => {
+const verifyOrderedProductsHaveProperties = (
+  orderedProducts,
+  properties = []
+) => {
   orderedProducts.forEach((product, index) => {
-    productData = product.productData;
+    const productData = product.productData;
     for (const element of properties) {
-      expect(productData[element]).toEqual(products[index][element]);
+      if (element === "adminId") {
+        verifyIDsAreEqual(productData[element], products[index][element]);
+        continue;
+      }
+      verifyEqual(products[index][element], productData[element]);
     }
   });
 };

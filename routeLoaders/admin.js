@@ -1,6 +1,6 @@
-const adminRoutes = require("../routes/admin/index");
+const {admin} = require("../routes");
 const path = "/admin";
 
-module.exports = (app) => {
-  app.use(path, adminRoutes);
+module.exports = app => {
+  app.use(path, admin);
 };

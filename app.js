@@ -2,26 +2,9 @@ const express = require("express");
 const path = require("path");
 require("dotenv").config();
 
-const {
-  appendUser,
-  connectToBb,
-  csurf,
-  errorHandler,
-  flash,
-  fileUploader,
-  notFound,
-  session,
-  setResLocals,
-  urlEncoded,
-} = require("./appMiddlewares/index");
+const middlewares = require("./appMiddlewares/index");
 
-const {
-  account,
-  admin,
-  auth,
-  editting,
-  shop,
-} = require("./routeLoaders/index");
+const routes = require("./routeLoaders/index");
 
 const app = express();
 
@@ -30,26 +13,20 @@ app.set("views", "views");
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/Data", express.static(path.join(__dirname, "Data")));
 
-urlEncoded(app);
-fileUploader(app);
-session(app);
-csurf(app);
-flash(app);
-appendUser(app);
-setResLocals(app);
+for (const key in middlewares) {
+  if (middlewares.hasOwnProperty(key)) {
+    //the two middleware are supposed to be inserted after the routes have been loaded so we skip them
+    if (key === " errorHandler" || key === "notFound") continue;
+    middlewares[key](app);
+  }
+}
 
 //load routes
-auth(app);
-admin(app);
-editting(app);
-shop(app);
-account(app);
-notFound(app);
-errorHandler(app);
-
-//connect to db.
-connectToBb(app);
-
-//--runInBand --detectOpenHandles
-
+for (const key in routes) {
+  if (routes.hasOwnProperty(key)) {
+    routes[key](app);
+  }
+}
+middlewares.notFound(app);
+middlewares.errorHandler(app);
 module.exports = app;

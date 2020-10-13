@@ -1,5 +1,7 @@
+const {Renderer} = require("../../util");
+
 const BaseAuth = require("./base");
-const { User } = require("../../database/interfaces/auth");
+const {User} = require("../../database/interfaces/auth");
 
 const changeDetailsPath = "/edit/user/change-details";
 const changePasswordPath = "/edit/user/change-password";
@@ -19,13 +21,16 @@ class UserAuth extends BaseAuth {
     try {
       const userId = req.session.user._id;
       const user = await User.findById(userId);
-      res.render("dashboards/user", {
-        pageTitle: "Your dashboard",
-        path: "/board",
-        postPath: "/update-details",
-        userData: user,
-        navigationData,
-      });
+
+      return new Renderer(res)
+        .templatePath("dashboards/user")
+        .pageTitle("Your dashboard")
+        .activePath("/dashboard")
+        .options({
+          user,
+          navigationData,
+        })
+        .render();
     } catch (error) {
       next(error);
     }

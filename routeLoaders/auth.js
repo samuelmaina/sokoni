@@ -1,6 +1,6 @@
-const authRoutes = require("../routes/auth/index");
+const {auth} = require("../routes");
 const path = "/auth";
 
-module.exports = (app) => {
-  app.use(path, authRoutes);
+module.exports = app => {
+  app.use(path, auth);
 };

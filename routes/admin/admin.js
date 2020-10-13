@@ -1,7 +1,12 @@
 const express = require("express");
 
-const validators = require("../../util/validators/product");
-const controller = require("../../controllers/admin");
+const fileUploader = require("../../appMiddlewares/fileUploader");
+
+let utils = require("../../util");
+const {product} = utils.validators;
+const validators = product;
+const {admin} = require("../../controllers");
+const controller = admin;
 
 const router = express.Router();
 
@@ -10,7 +15,7 @@ router
   .get(controller.getAddProduct)
   .post(validators.productInfoValidation, controller.postAddProduct);
 
-router.get("/edit-product/:productId", controller.getEditProduct);
+router.get("/edit-product/:id", controller.getEditProduct);
 router.post(
   "/edit-product",
   validators.productInfoValidation,
@@ -18,7 +23,7 @@ router.post(
 );
 
 router.get("/products", controller.getProducts);
-router.delete("/product/:productId", controller.deleteProduct);
+router.delete("/product/:id", controller.deleteProduct);
 router.get("/get-admin-sales", controller.getAdminSales);
 
 module.exports = router;

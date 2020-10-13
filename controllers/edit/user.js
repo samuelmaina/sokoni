@@ -1,53 +1,58 @@
-const errorHandler = require("../../util/errorHandler");
-const validationErrorsIn = require("../../util/validationResults");
+const {Renderer, Flash, validationResults} = require("../../util");
 
 const DASHBOARD_PATH = "/auth/user/dashboard";
 
 exports.getEditDetails = (req, res, next) => {
   try {
-    return res.render("auth/edit", {
-      pageTitle: "Edit Your Details",
-      path: "edit/details",
-      postPath: "edit/user/change-details",
-      previousData: req.user,
-    });
+    const {name, email} = req.user;
+    return new Renderer(res)
+      .templatePath("auth/edit")
+      .pageTitle("Edit Details")
+      .pathToPost("edit/user/change-details")
+      .appendPreviousData({name, email})
+      .render();
   } catch (error) {
-    errorHandler(error, next);
+    next(error);
   }
 };
 exports.postEditDetails = async (req, res, next) => {
   try {
-    const validationErrors = validationErrorsIn(req);
+    const flash = new Flash(req, res);
+    const validationErrors = validationResults(req);
     if (validationErrors) {
-      req.flash("previous-data", req.user);
-      req.flash("error", validationErrors);
-      return res.redirect("change-details");
+      return flash
+        .appendError(validationErrors)
+        .appendPreviousData(req.body)
+        .redirect("change-details");
     }
     await req.user.updateNameAndEmail(req.body);
-    req.flash("info", `Details successfully updated`);
-    res.redirect(DASHBOARD_PATH);
+    flash.appendInfo(`Details successfully updated`).redirect(DASHBOARD_PATH);
   } catch (error) {
-    errorHandler(error, next);
+    next(error);
   }
 };
 
 exports.getChangePassword = (req, res, next) => {
-  res.render("auth/newPassword", {
-    pageTitle: "Change Password",
-    path: "edit/details",
-    postPath: "change-password",
-    token: null,
-    Id: null,
-  });
+  return new Renderer(res)
+    .templatePath("auth/newPassword")
+    .pageTitle("Change Password")
+    .options({
+      token: null,
+      Id: null,
+    })
+    .pathToPost("/edit/user/change-password")
+    .render();
 };
 exports.postChangePassword = async (req, res, next) => {
   try {
-    const { password } = req.body;
-    const validationErrors = validationErrorsIn(req);
+    const flash = new Flash(req, res);
+    const {password} = req.body;
+    const validationErrors = validationResults(req);
     if (validationErrors) {
-      req.flash("error", validationErrors);
-      req.flash("previous-data", req.body);
-      return res.redirect("change-password");
+      return flash
+        .appendPreviousData(req.body)
+        .appendError(validationErrors)
+        .redirect("/edit/user/change-password");
     }
 
     //check if the submitted password is the same as the one stored in the database.if some,
@@ -57,14 +62,14 @@ exports.postChangePassword = async (req, res, next) => {
     );
     if (submittedSamePassword) {
       const errorMessage = `Password already in use.Please select another one`;
-      req.flash("previous-data", req.body);
-      req.flash("error", errorMessage);
-      return res.redirect("change-password");
+      return flash
+        .appendError(errorMessage)
+        .appendPreviousData(req.body)
+        .redirect("change-password");
     }
     await req.user.resetPasswordTo(password);
-    req.flash("info", `Password changed successfully`);
-    res.redirect(DASHBOARD_PATH);
+    flash.appendInfo(`Password changed successfully`).redirect(DASHBOARD_PATH);
   } catch (error) {
-    errorHandler(error, next);
+    next(error);
   }
 };
