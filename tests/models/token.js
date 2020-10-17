@@ -3,9 +3,9 @@ const {
   verifyEqual,
   verifyTruthy,
   verifyNull,
-} = require("../utils/testUtils");
+} = require("../utils/testsUtils");
 
-const {connectToDb, closeConnectionToBd} = require("../config");
+const {connectToDb} = require("../config");
 const {createNewUser, clearTheDb} = require("../utils/generalUtils");
 
 const {TokenGenerator} = require("../../database/models");
@@ -14,9 +14,6 @@ const VALIDITY_PERIOS_IN_MS = 1 * 60 * 60 * 1000;
 describe("Token Generator", () => {
   beforeAll(async () => {
     await connectToDb();
-  });
-  afterAll(async () => {
-    await closeConnectionToBd();
   });
   afterEach(async () => {
     await clearTheDb();

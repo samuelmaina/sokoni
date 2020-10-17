@@ -129,7 +129,7 @@ exports.getProducts = async (req, res, next) => {
     } = await ProductForAdmin.findPageProductsForAdminId(currentAdminId, page);
     renderer
       .templatePath("admin/products")
-      .pageTitle("Admin Products")
+      .pageTitle("Your Products")
       .activePath("/admin/products")
       .activePath("/products")
       .options({

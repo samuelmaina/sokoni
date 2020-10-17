@@ -1,4 +1,5 @@
 const bcrypt = require("bcrypt");
+const assert = require("assert");
 const {User, Admin, Product} = require("../../database/models");
 
 const Models = require("../../database/models");
@@ -7,13 +8,18 @@ exports.clearTheDb = async () => {
   try {
     for (const ModelName in Models) {
       const Model = Models[ModelName];
-      let count = await Model.find();
-      count = count.length;
+      const getNoOfDocs = async () => {
+        return await Model.find().countDocuments();
+      };
+      let count = await getNoOfDocs();
       if (count > 0) {
         await this.clearDataFromAModel(Model);
       }
+      count = await getNoOfDocs();
+      assert.equal(count, 0, "deletion not complete");
     }
   } catch (error) {
+    console.log(error);
     throw new Error(error);
   }
 };
@@ -52,17 +58,27 @@ const PRODUCT_PROPERTIES = {
 };
 
 exports.clearDataFromAModel = async Model => {
-  const documents = await Model.find();
-  documents.forEach(async document => {
-    await Model.findByIdAndDelete(document.id);
-  });
+  const getDocsInModel = () => {
+    return Model.find();
+  };
+  const documents = await getDocsInModel();
+  for (let index = 0; index < documents.length; index++) {
+    await Model.findByIdAndDelete(documents[index]._id);
+  }
+
+  const documentsAfterDeletion = await getDocsInModel();
+  assert.equal(
+    documentsAfterDeletion.length,
+    0,
+    "the model contains some data"
+  );
 };
 
 exports.createNewAdmin = async () => {
   let admin = new Admin({
     name: "Samuel Maina",
     email: "samuelmayna@gmail.com",
-    password: "Smainachez88(??",
+    password: await bcrypt.hash("Smainachez88(??", 12),
   });
   admin = await admin.save();
   return admin;
@@ -100,7 +116,7 @@ exports.createNewUser = async () => {
   let user = new User({
     name: "Samuel Maina",
     email: "samuelmayna@gmail.com",
-    password: "Smainachez88(??",
+    password: await bcrypt.hash("Smainachez88(??", 12),
   });
   user = await user.save();
   return user;
@@ -114,7 +130,8 @@ exports.deleteAllProducts = async products => {
   for (let index = 0; index < products.length; index++) {
     await Product.findByIdAndDelete(products[index].id);
   }
-  products = [];
+  const productCount = await Product.find().countDocuments();
+  assert.equal(productCount, 0, "deletion not complete");
 };
 
 exports.createTestProducts = async (adminId, quantity = TRIALS) => {

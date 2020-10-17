@@ -13,10 +13,10 @@ const AdminSales = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Product",
       },
-      productSales: [
+      sales: [
         {
-          quantity: { type: Number },
-          soldAt: { type: Date },
+          quantity: {type: Number},
+          soldAt: {type: Date},
         },
       ],
     },
@@ -31,7 +31,7 @@ AdminSales.statics.createNew = function (adminId) {
 };
 
 AdminSales.statics.findOneForAdminId = function (adminId) {
-  return this.findOne({ adminId }).populate(
+  return this.findOne({adminId}).populate(
     "products.productData",
     "title sellingPrice buyingPrice imageUrl"
   );
@@ -49,7 +49,34 @@ AdminSales.statics.getSalesForAdminIdWithinAnInterval = async function (
     toTIme
   );
 
-  return productsToDisplay;
+  return calculatProductsSalesData(productsToDisplay);
+};
+
+const calculatProductsSalesData = products => {
+  let productsAndTheirProfits = [];
+  products.forEach(product => {
+    let profit = 0.0;
+    let totalSales = 0.0;
+    product.sales.forEach(sale => {
+      const quantity = sale.quantity;
+      const sellingPrice = product.productData.sellingPrice;
+      const buyingPrice = product.productData.buyingPrice;
+      totalSales += quantity * sellingPrice;
+      profit += quantity * (sellingPrice - buyingPrice);
+    });
+    profit = profit.toFixed(2);
+    totalSales = totalSales.toFixed(2);
+    productsAndTheirProfits.push({
+      title: product.productData.title,
+      profit: profit,
+      totalSales: totalSales,
+      imageUrl: product.productData.imageUrl,
+    });
+  });
+  productsAndTheirProfits.sort((el1, el2) => {
+    return el1.profit <= el2.profit;
+  });
+  return productsAndTheirProfits;
 };
 AdminSales.statics.deleteById = function (Id) {
   return this.findByIdAndDelete(Id);
@@ -61,12 +88,12 @@ AdminSales.methods.findSalesWithinAnInterval = function (
   const soldProducts = this.getSoldProducts();
   const productsToDisplay = [];
   for (const product of soldProducts) {
-    let salesMeetingCriterion = product.productSales.filter((sale) => {
+    let salesMeetingCriterion = product.sales.filter(sale => {
       return sale.soldAt >= fromTime && sale.soldAt <= toTIme;
     });
     productsToDisplay.push({
       productData: product.productData,
-      productSales: salesMeetingCriterion,
+      sales: salesMeetingCriterion,
     });
   }
   return productsToDisplay;
@@ -74,32 +101,29 @@ AdminSales.methods.findSalesWithinAnInterval = function (
 
 AdminSales.methods.addOrderedProduct = async function (saleDetails) {
   const soldProducts = this.products;
-  const productIndex = soldProducts.findIndex((product) => {
+  const productIndex = soldProducts.findIndex(product => {
     return (
       product.productData._id.toString() === saleDetails.productId.toString()
     );
   });
   const updatedProducts = [...soldProducts];
   if (productIndex >= 0) {
-    updatedProducts[productIndex].productSales.push({
+    updatedProducts[productIndex].sales.push({
       quantity: saleDetails.quantity,
-      soldAt: saleDetails.soldAt,
+      soldAt: Date.now(),
     });
   } else {
     updatedProducts.push({
       productData: saleDetails.productId,
-      productSales: [
+      sales: [
         {
           quantity: saleDetails.quantity,
-          soldAt: saleDetails.soldAt,
+          soldAt: Date.now(),
         },
       ],
     });
   }
-  const updatedSoldProducts = {
-    products: updatedProducts,
-  };
-  this.soldProducts = updatedSoldProducts;
+  this.products = updatedProducts;
   return this.save();
 };
 

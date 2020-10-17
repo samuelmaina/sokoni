@@ -1,4 +1,4 @@
-module.exports = (app) => {
+module.exports = app => {
   const errorHandlerMiddleware = (error, req, res, next) => {
     res.locals.csrfToken = req.csrfToken();
     res.locals.isUserLoggedIn = req.session.isUserLoggedIn;
@@ -12,6 +12,7 @@ module.exports = (app) => {
       path: "/500",
       errorMessage: error,
     });
+    next();
   };
   app.use(errorHandlerMiddleware);
 };

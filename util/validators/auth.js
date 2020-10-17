@@ -18,7 +18,6 @@ const passwordValidator = body(
   "The password should be 8 or more character and should be must contain symbols"
 )
   .isLength({min: 8})
-  .not()
   .isAlphanumeric();
 
 const confirmPasswordValidator = body("confirmPassword").custom(

@@ -5,7 +5,7 @@ const {
   verifyDeeplyEqual,
   verifyTruthy,
   verifyFalsy,
-} = require("../../utils/testUtils");
+} = require("../../utils/testsUtils");
 
 const {connectToDb, closeConnectionToBd} = require("../../config");
 const {
@@ -36,9 +36,6 @@ const {
 describe("--Product ", () => {
   beforeAll(async () => {
     await connectToDb();
-  });
-  afterAll(async () => {
-    await closeConnectionToBd();
   });
   it("createNew create a complete product with sellingPrice added to it", async () => {
     const productData = getRandomProductData();
@@ -73,11 +70,15 @@ describe("--Product ", () => {
       });
       it(`getProductsWhoseQuantityIsGreaterThanZero get present products and the pagination Data for a page`, async () => {
         const page = 2;
-        const renderData = await Product.getProductsWhoseQuantityIsGreaterThanZero(page);
+        const renderData = await Product.getProductsWhoseQuantityIsGreaterThanZero(
+          page
+        );
         const paginationData = await calculatePaginationData(page);
         const renderedProducts = renderData.products;
         //ensure that renderedProducts are within the limits.
-        ensureThatTheRenderProductsAreWithinMAX_PRODUCT_PER_PAGE(renderedProducts);
+        ensureThatTheRenderProductsAreWithinMAX_PRODUCT_PER_PAGE(
+          renderedProducts
+        );
         //ensure all rendered products have positive quantity.
         ensureAllRenderedProductsHavePositiveQuantity(renderedProducts);
         verifyDeeplyEqual(renderData.paginationData, paginationData);
@@ -86,7 +87,10 @@ describe("--Product ", () => {
       it(`findPageProductsForAdminId get number of products(with positive quantity) and the pagination Data for an admin for  a page`, async () => {
         const adminId = admin.id;
         const page = 2;
-        const renderData = await Product.findPageProductsForAdminId(adminId, page);
+        const renderData = await Product.findPageProductsForAdminId(
+          adminId,
+          page
+        );
         //we present everything that is created by the current admin even if the quantity is less than
         //zero.
         const createdByPresentAdminId = {adminId};
@@ -103,7 +107,9 @@ describe("--Product ", () => {
           verifyIDs(renderedProducts[index].adminId, adminId);
         }
         ensureAllRenderedProductsHavePositiveQuantity(renderedProducts);
-        ensureThatTheRenderProductsAreWithinMAX_PRODUCT_PER_PAGE(renderedProducts);
+        ensureThatTheRenderProductsAreWithinMAX_PRODUCT_PER_PAGE(
+          renderedProducts
+        );
         verifyDeeplyEqual(renderData.paginationData, paginationData);
       });
 
@@ -117,10 +123,10 @@ describe("--Product ", () => {
         const expectedCategories = ["category 1", "category 2", "category 3"];
         const page = 1;
         await feedProductsWithTestCategories(expectedCategories);
-        expectedCategories.forEach(async (category) => {
+        expectedCategories.forEach(async category => {
           const renderData = await Product.findCategoryProducts(category, page);
           const {paginationData, products} = renderData;
-          products.forEach((element) => {
+          products.forEach(element => {
             verifyDeeplyEqual(element.category, category);
           });
           ensureAllRenderedProductsHavePositiveQuantity(products);

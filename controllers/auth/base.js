@@ -72,7 +72,6 @@ class Auth {
     try {
       const flash = new Flash(req, res).appendPreviousData(req.body);
       const {email, password} = req.body;
-
       const validationErrors = validationResults(req);
       if (validationErrors) {
         return flash.appendError(validationErrors).redirect(this.routes.logIn);
@@ -130,21 +129,16 @@ class Auth {
 
   async postReset(req, res, next) {
     try {
-      const flash = new Flash(req, res);
+      const flash = new Flash(req, res).appendPreviousData(req.body);
       const email = req.body.email;
-      const previousData = req.body;
       const validationErrors = validationResults(req);
       if (validationErrors) {
-        return flash
-          .appendError(validationErrors)
-          .appendPreviousData(previousData)
-          .redirect(this.routes.reset);
+        return flash.appendError(validationErrors).redirect(this.routes.reset);
       }
       const document = await this.Model.findByEmail(email);
       if (!document) {
         return flash
           .appendError(` No ${this.person} by that email exits`)
-          .appendPreviousData(previousData)
           .redirect(this.routes.reset);
       }
       const tokenDetails = await TokenGenerator.createNewForId(document.id);
@@ -163,7 +157,7 @@ class Auth {
       // });
       flash
         .appendInfo(
-          "A link has been sent into your email.Click on it to reset password"
+          "A link has been sent to your email. Please click the link to reset password."
         )
         .redirect(this.routes.logIn);
     } catch (error) {
@@ -199,7 +193,6 @@ class Auth {
     try {
       const {password, token} = req.body;
 
-      const flash = new Flash(req, res).appendPreviousData(req.body);
       const renderer = new Renderer(res)
         .templatePath("auth/newPassword")
         .pageTitle("New Password")
@@ -216,7 +209,6 @@ class Auth {
       }
 
       const tokenDetails = await TokenGenerator.findTokenDetails(token);
-      console.log(tokenDetails.getRequesterId());
       const document = await this.Model.findById(tokenDetails.getRequesterId());
 
       let resettingToSamePassword;

@@ -1,3 +1,5 @@
+const {AdminSales} = require("../database/models");
+
 const path = require("path");
 
 const {Flash, Renderer, pipeInvoicePdf} = require("../util");
@@ -41,7 +43,7 @@ exports.getIndex = async (req, res, next) => {
     );
     new Renderer(res)
       .templatePath("shop/index")
-      .pageTitle("Shop")
+      .pageTitle("SM Online Shop")
       .activePath("/")
       .options({
         prods: products,
@@ -61,7 +63,7 @@ exports.getProducts = async (req, res, next) => {
     );
     new Renderer(res)
       .templatePath("shop/product-list")
-      .pageTitle("All Products")
+      .pageTitle("Products")
       .activePath("/products")
       .options({
         paginationData,
@@ -265,7 +267,7 @@ const addToAdminSales = async (orderedProducts, next) => {
   try {
     for (const product of orderedProducts) {
       const productDetails = product.productData;
-      let adminSales = await AdminSale.findSalesForAdminId(
+      let adminSales = await AdminSales.findOneForAdminId(
         productDetails.adminId
       );
 
@@ -275,7 +277,6 @@ const addToAdminSales = async (orderedProducts, next) => {
       const saleDetails = {
         quantity: product.quantity,
         productId: productDetails._id,
-        soldAt: Date.now(),
       };
       await adminSales.addOrderedProduct(saleDetails);
     }

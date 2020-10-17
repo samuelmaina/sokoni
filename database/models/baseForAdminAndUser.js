@@ -34,7 +34,7 @@ const Base = new Schema(
   baseOptions
 );
 
-const hashPassword = (password) => {
+const hashPassword = password => {
   return bcrypt.hash(password, 12);
 };
 
@@ -53,7 +53,7 @@ Base.statics.createNew = async function (memberData) {
 };
 
 Base.statics.findByEmail = function (email) {
-  return this.findOne({ email });
+  return this.findOne({email});
 };
 Base.statics.findOneWithCredentials = async function (email, password) {
   const member = await this.findByEmail(email);

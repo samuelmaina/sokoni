@@ -1,5 +1,6 @@
 const session = require("express-session");
 const MongoDBSession = require("connect-mongodb-session")(session);
+require("dotenv").config();
 
 /**
  * @param {number} validityPeriodInMs- the Time limit in which the
@@ -10,9 +11,10 @@ const validityPeriodInMs = 5 * 60 * 1000;
  * @param {document} SessionCOllection- the collection name
  * for the session in the database
  */
+
 const dbStorage = "sessions";
 const store = new MongoDBSession({
-  uri: process.env.MONGO_URI,
+  uri: process.env.SESSION_STORE,
   collection: dbStorage,
 });
 
@@ -25,8 +27,8 @@ module.exports = app => {
   app.use(
     session({
       secret: process.env.SESSION_SECRET,
-      resave: false,
-      saveUninitialized: true,
+      resave: true,
+      saveUninitialized: false,
       store: store,
       cookie: {
         maxAge: validityPeriodInMs,

@@ -53,12 +53,19 @@ class Renderer {
     this._info = info;
     return this;
   }
+  /**
+   *
+   * @param {*} previousData -an object.
+   */
   appendPreviousData(previousData = {}) {
     this._previousData = previousData;
     return this;
   }
 
-  //the res data that will be rendered to the view engine
+  /**
+   *
+   * @param {object} options -res data that will be rendered in res.body
+   */
   options(options = {}) {
     for (const key in options) {
       if (options.hasOwnProperty(key)) {

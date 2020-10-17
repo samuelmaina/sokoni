@@ -5,7 +5,7 @@ const {
   verifyFalsy,
   verifyEqual,
   verifyIDsAreEqual,
-} = require("../../utils/testUtils");
+} = require("../../utils/testsUtils");
 const {
   createNewUser,
   createTestProducts,
@@ -29,16 +29,15 @@ describe("----User Database", () => {
   beforeAll(async () => {
     await connectToDb();
   });
-  afterAll(async () => {
-    await closeConnectionToBd();
-  });
-
   baseTest(User);
   describe(" Purchase Tests", () => {
     beforeAll(async () => {
       user = await createNewUser();
       admin = await createNewAdmin();
       products = await createTestProducts(admin.id, TRIALS);
+      userUtils.setProducts(products);
+      userUtils.setUser(user);
+      userUtils.setTrials(TRIALS);
     });
     afterAll(async () => {
       await clearTheDb();
@@ -110,7 +109,7 @@ describe("----User Database", () => {
     });
     it("findCartProductsAndTheirTotalForId finds carts products and their totals for", async () => {
       await userUtils.addTRIALProductsToCart();
-      let expectedTotal = userUtis.getTotals();
+      let expectedTotal = userUtils.getTotals();
       const {
         cartProducts,
         total,

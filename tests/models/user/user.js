@@ -1,5 +1,16 @@
 let TRIALS;
+let products = [];
 let user;
+
+exports.setUser = testUser => {
+  user = testUser;
+};
+exports.setProducts = (testProducts = []) => {
+  products = testProducts;
+};
+exports.setTrials = trials => {
+  TRIALS = trials;
+};
 
 exports.resetCart = async () => {
   user.cart = [];
@@ -21,7 +32,7 @@ exports.addTRIALProductsToCart = async () => {
 };
 const addProductToCart = async (productId, quantity) => {
   const userCart = user.cart;
-  const productIndex = userCart.findIndex((product) => {
+  const productIndex = userCart.findIndex(product => {
     return product.productData.toString() === productId.toString();
   });
   const data = {
@@ -37,9 +48,9 @@ const addProductToCart = async (productId, quantity) => {
   user = await user.save();
 };
 
-exports.productFound = (productId) => {
+exports.productFound = productId => {
   const userCart = user.cart;
-  const productIndex = userCart.findIndex((product) => {
+  const productIndex = userCart.findIndex(product => {
     return product.productData.toString() === productId.toString();
   });
   return productIndex >= 0;

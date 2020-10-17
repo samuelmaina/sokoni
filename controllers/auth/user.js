@@ -24,7 +24,7 @@ class UserAuth extends BaseAuth {
 
       return new Renderer(res)
         .templatePath("dashboards/user")
-        .pageTitle("Your dashboard")
+        .pageTitle("Dashboard")
         .activePath("/dashboard")
         .options({
           user,

@@ -1,11 +1,11 @@
-const {connectToDb, closeConnectionToBd} = require("../config");
+const {connectToDb} = require("../config");
 const {
   createNewAdmin,
   createTestProducts,
   createNewUser,
   clearTheDb,
 } = require("../utils/generalUtils");
-const {verifyIDsAreEqual, verifyEqual} = require("../utils/testsUtils.test");
+const {verifyIDsAreEqual, verifyEqual} = require("../utils/testsUtils");
 
 const {Order} = require("../../database/models");
 
@@ -22,9 +22,6 @@ describe("Order ", () => {
   });
   afterEach(async () => {
     await clearTheDb();
-  });
-  afterAll(async () => {
-    await closeConnectionToBd();
   });
   it("createNew creates a new Order", async () => {
     const products = await createTestProducts(admin.id, 4);

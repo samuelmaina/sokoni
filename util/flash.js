@@ -25,18 +25,12 @@ class Flash {
   }
 
   /**
-   *
-   * @param {String} path
    * You can not chain anything else on redirect after calling it.
+   * @param {String} path
    */
   redirect(path) {
-    const {_res, _req} = this;
-    _req.session.save(err => {
-      if (err) {
-        throw new Error(err);
-      }
-      _res.redirect(path);
-    });
+    const {_res} = this;
+    _res.redirect(path);
   }
 }
 module.exports = Flash;

@@ -1,4 +1,4 @@
-const { AdminSales } = require("../models/index");
+const {AdminSales} = require("../models/index");
 class AdminSalesForAdmin {
   constructor(Model) {
     this.Model = Model;
@@ -24,7 +24,7 @@ class AdminSalesForAdmin {
    * @param {Number} adminId
    */
   deleteSalesForAdminId(adminId) {
-    return this.Model.findOneAndRemove({ adminId });
+    return this.Model.findOneAndRemove({adminId});
   }
   /**
    *Finds all the profits and losses for an admin with the provided Id within a period of t
@@ -36,37 +36,11 @@ class AdminSalesForAdmin {
    * for the time range
    */
   async salesWithinAnIntervalForAdminId(adminId, fromTime, ToTime) {
-    const productsAndTheirProfits = [];
-    const adminSales = await this.getSalesForAdminIdWithinAnInterval(
+    return await this.getSalesForAdminIdWithinAnInterval(
       adminId,
       fromTime,
       ToTime
     );
-    if (adminSales) {
-      adminSales.forEach((product) => {
-        let profit = 0.0;
-        let totalSales = 0.0;
-        product.productSales.forEach((sale) => {
-          const quantity = sale.quantity;
-          const sellingPrice = product.productData.sellingPrice;
-          const buyingPrice = product.productData.buyingPrice;
-          totalSales += quantity * sellingPrice;
-          profit += quantity * (sellingPrice - buyingPrice);
-        });
-        profit = profit.toFixed(2);
-        totalSales = totalSales.toFixed(2);
-        productsAndTheirProfits.push({
-          title: product.productData.title,
-          profit: profit,
-          totalSales: totalSales,
-          imageUrl: product.productData.imageUrl,
-        });
-      });
-      productsAndTheirProfits.sort((el1, el2) => {
-        return el1.profit <= el2.profit;
-      });
-      return productsAndTheirProfits;
-    } else return [];
   }
 }
 module.exports = new AdminSalesForAdmin(AdminSales);

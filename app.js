@@ -1,6 +1,5 @@
 const express = require("express");
 const path = require("path");
-require("dotenv").config();
 
 const middlewares = require("./appMiddlewares/index");
 
@@ -20,13 +19,14 @@ for (const key in middlewares) {
     middlewares[key](app);
   }
 }
-
 //load routes
 for (const key in routes) {
   if (routes.hasOwnProperty(key)) {
     routes[key](app);
   }
 }
+
 middlewares.notFound(app);
 middlewares.errorHandler(app);
+
 module.exports = app;

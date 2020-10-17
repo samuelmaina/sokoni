@@ -1,18 +1,12 @@
 const bcrypt = require("bcrypt");
-
 const {clearTheDb} = require("../utils/generalUtils");
-const {
-  verifyEqual,
-  verifyIDsAreEqual,
-  verifyTruthy,
-} = require("../utils/testUtils");
+const {verifyEqual, verifyTruthy} = require("../utils/testsUtils");
 
 const TRIALS = 10;
-
-const MAX_WAITING_TIME_IN_MS = 50000;
-
+let count = 0;
+const MAX_WAITING_TIME_IN_MS = 100000;
 const baseAuthTest = Model => {
-  afterEach(async () => {
+  afterAll(async () => {
     await clearTheDb();
   });
   it("createNew creates a new document", async () => {
@@ -52,6 +46,7 @@ const baseAuthTest = Model => {
         const emailDoc = await Model.findByEmail(searchEmail);
         verifyEqual(emailDoc.email, searchEmail);
       });
+
       it("findOneWithCredentials finds a document matching the email and password", async () => {
         const {password, email} = searchData[randomIndex()];
         const verifiedDoc = await Model.findOneWithCredentials(email, password);
@@ -67,7 +62,6 @@ const baseAuthTest = Model => {
         //hashing is computation intensive.So we will use one hashedPassword for all the test..
         hashedPassword = await hashPassword(password);
       });
-
       beforeEach(async () => {
         document = await createOneDocument(hashedPassword);
       });

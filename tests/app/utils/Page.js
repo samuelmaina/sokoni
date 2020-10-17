@@ -1,4 +1,6 @@
 const {By} = require("selenium-webdriver");
+const {getNewDriverInstance} = require("../config");
+const fs = require("fs");
 class Page {
   constructor(driver) {
     this.driver = driver;
@@ -12,11 +14,19 @@ class Page {
   }
   async clickById(id) {
     try {
-      await this.driver.findElement(By.id(id)).click();
+      await this.driver.findElement(By.css(`#${id}`)).click();
     } catch (error) {
       throw new Error(error);
     }
   }
+  async clickLink(linkText) {
+    try {
+      await this.driver.findElement(By.linkText(linkText)).click();
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   async enterDataByName(name, data) {
     try {
       await this.driver.findElement(By.name(name)).sendKeys(data);
@@ -26,10 +36,7 @@ class Page {
   }
   async extractTextByClassName(className) {
     try {
-      const data = await this.driver
-        .findElement(By.className(className))
-        .getText();
-      return data;
+      return await this.driver.findElement(By.className(className)).getText();
     } catch (error) {
       throw new Error(error);
     }
@@ -43,8 +50,7 @@ class Page {
   }
   async getTitle() {
     try {
-      const title = await this.driver.getTitle();
-      return title;
+      return await this.driver.getTitle();
     } catch (error) {
       throw new Error(error);
     }
