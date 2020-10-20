@@ -1,5 +1,5 @@
 const PDFDocument = require("pdfkit");
-const {User} = require("../database/interfaces/auth");
+const {User} = require("../database/models");
 
 const shopEmail = "samuelmainaonlineshop@gmail.com";
 const shopName = "SM Online Shop.";

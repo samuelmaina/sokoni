@@ -4,52 +4,48 @@ const path = require("path");
 
 const {Flash, Renderer, pipeInvoicePdf} = require("../util");
 
-const {
-  ProductForShop,
-  UserForShop,
-  OrderForShop,
-} = require("../database/interfaces");
+const {Product, User, Order} = require("../database/models");
 
-exports.getProductPerCategory = async (req, res, next) => {
+exports.getIndex = async (req, res, next) => {
   try {
+    const categories = await Product.getPresentCategories();
     const page = +req.query.page || 1;
-    const category = req.params.category;
-    const categories = await ProductForShop.getPresentCategories();
     const {
       paginationData,
       products,
-    } = await ProductForShop.findCategoryProducts(category, page);
-    return new Renderer(res)
+    } = await Product.getProductsWhoseQuantityIsGreaterThanZero(page);
+    new Renderer(res)
       .templatePath("shop/index")
-      .pageTitle("Shop")
-      .options({
+      .pageTitle("SM Online Shop")
+      .activePath("/")
+      .appendDataToResBody({
         prods: products,
         paginationData,
         categories,
       })
-      .activePath("/")
       .render();
   } catch (error) {
     next(error);
   }
 };
-
-exports.getIndex = async (req, res, next) => {
+exports.getProductPerCategory = async (req, res, next) => {
   try {
-    const categories = await ProductForShop.getPresentCategories();
     const page = +req.query.page || 1;
-    const {paginationData, products} = await ProductForShop.findProductsForPage(
+    const category = req.params.category;
+    const categories = await Product.getPresentCategories();
+    const {paginationData, products} = await Product.findCategoryProducts(
+      category,
       page
     );
-    new Renderer(res)
+    return new Renderer(res)
       .templatePath("shop/index")
-      .pageTitle("SM Online Shop")
-      .activePath("/")
-      .options({
+      .pageTitle(`${category}`)
+      .appendDataToResBody({
         prods: products,
         paginationData,
         categories,
       })
+      .activePath("/")
       .render();
   } catch (error) {
     next(error);
@@ -58,14 +54,15 @@ exports.getIndex = async (req, res, next) => {
 exports.getProducts = async (req, res, next) => {
   try {
     const page = +req.query.page || 1;
-    const {paginationData, products} = await ProductForShop.findProductsForPage(
-      page
-    );
+    const {
+      paginationData,
+      products,
+    } = await Product.getProductsWhoseQuantityIsGreaterThanZero(page);
     new Renderer(res)
       .templatePath("shop/product-list")
       .pageTitle("Products")
       .activePath("/products")
-      .options({
+      .appendDataToResBody({
         paginationData,
         prods: products,
       })
@@ -79,7 +76,7 @@ exports.getProduct = async (req, res, next) => {
   try {
     const prodId = req.params.productId;
     const page = +req.query.page || 1;
-    const product = await ProductForShop.findById(prodId);
+    const product = await Product.findById(prodId);
     if (!product) {
       return res.redirect("/");
     }
@@ -87,7 +84,7 @@ exports.getProduct = async (req, res, next) => {
       .templatePath("shop/product-detail")
       .pageTitle(product.title)
       .activePath("/product")
-      .options({
+      .appendDataToResBody({
         product,
         currentPage: page,
       })
@@ -99,11 +96,11 @@ exports.getProduct = async (req, res, next) => {
 
 exports.getAddToCart = async (req, res, next) => {
   const {productId, page} = req.body;
-  const product = await ProductForShop.findById(productId);
+  const product = await Product.findById(productId);
   new Renderer(res)
     .templatePath("shop/add-to-cart")
     .pageTitle("Add product")
-    .options({
+    .appendDataToResBody({
       product,
       page,
     })
@@ -117,13 +114,13 @@ exports.postToCart = async (req, res, next) => {
     const renderer = new Renderer(res)
       .templatePath("shop/add-to-cart")
       .pageTitle("Add product")
-      .options({
+      .appendDataToResBody({
         page,
         previousData,
       });
 
-    const product = await ProductForShop.findById(productId);
-    renderer.options({
+    const product = await Product.findById(productId);
+    renderer.appendDataToResBody({
       product,
     });
     if (quantity < 1) {
@@ -160,17 +157,16 @@ exports.postToCart = async (req, res, next) => {
 };
 exports.getCart = async (req, res, next) => {
   try {
-    const {
-      cartProducts,
-      total,
-    } = await UserForShop.findCartProductsAndTheirTotalsForUserId(req.user._id);
+    const {cartProducts, total} = await User.findCartProductsAndTheirTotalForId(
+      req.user._id
+    );
     req.session.total = total;
     req.session.orderedProducts = cartProducts;
 
     new Renderer(res)
       .templatePath("shop/cart")
       .pageTitle("Your Cart")
-      .options({
+      .appendDataToResBody({
         products: cartProducts,
         total,
       })
@@ -186,7 +182,7 @@ exports.postCartDeleteProduct = async (req, res, next) => {
     const prodId = req.body.productId;
     const deletedQuantity = await req.user.deleteProductIdFromCart(prodId);
     res.redirect("/cart");
-    const product = await ProductForShop.findById(prodId);
+    const product = await Product.findById(prodId);
     //increase the quantity earlier deleted since the product(s) were rejected
     await product.increaseQuantityBy(deletedQuantity);
     // refund the customer
@@ -207,10 +203,12 @@ exports.createOrder = async (req, res, next) => {
       orderedProducts: orderedProducts,
       total: productTotal,
     };
-    const order = await OrderForShop.createNew(orderData);
+    const order = await Order.createNew(orderData);
     await req.user.clearCart();
     res.redirect("/orders");
-    const populatedOrder = await OrderForShop.findByIdWithDetails(order._id);
+    const populatedOrder = await Order.findByIdAndPopulateProductsDetails(
+      order._id
+    );
     await addToAdminSales(populatedOrder.orderedProducts, next);
   } catch (error) {
     next(error);
@@ -218,13 +216,13 @@ exports.createOrder = async (req, res, next) => {
 };
 exports.getOrders = async (req, res, next) => {
   try {
-    const orders = await OrderForShop.findAllForUserId(req.user._id);
+    const orders = await Order.findAllforUserId(req.user._id);
     if (orders)
       new Renderer(res)
         .templatePath("shop/orders")
         .pageTitle("Your Orders")
         .activePath("/orders")
-        .options({
+        .appendDataToResBody({
           orders,
         })
         .render();
@@ -239,7 +237,7 @@ exports.createInvoicePdf = async (req, res, next) => {
     const orderId = req.params.orderId;
     const invoiceName = "invoice-" + orderId + ".pdf";
     const invoicePath = path.join("Data", "Invoices", invoiceName);
-    const order = await OrderForShop.findByIdWithDetails(orderId);
+    const order = await Order.findByIdAndPopulateProductsDetails(orderId);
     if (!order) {
       return flash.appendError("No such order exists").redirect("/orders");
     }

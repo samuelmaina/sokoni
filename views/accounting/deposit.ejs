@@ -16,7 +16,7 @@
                     <label for="amount"> Amount</label>
                     <input type="number" name="amount" placeholder=" amount" value="<%= previousData.amount%>" />
                 </div>
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <%- include('../includes/csurf.ejs') %>
                 <input class="btn" type="submit" value="Deposit the Amount">
             </form>
         </article>

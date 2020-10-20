@@ -1,12 +1,13 @@
 const assert = require("assert");
-const {startApp, getNewDriverInstance, getApp} = require("./config");
+const {startApp, getNewDriverInstance, closeApp} = require("./config");
 const {
   createNewUserWithData,
   createNewAdminWithData,
   clearTheDb,
-  clearDataFromAModel,
 } = require("../utils/generalUtils");
 const Page = require("./utils/Auth");
+
+const {clearSessions} = require("./utils/session");
 
 const TEST_MAX_TIME = 25000;
 
@@ -15,25 +16,27 @@ const base = `http://localhost:${PORT}`;
 const homePage = `${base}/`;
 const baseAuth = `${base}/auth/`;
 let page;
+const data = {
+  name: "John Doe",
+  email: "samuelmayna@gmail.com",
+  password: "Smain68219",
+};
 describe("Ensure that all the links on the nav bar are working", () => {
   beforeAll(async () => {
-    page = new Page(getNewDriverInstance());
-    await startApp();
+    await startApp(PORT);
     await clearTheDb();
-  });
+    page = new Page(getNewDriverInstance());
+  }, TEST_MAX_TIME);
   afterAll(async () => {
     await page.close();
+    await closeApp();
   });
   it(
     "homepage",
     async () => {
-      try {
-        await page.openUrl(homePage);
-        const title = await clickLinkAndReturnNewTitle("Shop");
-        expect(title).toEqual("SM Online Shop");
-      } catch (error) {
-        throw new Error(error);
-      }
+      await page.openUrl(homePage);
+      const title = await clickLinkAndReturnNewTitle("Shop");
+      expect(title).toEqual("SM Online Shop");
     },
     TEST_MAX_TIME
   ); //so we need to assign it more time for it to complete. //this is the this is the first page to be opened.It will take longer than expected
@@ -46,6 +49,16 @@ describe("Ensure that all the links on the nav bar are working", () => {
       async () => {
         const title = await clickLinkAndReturnNewTitle("Login");
         expect(title).toEqual("User Log In");
+      },
+      TEST_MAX_TIME
+    );
+    it(
+      "reset",
+      async () => {
+        await page.openUrl(`${baseAuth}/user/log-in`);
+        await page.clickById("reset");
+        const title = await page.getTitle();
+        expect(title).toEqual("User Reset Password");
       },
       TEST_MAX_TIME
     );
@@ -78,24 +91,16 @@ describe("Ensure that all the links on the nav bar are working", () => {
     const logInUrl = `${baseAuth}/user/log-in`;
     const type = "user";
     beforeAll(async () => {
-      await login(logInUrl, type);
+      await login;
       const title = await page.getTitle();
       //when user is logged successfully the app redirects to Products.
       assert.equal(title, "Products", new Error("Unable to login the user"));
     }, TEST_MAX_TIME);
     afterAll(async () => {
-      try {
-        await clearTheDb();
-        await clickLogoutAndReturnNewTitle();
-        const title = await page.getTitle();
-        assert.equal(title, "SM Online Shop", new Error("User not logged out"));
-      } catch (error) {
-        console.log(error);
-        throw new Error(error);
-      }
-    }, TEST_MAX_TIME);
+      await clearSessions();
+      await clearTheDb();
+    });
     beforeEach(async () => {
-      //reload incase the test link fails.
       await page.openUrl(homePage);
     });
     it("Products", async () => {
@@ -155,9 +160,8 @@ describe("Ensure that all the links on the nav bar are working", () => {
       await page.openUrl(homePage);
     });
     afterAll(async () => {
+      await clearSessions();
       await clearTheDb();
-      const title = await clickLogoutAndReturnNewTitle();
-      assert.equal(title, "SM Online Shops", new Error("Admin not logged out"));
     }, TEST_MAX_TIME);
 
     it("Your Products", async () => {
@@ -182,23 +186,16 @@ const logoutAndReloginReturningTitleAfterLogout = async (logInUrl, type) => {
   const title = await clickLogoutAndReturnNewTitle();
   //login again for the next test.This won't be affected by failure of logout
   await login(logInUrl, type);
-  await page.hold(500);
   return title;
 };
 
 const clickLinkAndReturnNewTitle = async link => {
   await page.clickLink(link);
   const title = await page.getTitle();
-  await page.hold(500);
   return title;
 };
 const login = async (loginUrl, type) => {
   try {
-    const data = {
-      name: "John Doe",
-      email: "samuelmayna@gmail.com",
-      password: "Smain68219",
-    };
     switch (type) {
       case "user":
         await createNewUserWithData(data);
@@ -210,7 +207,6 @@ const login = async (loginUrl, type) => {
         break;
     }
     await page.openUrl(loginUrl);
-    await page.hold(500);
     await page.enterEmail(data.email);
     await page.enterPassword(data.password);
     await page.submit("login");
@@ -218,13 +214,9 @@ const login = async (loginUrl, type) => {
     throw new Error(error);
   }
 };
-const ensure = exp => {
-  assert.ok(exp);
-};
+
 const clickLogoutAndReturnNewTitle = async () => {
   await page.clickById("logout");
   const title = await page.getTitle();
-  //need to hold a bit longer since we are deleting the session which will take some time.
-  await page.hold(700);
   return title;
 };

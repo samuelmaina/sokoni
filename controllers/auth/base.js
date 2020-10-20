@@ -141,8 +141,7 @@ class Auth {
           .appendError(` No ${this.person} by that email exits`)
           .redirect(this.routes.reset);
       }
-      const tokenDetails = await TokenGenerator.createNewForId(document.id);
-      console.log(tokenDetails.token);
+      await TokenGenerator.createNewForId(document.id);
       // transporter.send({
       //   //http://localhost:3000/auth/user/new-password/8c4c25d10c8194101a037fdbd2870e9996b5e3d786f662003116a6e92ea327bc
       //   from: "samuelsonlineshop@online.com",
@@ -181,7 +180,7 @@ class Auth {
         .pageTitle("New Password")
         .pathToPost(this.routes.newPassword)
         .activePath("/login")
-        .options({
+        .appendDataToResBody({
           token: tokenString,
         })
         .render();
@@ -198,7 +197,7 @@ class Auth {
         .pageTitle("New Password")
         .pathToPost(this.routes.newPassword)
         .activePath("/login")
-        .options({
+        .appendDataToResBody({
           token,
         })
         .appendPreviousData(req.body);

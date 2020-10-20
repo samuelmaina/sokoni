@@ -1,4 +1,4 @@
-const {User, Admin} = require("../../database/interfaces/auth");
+const {User, Admin} = require("../../database/models");
 
 const body = require("express-validator/").check;
 
@@ -11,7 +11,7 @@ const nameValidator = body(
 
 const emailValidator = body("email")
   .isEmail()
-  .withMessage("Please enter a valid email");
+  .withMessage("Please enter a valid email.");
 
 const passwordValidator = body(
   "password",

@@ -1,4 +1,4 @@
-const {connectToDb} = require("../config");
+const {connectToDb, closeConnectionToBd} = require("../config");
 const {
   createNewAdmin,
   createTestProducts,
@@ -19,6 +19,9 @@ describe("Order ", () => {
     await connectToDb();
     admin = await createNewAdmin();
     user = await createNewUser();
+  });
+  afterAll(async () => {
+    await closeConnectionToBd();
   });
   afterEach(async () => {
     await clearTheDb();
@@ -140,7 +143,7 @@ const createSomeOrders = async TRIALS => {
 };
 
 const verifyUserIdCreatedOrder = (order, userId) => {
-  verifyIDsAreEqual(order.userId, user.id);
+  verifyIDsAreEqual(order.userId, userId);
 };
 const ensureOrdersAreInDescendingTime = orders => {
   orders.forEach((order, index) => {

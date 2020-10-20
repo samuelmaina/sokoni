@@ -4,7 +4,7 @@
   "description": "Online shop",
   "main": "app.js",
   "scripts": {
-    "test": "jest --detectOpenHandles --verbose --runInBand",
+    "test": "jest --runInBand",
     "start": "nodemon node index.js"
   },
   "author": "Samuel Maina",

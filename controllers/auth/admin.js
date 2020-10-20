@@ -1,6 +1,5 @@
 const BaseAuth = require("./base");
-const {Auth} = require("../../database/interfaces");
-const {Admin} = Auth;
+const {Admin} = require("../../database/models");
 
 const admin = new BaseAuth(Admin, "admin");
 module.exports = admin;

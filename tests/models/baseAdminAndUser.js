@@ -3,8 +3,7 @@ const {clearTheDb} = require("../utils/generalUtils");
 const {verifyEqual, verifyTruthy} = require("../utils/testsUtils");
 
 const TRIALS = 10;
-let count = 0;
-const MAX_WAITING_TIME_IN_MS = 100000;
+const MAX_WAITING_TIME_IN_MS = 6000;
 const baseAuthTest = Model => {
   afterAll(async () => {
     await clearTheDb();

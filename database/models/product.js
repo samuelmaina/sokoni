@@ -4,10 +4,10 @@ const fs = require("fs");
 
 require("dotenv").config();
 
+const {ProductService} = require("../services");
 const imageDeleter = require("../../util/deleteFile");
-
-const PRODUCTS_PER_PAGE = Number(process.env.PRODUCTS_PER_PAGE);
 const Schema = mongoose.Schema;
+const PRODUCTS_PER_PAGE = Number(process.env.PRODUCTS_PER_PAGE);
 
 const productSchema = {
   title: {
@@ -68,6 +68,12 @@ const Product = new Schema(productSchema, {
 
 const quantityGreaterThanZero = {quantity: {$gt: 0}};
 
+Product.statics.getProductsPerPageForQuery = async function (page, query) {
+  return await this.find(query)
+    .skip((page - 1) * PRODUCTS_PER_PAGE)
+    .limit(PRODUCTS_PER_PAGE);
+};
+
 Product.statics.createNew = function (productData) {
   //check if all the properties are there.
   for (const key in productSchema) {
@@ -78,52 +84,19 @@ Product.statics.createNew = function (productData) {
       }
     }
   }
-  productData.sellingPrice = (
-    (1 + productData.percentageProfit / 100.0) *
-    productData.buyingPrice
-  ).toFixed(2);
+  ProductService.calculateSellingPrice(productData);
   const product = new this(productData);
   return product.save();
 };
 
-Product.statics.getTotalNumberOfProducts = function (criterion = {}) {
-  for (const key in criterion) {
-    if (criterion.hasOwnProperty(key)) {
-      if (!productSchema[key]) {
-        throw new Error("can not query a non-existent property");
-      }
-    }
-  }
-  for (const property in quantityGreaterThanZero) {
-    criterion[property] = quantityGreaterThanZero[property];
-  }
-  return this.find(criterion).countDocuments();
-};
-
-const calculatePaginationData = (total, page) => {
-  const paginationData = {
-    hasNextPage: page * PRODUCTS_PER_PAGE < total,
-    hasPreviousPage: page > 1,
-    nextPage: page + 1,
-    previousPage: page - 1,
-    lastPage: Math.ceil(total / PRODUCTS_PER_PAGE),
-    currentPage: page,
-  };
-  return paginationData;
-};
 Product.statics.getProductsWhoseQuantityIsGreaterThanZero = async function (
   page = 1
 ) {
   if (!Number.isInteger(page) || page < 1) {
     throw new Error("page must be a positive whole number");
   }
-  const total = await this.getTotalNumberOfProducts();
-  const paginationData = calculatePaginationData(total, page);
-
-  //TODO: Add a  way to discard expired products
-  const products = await this.find(quantityGreaterThanZero)
-    .skip((page - 1) * PRODUCTS_PER_PAGE)
-    .limit(PRODUCTS_PER_PAGE);
+  const paginationData = await this.calculatePaginationData(page);
+  const products = await this.getProductsPerPage(page);
   return {
     paginationData,
     products,
@@ -131,11 +104,9 @@ Product.statics.getProductsWhoseQuantityIsGreaterThanZero = async function (
 };
 
 Product.statics.findPageProductsForAdminId = async function (adminId, page) {
-  const total = await this.getTotalAdminProducts(adminId);
-  const paginationData = calculatePaginationData(total, page);
-  const products = await this.find({adminId})
-    .skip((page - 1) * PRODUCTS_PER_PAGE)
-    .limit(PRODUCTS_PER_PAGE);
+  const query = {adminId};
+  const paginationData = await this.calculatePaginationData(page, query);
+  const products = await this.getProductsPerPageForQuery(page, query);
   return {
     paginationData,
     products,
@@ -143,27 +114,17 @@ Product.statics.findPageProductsForAdminId = async function (adminId, page) {
 };
 
 Product.statics.getPresentCategories = async function () {
-  let categories = [];
-  const products = await this.find(quantityGreaterThanZero).exec();
-  for (const product of products) {
-    let prodCategory = product.category;
-    const categoryIndex = categories.findIndex(c => {
-      return c === prodCategory;
-    });
-    if (categoryIndex < 0) {
-      categories.push(prodCategory);
-    }
-  }
-  return categories;
+  const products = await this.getAllProductsWhoseQuantityIsGreaterThanZero();
+  return ProductService.findCategoriesPresent(products);
 };
 
 Product.statics.findCategoryProducts = async function (category, page = 1) {
   const categoryQuery = {category};
-  const total = await this.getTotalNumberOfProducts(categoryQuery);
-  const paginationData = calculatePaginationData(total, page);
-  const products = await this.find({category})
-    .skip((page - 1) * PRODUCTS_PER_PAGE)
-    .limit(PRODUCTS_PER_PAGE);
+  const paginationData = await this.calculatePaginationData(
+    page,
+    categoryQuery
+  );
+  const products = await this.getProductsPerPageForQuery(page, categoryQuery);
   return {
     products,
     paginationData,
@@ -171,9 +132,6 @@ Product.statics.findCategoryProducts = async function (category, page = 1) {
 };
 Product.statics.deleteById = function (prodId) {
   return this.findByIdAndDelete(prodId);
-};
-Product.statics.getTotalAdminProducts = function (adminId) {
-  return this.find({adminId}).countDocuments();
 };
 
 Product.methods.isCreatedByAdminId = function (adminId) {
@@ -211,13 +169,32 @@ Product.methods.updateDetails = function (productData) {
       }
     });
   }
-  productData.sellingPrice = (
-    (1 + productData.percentageProfit / 100.0) *
-    productData.buyingPrice
-  ).toFixed(2);
+  ProductService.calculateSellingPrice(productData);
   for (const property in productData) {
     this[property] = productData[property];
   }
   return this.save();
+};
+
+Product.statics.getAllProductsWhoseQuantityIsGreaterThanZero = async function () {
+  return await this.find(quantityGreaterThanZero);
+};
+
+Product.statics.getProductsPerPage = async function (page) {
+  return await this.getProductsPerPageForQuery(page, quantityGreaterThanZero);
+};
+
+Product.statics.totalOfProductsMeetingQuery = async function (query) {
+  //the products fetched must have a positive quantity.So merge
+  // quantityGreaterThanZero with the query.
+  for (const property in quantityGreaterThanZero) {
+    query[property] = quantityGreaterThanZero[property];
+  }
+  return await this.find(query).countDocuments();
+};
+
+Product.statics.calculatePaginationData = async function (page, query = {}) {
+  const total = await this.totalOfProductsMeetingQuery(query);
+  return ProductService.calculatePaginationData(page, total);
 };
 module.exports = mongoose.model("Product", Product);

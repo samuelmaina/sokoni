@@ -24,7 +24,7 @@ exports.clearTheDb = async () => {
   }
 };
 
-const PRODUCT_PROPERTIES = {
+exports.PRODUCT_PROPERTIES = {
   title: {
     type: String,
   },
@@ -58,19 +58,20 @@ const PRODUCT_PROPERTIES = {
 };
 
 exports.clearDataFromAModel = async Model => {
-  const getDocsInModel = () => {
-    return Model.find();
+  const getDocsInModel = async () => {
+    return await Model.find();
   };
+
   const documents = await getDocsInModel();
-  for (let index = 0; index < documents.length; index++) {
-    await Model.findByIdAndDelete(documents[index]._id);
+  for (const document of documents) {
+    await Model.findByIdAndDelete(document._id);
   }
 
   const documentsAfterDeletion = await getDocsInModel();
   assert.equal(
     documentsAfterDeletion.length,
     0,
-    "the model contains some data"
+    `the model (${Model.modelName} not cleared completely.`
   );
 };
 
@@ -122,23 +123,11 @@ exports.createNewUser = async () => {
   return user;
 };
 
-exports.deleteUserById = userId => {
-  return User.findByIdAndDelete(userId);
-};
-
-exports.deleteAllProducts = async products => {
-  for (let index = 0; index < products.length; index++) {
-    await Product.findByIdAndDelete(products[index].id);
-  }
-  const productCount = await Product.find().countDocuments();
-  assert.equal(productCount, 0, "deletion not complete");
-};
-
-exports.createTestProducts = async (adminId, quantity = TRIALS) => {
+exports.createTestProducts = async (adminId, quantity = 1) => {
   const products = [];
   let product;
   for (let index = 0; index < quantity; index++) {
-    product = getRandomProductData(adminId);
+    product = this.getRandomProductData(adminId);
     product.sellingPrice = (
       (1 + product.percentageProfit / 100) *
       product.buyingPrice
@@ -149,9 +138,9 @@ exports.createTestProducts = async (adminId, quantity = TRIALS) => {
   }
   return products;
 };
-
-const getRandomProductData = adminId => {
+exports.getRandomProductData = adminId => {
   const data = {};
+  const PRODUCT_PROPERTIES = this.PRODUCT_PROPERTIES;
   for (const key in PRODUCT_PROPERTIES) {
     if (key === "adminId") {
       data[key] = adminId;

@@ -1,6 +1,6 @@
-const { User } = require("../database/interfaces/auth");
+const {User} = require("../database/models");
 
-module.exports = (app) => {
+module.exports = app => {
   const append = async (req, res, next) => {
     try {
       if (!req.session.user) {

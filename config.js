@@ -1,1 +1,3 @@
-exports.MONGO_URI = "mongodb://127.0.0.1:27017/sessions";
+require("dotenv").config();
+
+module.exports = process.env;

@@ -15,7 +15,7 @@
             <label for="quantity"
                 style="font-size: 4rem;font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;"></label>Quantity</label>
             <input class="btn" type="number" name="quantity" id="quantity" value="<%= previousData.quantity%>">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <%- include('../includes/csurf.ejs') %>
             <input class="btn" type="submit" value="Add to Cart">
             <input type="hidden" value="<%=page %>" name="page">
             <input type="hidden" name="productId" value="<%= product.id %>">

@@ -1,6 +1,5 @@
 const {By} = require("selenium-webdriver");
-const {getNewDriverInstance} = require("../config");
-const fs = require("fs");
+
 class Page {
   constructor(driver) {
     this.driver = driver;
@@ -19,6 +18,33 @@ class Page {
       throw new Error(error);
     }
   }
+  async extractTextById(id) {
+    try {
+      return await this.driver.findElement(By.css(`#${id}`)).getText();
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+  async findElementsByClassName(className) {
+    try {
+      return await this.driver.findElements(By.className(className));
+    } catch (error) {}
+  }
+  async clickByCss(cssPath) {
+    try {
+      return await this.driver.findElement(By.css(cssPath)).click();
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+  async extractTextByCss(cssPath) {
+    try {
+      return await this.driver.findElement(By.css(cssPath)).getText();
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
   async clickLink(linkText) {
     try {
       await this.driver.findElement(By.linkText(linkText)).click();
@@ -34,9 +60,23 @@ class Page {
       throw new Error(error);
     }
   }
+  async extractTextByName(name) {
+    try {
+      return await this.driver.findElement(By.name(name)).getText();
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
   async extractTextByClassName(className) {
     try {
       return await this.driver.findElement(By.className(className)).getText();
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+  async clickByClassName(className) {
+    try {
+      await this.driver.findElement(By.className(className)).getText();
     } catch (error) {
       throw new Error(error);
     }

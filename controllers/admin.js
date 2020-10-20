@@ -4,7 +4,7 @@ require("dotenv").config();
 
 const {deleteFile, validationResults, Renderer, Flash} = require("../util");
 
-const {ProductForAdmin, AdminSalesForAdmin} = require("../database/interfaces");
+const {Product, AdminSales} = require("../database/models");
 
 exports.getAddProduct = (req, res, next) => {
   new Renderer(res)
@@ -12,7 +12,7 @@ exports.getAddProduct = (req, res, next) => {
     .pageTitle("Add Product")
     .pathToPost("/admin/add-product")
     .activePath("/add-product")
-    .options({editing: false})
+    .appendDataToResBody({editing: false})
     .render();
 };
 
@@ -34,9 +34,9 @@ exports.postAddProduct = async (req, res, next) => {
     const productData = req.body;
     productData.imageUrl = image.path;
     productData.adminId = req.session.admin._id;
-    await ProductForAdmin.createNew(productData);
+    await Product.createNew(productData);
     flash
-      .appendInfo("ProductForAdmin successfully created")
+      .appendInfo("Product created successfully created")
       .redirect("/admin/products");
   } catch (error) {
     next(error);
@@ -50,7 +50,7 @@ exports.getEditProduct = async (req, res, next) => {
     const {edit, page} = req.query;
 
     const prodId = req.params.id;
-    const product = await ProductForAdmin.findById(prodId);
+    const product = await Product.findById(prodId);
 
     if (!product || !product.isCreatedByAdminId(adminId)) {
       return flash
@@ -63,7 +63,7 @@ exports.getEditProduct = async (req, res, next) => {
       .pathToPost("/admin/edit-product")
       .activePath("/products")
       .appendPreviousData(product)
-      .options({
+      .appendDataToResBody({
         editing: edit,
         page,
       })
@@ -85,7 +85,7 @@ exports.postEditProduct = async (req, res, next) => {
       .pathToPost("/admin/edit-product")
       .activePath("/products")
       .appendPreviousData(req.body)
-      .options({
+      .appendDataToResBody({
         editing: editMode,
         page,
       });
@@ -99,7 +99,7 @@ exports.postEditProduct = async (req, res, next) => {
     if (validationErrors) {
       return renderer.appendError(validationErrors).render();
     }
-    const product = await ProductForAdmin.findById(id);
+    const product = await Product.findById(id);
     if (!product || !product.isCreatedByAdminId(adminId)) {
       return renderer
         .appendError(
@@ -123,16 +123,16 @@ exports.getProducts = async (req, res, next) => {
     const renderer = new Renderer(res);
     const currentAdminId = req.session.admin._id;
     const page = +req.query.page || 1;
-    const {
-      paginationData,
-      products,
-    } = await ProductForAdmin.findPageProductsForAdminId(currentAdminId, page);
+    const {paginationData, products} = await Product.findPageProductsForAdminId(
+      currentAdminId,
+      page
+    );
     renderer
       .templatePath("admin/products")
       .pageTitle("Your Products")
       .activePath("/admin/products")
       .activePath("/products")
-      .options({
+      .appendDataToResBody({
         prods: products,
         paginationData,
       })
@@ -147,7 +147,7 @@ exports.deleteProduct = async (req, res, next) => {
     const flash = new Flash(req, res);
     const adminId = req.session.admin._id;
     const prodId = req.params.id;
-    const prod = await ProductForAdmin.findById(prodId);
+    const prod = await Product.findById(prodId);
     if (!prod || !prod.isCreatedByAdminId(adminId)) {
       return flash
         .appendError("You can't delete this product")
@@ -158,7 +158,7 @@ exports.deleteProduct = async (req, res, next) => {
     using the product's image url and then delete the product data
     */
 
-    await ProductForAdmin.deleteById(prodId);
+    await Product.deleteById(prodId);
     flash
       .appendInfo("Product deleted successfully")
       .redirect("/admin/products");
@@ -181,7 +181,7 @@ exports.getAdminSales = async (req, res, next) => {
     if (fromTime > Date.now() || toTime > Date.now()) {
       return res.redirect("/products");
     }
-    const salesProfits = await AdminSalesForAdmin.salesWithinAnIntervalForAdminId(
+    const salesProfits = await AdminSales.getSalesForAdminIdWithinAnInterval(
       adminId,
       fromTime,
       toTime
@@ -191,7 +191,7 @@ exports.getAdminSales = async (req, res, next) => {
       .templatePath("admin/sales")
       .pageTitle("Your Sales")
       .activePath("/sales")
-      .options({
+      .appendDataToResBody({
         sales: salesProfits,
       })
       .render();

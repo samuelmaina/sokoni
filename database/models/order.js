@@ -35,18 +35,35 @@ Order.statics.createNew = function (orderData) {
 };
 const byAscendingOrderTime = {time: -1};
 
+Order.statics.findWithPopulated = async function (
+  query,
+  pathToPopulate,
+  whatToPopulate
+) {
+  return await this.find(query)
+    .populate(pathToPopulate, whatToPopulate)
+    .sort(byAscendingOrderTime);
+};
+const pathToPopulate = "orderedProducts.productData";
+
 Order.statics.findAllforUserId = function (userId) {
-  return this.find({userId})
-    .populate("orderedProducts.productData", "title sellingPrice")
-    .sort(byAscendingOrderTime)
-    .exec();
+  const byUserIdQuery = {userId};
+  return this.findWithPopulated(
+    byUserIdQuery,
+    pathToPopulate,
+    "title sellingPrice"
+  );
 };
 
-Order.statics.findByIdAndPopulateProductsDetails = function (Id) {
-  return this.findById(Id)
-    .populate("orderedProducts.productData", " title sellingPrice adminId")
-    .sort(byAscendingOrderTime)
-    .exec();
+Order.statics.findByIdAndPopulateProductsDetails = async function (id) {
+  const byIdQuery = {_id: id};
+  const populatePath = pathToPopulate;
+  const whatToPopulate = " title sellingPrice adminId";
+  //the normal findById return one document but find({id:id}) returns
+  //an array with just one document.so we need to return first element to mimic findById.
+  return (
+    await this.findWithPopulated(byIdQuery, populatePath, whatToPopulate)
+  )[0];
 };
 
 Order.methods.isOrderedById = function (Id) {

@@ -22,7 +22,7 @@
                     <%= (p.quantity*p.productData.sellingPrice).toFixed(2) %></h1>
                 <form action="/cart-delete-item" method="POST">
                     <input type="hidden" value="<%= p.productData._id %>" name="productId">
-                    <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+                    <%- include('../includes/csurf.ejs') %>
                     <input class="btn delete" type="submit" value='delete'>
                 </form>
             </li>
@@ -30,7 +30,7 @@
         </ul>
         <strong class="grid cart__item ">Total Price <span class="total">ksh <%= total %></span></strong> <br>
         <form action="/create-order" method="POST">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <%- include('../includes/csurf.ejs') %>
             <input class="btn cart__item " type="submit" value='Order Now!!'>
         </form>
 

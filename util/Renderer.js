@@ -66,11 +66,9 @@ class Renderer {
    *
    * @param {object} options -res data that will be rendered in res.body
    */
-  options(options = {}) {
+  appendDataToResBody(options = {}) {
     for (const key in options) {
-      if (options.hasOwnProperty(key)) {
-        this._options[key] = options[key];
-      }
+      this._options[key] = options[key];
     }
     return this;
   }

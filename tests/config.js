@@ -1,17 +1,9 @@
 const mongoose = require("mongoose");
-const Models = require("../database/models/index");
-
-const {clearDataFromAModel} = require("./utils/generalUtils");
-
-require("dotenv").config();
-
+const {MONGO_TEST_URI} = require("../config");
+const connector = require("../util/connectToDb");
 const connectToDb = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_TEST_URI, {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
-      useFindAndModify: false,
-    });
+    await connector(MONGO_TEST_URI);
   } catch (error) {
     throw new Error(error);
   }

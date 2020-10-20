@@ -1,6 +1,4 @@
-const {Admin, Product, AdminSales} = require("../../database/models");
-
-const assert = require("assert");
+const {AdminSales} = require("../../database/models");
 
 const {connectToDb, closeConnectionToBd} = require("../config");
 const {
@@ -48,15 +46,20 @@ describe("AdminSales", () => {
   it(`getSalesForAdminIdWithinAnInterval return the sale for period of time`, async () => {
     const adminSales = await createNewAdminSales(admin.id);
     await feedSomeProductsToAdminSales(adminSales);
-    const fromTime = Date.now() - 20;
+    const fromTime = Date.now() - 2000;
     const toTime = Date.now();
 
-    const sales = getSalesForAdminIdWithinAnInterval(
+    const products = await AdminSales.getSalesForAdminIdWithinAnInterval(
       admin.id,
       fromTime,
       toTime
     );
-    verifyIDsAreEqual(s);
+    verifyThatProductsHaveWellCalculatedProperties(products, [
+      "title",
+      "profit",
+      "totalSales",
+      "imageUrl",
+    ]);
   });
   it("addOrderedProduct adds a product to  admin Sales", async () => {
     const adminSales = await createNewAdminSales(admin.id);
@@ -75,7 +78,7 @@ describe("AdminSales", () => {
     const orderedProducts = adminSales.products;
 
     //ensure that the array contains something,else
-    //the test will pass since the for loop won't any loops.
+    //the test will pass since the for loop won't have any loops.
     expect(orderedProducts.length).toBeGreaterThan(0);
     for (let index = 0; index < orderedProducts.length; index++) {
       const prod = orderedProducts[index];
@@ -89,6 +92,17 @@ describe("AdminSales", () => {
     }
   });
 });
+
+const verifyThatProductsHaveWellCalculatedProperties = (
+  products = [],
+  properties = []
+) => {
+  products.forEach(product => {
+    for (const prop of properties) {
+      expect(product).toHaveProperty(prop);
+    }
+  });
+};
 const createNewAdminSales = async adminId => {
   let adminSales = new AdminSales({adminId});
   adminSales = await adminSales.save();
@@ -116,7 +130,7 @@ const feedSomeProductsToAdminSales = async adminSales => {
       productData: products[index].id,
       sales: [
         {
-          quantity: generateRandomIntegeUpto(100),
+          quantity: 90,
           soldAt: Date.now(),
         },
       ],

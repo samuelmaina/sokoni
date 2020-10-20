@@ -36,7 +36,7 @@ exports.getChangePassword = (req, res, next) => {
   return new Renderer(res)
     .templatePath("auth/newPassword")
     .pageTitle("Change Password")
-    .options({
+    .appendDataToResBody({
       token: null,
       Id: null,
     })

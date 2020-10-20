@@ -2,7 +2,7 @@ const body = require("express-validator").check;
 
 const productInfoValidation = [
   body("title")
-    .isLength({ min: 5, max: 15 })
+    .isLength({min: 5, max: 15})
     .withMessage(
       "Please provide the product with a title which is between 5 and 15 characters long"
     )
@@ -10,7 +10,7 @@ const productInfoValidation = [
   body("buyingPrice")
     .isNumeric()
     .withMessage("buyingPrice must be a number")
-    .custom((value) => {
+    .custom(value => {
       if (value < 0) {
         throw new Error("buyingPrice must be a positive real number");
       }
@@ -19,7 +19,7 @@ const productInfoValidation = [
   body("percentageProfit")
     .isNumeric()
     .withMessage("percentageProfit must be a number")
-    .custom((value) => {
+    .custom(value => {
       if (value < 0) {
         throw new Error("percentageProfit must be a positive real number");
       }
@@ -28,7 +28,7 @@ const productInfoValidation = [
   body("expirationPeriod")
     .isNumeric()
     .withMessage("expirationPeriod must be a number")
-    .custom((value) => {
+    .custom(value => {
       if (value < 0) {
         throw new Error("expirationPeriod must be a positive real number");
       }
@@ -37,7 +37,7 @@ const productInfoValidation = [
   body("quantity")
     .isInt()
     .withMessage("Quantity must be positive whole number")
-    .custom((value) => {
+    .custom(value => {
       if (value < 1) {
         throw new Error(
           "quantity must be greater than zero and must be a whole number"
@@ -46,15 +46,15 @@ const productInfoValidation = [
       return true;
     }),
   body("description")
-    .isLength({ min: 10 })
+    .isLength({min: 10})
     .withMessage("Very short description.Please type atleast 10 words")
     .trim(),
   body("brand")
-    .isLength({ min: 3, max: 20 })
+    .isLength({min: 3, max: 20})
     .withMessage("brand should be 3-20 characters long")
     .trim(),
   body("category")
-    .isLength({ min: 3, max: 20 })
+    .isLength({min: 3, max: 20})
     .withMessage("category should be 3-20 characters long")
     .trim(),
 ];

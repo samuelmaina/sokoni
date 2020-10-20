@@ -1,15 +1,15 @@
+const assert = require("assert");
 const mongoose = require("mongoose");
-module.exports = (mongo_uri, app, PORT) => {
-  mongoose
-    .connect(mongo_uri, {
+
+module.exports = async mongo_uri => {
+  try {
+    const connection = await mongoose.connect(mongo_uri, {
       useUnifiedTopology: true,
       useNewUrlParser: true,
       useFindAndModify: false,
-    })
-    .then(connection => {
-      if (connection) app.listen(PORT);
-    })
-    .catch(err => {
-      throw new Error(err);
     });
+    assert.ok(connection, "No errors thrown but connection not established.");
+  } catch (error) {
+    throw new Error(error);
+  }
 };

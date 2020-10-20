@@ -1,7 +1,7 @@
 const {Renderer} = require("../../util");
 
 const BaseAuth = require("./base");
-const {User} = require("../../database/interfaces/auth");
+const {User} = require("../../database/models");
 
 const changeDetailsPath = "/edit/user/change-details";
 const changePasswordPath = "/edit/user/change-password";
@@ -26,7 +26,7 @@ class UserAuth extends BaseAuth {
         .templatePath("dashboards/user")
         .pageTitle("Dashboard")
         .activePath("/dashboard")
-        .options({
+        .appendDataToResBody({
           user,
           navigationData,
         })

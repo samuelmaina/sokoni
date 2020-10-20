@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const Base = require("./baseForAdminAndUser");
 
+const {UserServices} = require("../services/index");
+
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -28,49 +30,26 @@ userSchema.statics.findCartProductsAndTheirTotalForId = async function (Id) {
     throw new Error("No user by that Id exists");
   }
   const cartProducts = userWithPopulatedCart.getCartProducts();
-  let total = 0.0;
-  cartProducts.forEach(product => {
-    total += product.productData.getSellingPrice() * product.quantity;
-  });
-  total = Number(total.toFixed(2));
+  const total = UserServices.calculateProductsTotals(cartProducts);
   return {
     cartProducts,
     total,
   };
 };
 
-userSchema.methods.addProductIdToCart = function (prodId, quantity) {
-  const cartProductIndex = this.cart.findIndex(cp => {
-    return cp.productData.toString() === prodId.toString();
-  });
-  let newQuantity = Number(quantity);
-  if (!Number.isInteger(newQuantity) || newQuantity < 1) {
-    throw new Error("Can only add quantity  greater than zero");
-  }
-  const updatedCartProducts = [...this.cart];
-  if (cartProductIndex >= 0) {
-    newQuantity = this.cart[cartProductIndex].quantity + newQuantity;
-    updatedCartProducts[cartProductIndex].quantity = newQuantity;
-  } else {
-    updatedCartProducts.push({
-      productData: prodId,
-      quantity: newQuantity,
-    });
-  }
-  this.cart = updatedCartProducts;
+userSchema.methods.addProductIdToCart = function (productId, quantity) {
+  const cart = this.cart;
+  this.cart = UserServices.addProductIdToCart(cart, productId, quantity);
   return this.save();
 };
 
 userSchema.methods.deleteProductIdFromCart = async function (prodId) {
-  const deletedProductIndex = this.cart.findIndex(cp => {
-    return cp.productData.toString() === prodId.toString();
-  });
-  const deletedQuantity = this.cart[deletedProductIndex].quantity;
-  const updatedCartProducts = this.cart.filter(cp => {
-    return cp.productData.toString() !== prodId.toString();
-  });
-
-  this.cart = updatedCartProducts;
+  const cart = this.cart;
+  const {updatedCart, deletedQuantity} = UserServices.deleteProductIdfromCart(
+    cart,
+    prodId
+  );
+  this.cart = updatedCart;
   await this.save();
   return deletedQuantity;
 };
