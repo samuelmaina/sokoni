@@ -2,7 +2,7 @@ const bcrypt = require("bcrypt");
 const {clearTheDb} = require("../utils/generalUtils");
 const {verifyEqual, verifyTruthy} = require("../utils/testsUtils");
 
-const TRIALS = 10;
+const TRIALS = 2;
 const MAX_WAITING_TIME_IN_MS = 6000;
 const baseAuthTest = Model => {
   afterAll(async () => {
@@ -14,7 +14,7 @@ const baseAuthTest = Model => {
       email: "johndoe77@gmail.com",
       password: "johndoe@4899.???",
     };
-    const document = await Model.createNew(data);
+    const document = await Model.createOne(data);
     verifyEqual(document.name, data.name);
     verifyEqual(document.email, data.email);
 
@@ -62,35 +62,47 @@ const baseAuthTest = Model => {
         hashedPassword = await hashPassword(password);
       });
       beforeEach(async () => {
-        document = await createOneDocument(hashedPassword);
+        document = await createOneDocWIthPassword(hashedPassword);
       });
       afterEach(async () => {
         await clearTheDb();
       });
-      it("resetPasswordTo function reset the document's password", async () => {
-        const newPassword = "johndoes@!2345?";
-        await document.resetPasswordTo(newPassword);
-        const passwordChanged = await confirmPassword(
-          newPassword,
-          document.password
-        );
-        verifyTruthy(passwordChanged);
+      describe("update update the given field with the given data.", () => {
+        it("name", async () => {
+          const newName = "John Doe 3";
+          await document.update("name", newName);
+          verifyEqual(newName, document.name);
+        });
+        it("email", async () => {
+          const newEmail = "somerandom@gmail.com";
+          await document.update("email", newEmail);
+          verifyEqual(newEmail, document.email);
+        });
+        it("password", async () => {
+          const newPassword = "johndoes@!2345?";
+          await document.update("password", newPassword);
+          const passwordChanged = await confirmPassword(
+            newPassword,
+            document.password
+          );
+          verifyTruthy(passwordChanged);
+        });
+        it("tel", async () => {
+          const newTel = "0723475788";
+          await document.update("tel", newTel);
+          verifyEqual(newTel, document.tel);
+        });
       });
 
-      it("checkIfPasswordIsValid checks password validity", async () => {
-        const passwordCorrect = await document.checkIfPasswordIsValid(password);
+      it("isPasswordCorrect checks password correctness", async () => {
+        const passwordCorrect = await document.isPasswordCorrect(password);
         verifyTruthy(passwordCorrect);
       });
-      it("updateNameAndEmail updates document's name and email", async () => {
-        const name2 = "samuel Maina 2";
-        const email2 = "samuelmayna22@gmail.com";
-        const data = {
-          name: name2,
-          email: email2,
-        };
-        await document.updateNameAndEmail(data);
-        verifyTruthy(document.name, name2);
-        verifyTruthy(document.email, email2);
+      it("deleteAccount() deletes the current account", async () => {
+        const documentId = document.id;
+        await document.deleteAccount();
+        const currentDoc = await Model.findById(documentId);
+        expect(currentDoc).toBeNull();
       });
     });
   });
@@ -106,7 +118,7 @@ const baseAuthTest = Model => {
     return Math.floor(Math.random() * (TRIALS - 1));
   };
 
-  const createOneDocument = async hashedPassword => {
+  const createOneDocWIthPassword = async hashedPassword => {
     const data = {
       name: "John Doe",
       email: "johndoe77@gmail.com",
@@ -121,8 +133,7 @@ const baseAuthTest = Model => {
   };
 
   /**
-   * The search data is the data that was used to create the documents.
-   * It will be used during querying in the tests and verfication of test results.
+   * search data is the data that is used to create the docs.
    */
   const createTrialDocumentsAndReturnSearchData = async () => {
     const searchData = [];

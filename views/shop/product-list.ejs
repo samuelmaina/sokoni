@@ -32,6 +32,11 @@
     </article>
     <% } %>
 </div>
+<ul>
+    <% for (let category of categories) { %>
+    <li><a href="/category/<%=category%>?page=<%=paginationData.currentPage%>"><%=category%></a></li>
+    <% } %>
+</ul>
 <%- include('../includes/pagination.ejs', {currentPage: paginationData.currentPage, nextPage: paginationData.nextPage, previousPage: paginationData.previousPage, lastPage: paginationData.lastPage, hasNextPage: paginationData.hasNextPage, hasPreviousPage: paginationData.hasPreviousPage}) %>
 
 <% } else { %>

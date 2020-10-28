@@ -1,36 +1,23 @@
-let TRIALS;
-let products = [];
-let user;
-
-exports.setUser = testUser => {
-  user = testUser;
-};
-exports.setProducts = (testProducts = []) => {
-  products = testProducts;
-};
-exports.setTrials = trials => {
-  TRIALS = trials;
-};
-
-exports.resetCart = async () => {
+exports.resetCart = async user => {
   user.cart = [];
   await user.save();
 };
-exports.getTotals = () => {
+exports.getTotals = (products = [], quantity) => {
   let total = 0.0;
-  for (let index = 0; index < TRIALS; index++) {
-    let sellingPrice = products[index].sellingPrice;
-    total += sellingPrice * TRIALS;
+  for (const product of products) {
+    const {productData, quantity} = product;
+    let sellingPrice = productData.sellingPrice;
+    total += sellingPrice * quantity;
   }
   return Number(total.toFixed(2));
 };
 
-exports.addTRIALProductsToCart = async () => {
-  for (let index = 0; index < TRIALS; index++) {
-    await addProductToCart(products[index].id, TRIALS);
+exports.addTRIALProductsToCart = async (user, products = [], quantity) => {
+  for (const product of products) {
+    await addProductToCart(user, product.id, quantity);
   }
 };
-const addProductToCart = async (productId, quantity) => {
+const addProductToCart = async (user, productId, quantity) => {
   const userCart = user.cart;
   const productIndex = userCart.findIndex(product => {
     return product.productData.toString() === productId.toString();
@@ -48,9 +35,15 @@ const addProductToCart = async (productId, quantity) => {
   user = await user.save();
 };
 
-exports.productFound = productId => {
-  const userCart = user.cart;
-  const productIndex = userCart.findIndex(product => {
+exports.ensureProductsHaveProperties = (products, properties) => {
+  for (const product of products) {
+    properties.forEach(prop => {
+      expect(product.productData).toHaveProperty(prop);
+    });
+  }
+};
+exports.productFound = (cart, productId) => {
+  const productIndex = cart.findIndex(product => {
     return product.productData.toString() === productId.toString();
   });
   return productIndex >= 0;

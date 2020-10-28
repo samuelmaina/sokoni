@@ -1,8 +1,6 @@
 exports.addSoldProducts = (products, saleDetails) => {
   const productIndex = products.findIndex(product => {
-    return (
-      product.productData._id.toString() === saleDetails.productId.toString()
-    );
+    return product.productData.toString() === saleDetails.productId.toString();
   });
   const updatedProducts = [...products];
   if (productIndex >= 0) {

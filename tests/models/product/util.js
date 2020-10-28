@@ -76,7 +76,7 @@ exports.verifyErrorIsThrownWhenAnyProductDataMisses = adminId => {
     const trial = this.getRandomProductDataWithoutADataItem(prop, adminId);
     throws(
       () => {
-        Product.createNew(trial).catch(err => {
+        Product.createOne(trial).catch(err => {
           throw new Error(err);
         });
       },

@@ -1,25 +1,23 @@
-const {Product} = require("../../database/models");
 const {startApp, getNewDriverInstance, closeApp} = require("./config");
 const {feedProductsWithTestCategories} = require("../models/product/util");
 const {createTestProducts, clearTheDb} = require("../utils/generalUtils");
 
-const {By} = require("selenium-webdriver");
-
-const Page = require("./utils/Page");
+const {Page} = require("./utils");
 
 let page;
+
+const TRIALS = 10;
 
 const MAX_TEST_PERIOD = 20000;
 
 const PORT = 5000;
 const base = `http://localhost:${PORT}`;
 const homePage = `${base}/`;
-describe("Shop Navigation", () => {
+describe.skip("Shop Navigation", () => {
   let products = [];
   beforeAll(async () => {
     page = new Page(getNewDriverInstance());
     await startApp(PORT);
-    const TRIALS = 10;
     const adminId = "Id4684veru994334";
     products = await createTestProducts(adminId, TRIALS);
   }, MAX_TEST_PERIOD);
@@ -55,9 +53,8 @@ describe("Shop Navigation", () => {
       await page.clickByCss('input[type = "submit"]');
       const title = await page.getTitle();
 
-      //user can not add to cart when they are not logged in.
-      //This is the entry point and user is not logged in,so
-      // we expect a redirect to "User Log In"
+      //user is redirected to User Login In when they try to add to cart when they are not logged in.
+      //in this case, they are not logged in, we expect a redirect to "User Log In"
       expect(title).toEqual("User Log In");
     },
     MAX_TEST_PERIOD

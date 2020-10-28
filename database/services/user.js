@@ -1,9 +1,9 @@
 exports.calculateProductsTotals = products => {
-  let total = 0.0;
-  products.forEach(product => {
-    total += product.productData.getSellingPrice() * product.quantity;
-  });
-  return (total = Number(total.toFixed(2)));
+  let total = products.reduce(
+    (total, next) => (total += next.productData.sellingPrice * next.quantity),
+    0
+  );
+  return Number(total.toFixed(2));
 };
 
 exports.addProductIdToCart = (cart, prodId, quantity) => {

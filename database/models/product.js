@@ -2,12 +2,15 @@ const mongoose = require("mongoose");
 const path = require("path");
 const fs = require("fs");
 
-require("dotenv").config();
-
 const {ProductService} = require("../services");
+
 const imageDeleter = require("../../util/deleteFile");
+
+let {PRODUCTS_PER_PAGE} = require("../../config");
+const POSITIVE_QUNTITY_QUERY = {quantity: {$gt: 0}};
+
+PRODUCTS_PER_PAGE = Number(PRODUCTS_PER_PAGE);
 const Schema = mongoose.Schema;
-const PRODUCTS_PER_PAGE = Number(process.env.PRODUCTS_PER_PAGE);
 
 const productSchema = {
   title: {
@@ -28,9 +31,6 @@ const productSchema = {
     type: Number,
     min: 0,
   },
-  expirationPeriod: {
-    type: Number,
-  },
   sellingPrice: {
     type: Number,
   },
@@ -45,7 +45,8 @@ const productSchema = {
     required: true,
   },
   adminId: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: "Admin",
     required: true,
   },
   category: {
@@ -66,19 +67,13 @@ const Product = new Schema(productSchema, {
   timestamps: true,
 });
 
-const quantityGreaterThanZero = {quantity: {$gt: 0}};
-
-Product.statics.getProductsPerPageForQuery = async function (page, query) {
-  return await this.find(query)
-    .skip((page - 1) * PRODUCTS_PER_PAGE)
-    .limit(PRODUCTS_PER_PAGE);
-};
-
-Product.statics.createNew = function (productData) {
+Product.statics.createOne = function (productData) {
   //check if all the properties are there.
   for (const key in productSchema) {
     if (productSchema.hasOwnProperty(key)) {
-      if (key === "sellingPrice") continue;
+      if (key === "sellingPrice") {
+        continue;
+      }
       if (!productData[key]) {
         throw new Error(`${key} is expected`);
       }
@@ -89,17 +84,36 @@ Product.statics.createNew = function (productData) {
   return product.save();
 };
 
-Product.statics.getProductsWhoseQuantityIsGreaterThanZero = async function (
-  page = 1
-) {
+Product.statics.findProductsForPage = async function (page = 1) {
   if (!Number.isInteger(page) || page < 1) {
-    throw new Error("page must be a positive whole number");
+    throw new Error("Page must be a positive whole number");
   }
   const paginationData = await this.calculatePaginationData(page);
   const products = await this.getProductsPerPage(page);
   return {
     paginationData,
     products,
+  };
+};
+
+Product.statics.findCategories = async function () {
+  const products = await this.getAllProductsWhoseQuantityIsGreaterThanZero();
+  return ProductService.findCategoriesPresent(products);
+};
+
+Product.statics.findCategoryProductsForPage = async function (
+  category,
+  page = 1
+) {
+  const categoryQuery = {category};
+  const paginationData = await this.calculatePaginationData(
+    page,
+    categoryQuery
+  );
+  const products = await this.getProductsPerPageForQuery(page, categoryQuery);
+  return {
+    products,
+    paginationData,
   };
 };
 
@@ -113,54 +127,26 @@ Product.statics.findPageProductsForAdminId = async function (adminId, page) {
   };
 };
 
-Product.statics.getPresentCategories = async function () {
-  const products = await this.getAllProductsWhoseQuantityIsGreaterThanZero();
-  return ProductService.findCategoriesPresent(products);
-};
-
-Product.statics.findCategoryProducts = async function (category, page = 1) {
-  const categoryQuery = {category};
-  const paginationData = await this.calculatePaginationData(
-    page,
-    categoryQuery
-  );
-  const products = await this.getProductsPerPageForQuery(page, categoryQuery);
-  return {
-    products,
-    paginationData,
-  };
-};
-Product.statics.deleteById = function (prodId) {
-  return this.findByIdAndDelete(prodId);
-};
-
 Product.methods.isCreatedByAdminId = function (adminId) {
   return this.adminId.toString() === adminId.toString();
 };
-Product.methods.increaseQuantityBy = function (quantity) {
+Product.methods.incrementQuantity = async function (quantity) {
   if (quantity < 1) {
     throw new Error("can not increase a quantity less than 1");
   }
   this.quantity += quantity;
-  return this.save();
+  return await this.save();
 };
-Product.methods.reduceQuantityBy = async function (quantity) {
+Product.methods.decrementQuantity = async function (quantity) {
   let currentQuantity = this.quantity;
   if (currentQuantity < quantity)
     throw new Error("can not reduce such a quantity");
   currentQuantity -= quantity;
   this.quantity = currentQuantity;
-  await this.save();
-  return null;
-};
-Product.methods.getQuantity = function () {
-  return this.quantity;
-};
-Product.methods.getSellingPrice = function () {
-  return this.sellingPrice;
+  return await this.save();
 };
 
-Product.methods.updateDetails = function (productData) {
+Product.methods.updateDetails = async function (productData) {
   if (this.imageUrl !== productData.imageUrl) {
     const imagePath = path.resolve(this.imageUrl);
     fs.exists(imagePath, exists => {
@@ -173,22 +159,25 @@ Product.methods.updateDetails = function (productData) {
   for (const property in productData) {
     this[property] = productData[property];
   }
-  return this.save();
+  return await this.save();
+};
+Product.methods.deleteProduct = async function () {
+  await this.deleteOne();
 };
 
 Product.statics.getAllProductsWhoseQuantityIsGreaterThanZero = async function () {
-  return await this.find(quantityGreaterThanZero);
+  return await this.find(POSITIVE_QUNTITY_QUERY);
 };
 
 Product.statics.getProductsPerPage = async function (page) {
-  return await this.getProductsPerPageForQuery(page, quantityGreaterThanZero);
+  return await this.getProductsPerPageForQuery(page, POSITIVE_QUNTITY_QUERY);
 };
 
 Product.statics.totalOfProductsMeetingQuery = async function (query) {
   //the products fetched must have a positive quantity.So merge
-  // quantityGreaterThanZero with the query.
-  for (const property in quantityGreaterThanZero) {
-    query[property] = quantityGreaterThanZero[property];
+  // POSITIVE_QUNTITY_QUERY with the query.
+  for (const property in POSITIVE_QUNTITY_QUERY) {
+    query[property] = POSITIVE_QUNTITY_QUERY[property];
   }
   return await this.find(query).countDocuments();
 };
@@ -196,5 +185,11 @@ Product.statics.totalOfProductsMeetingQuery = async function (query) {
 Product.statics.calculatePaginationData = async function (page, query = {}) {
   const total = await this.totalOfProductsMeetingQuery(query);
   return ProductService.calculatePaginationData(page, total);
+};
+
+Product.statics.getProductsPerPageForQuery = async function (page, query) {
+  return await this.find(query)
+    .skip((page - 1) * PRODUCTS_PER_PAGE)
+    .limit(PRODUCTS_PER_PAGE);
 };
 module.exports = mongoose.model("Product", Product);

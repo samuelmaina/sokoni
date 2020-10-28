@@ -43,7 +43,7 @@ class Auth {
           .appendPreviousData(previousData)
           .redirect(this.routes.signUp);
       }
-      await this.Model.createNew(req.body);
+      await this.Model.createOne(req.body);
       const successSignUpMessage = `Dear ${req.body.name}, You have successfully signed up`;
       flash.appendInfo(successSignUpMessage).redirect(this.routes.logIn);
       // transporter.sendMail(emailBody);
@@ -141,7 +141,7 @@ class Auth {
           .appendError(` No ${this.person} by that email exits`)
           .redirect(this.routes.reset);
       }
-      await TokenGenerator.createNewForId(document.id);
+      await TokenGenerator.createOneForId(document.id);
       // transporter.send({
       //   //http://localhost:3000/auth/user/new-password/8c4c25d10c8194101a037fdbd2870e9996b5e3d786f662003116a6e92ea327bc
       //   from: "samuelsonlineshop@online.com",
@@ -222,7 +222,7 @@ class Auth {
           )
           .render();
       }
-      await document.resetPasswordTo(password);
+      await document.update("password", password);
       flash.appendInfo("Password reset successful").redirect(this.routes.logIn);
       await TokenGenerator.deleteTokenById(tokenDetails.id);
     } catch (error) {

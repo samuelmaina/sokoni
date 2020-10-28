@@ -4,7 +4,7 @@ const {adminSalesServices} = require("../services");
 const Schema = mongoose.Schema;
 
 const AdminSales = new Schema({
-  adminId: {
+  adminID: {
     type: Schema.Types.ObjectId,
     ref: "Admin",
     required: true,
@@ -25,26 +25,28 @@ const AdminSales = new Schema({
   ],
 });
 
-AdminSales.statics.createNew = function (adminId) {
+AdminSales.statics.createOne = async function (adminID) {
   const adminSale = new this({
-    adminId: adminId,
+    adminID,
   });
-  return adminSale.save();
+  return await adminSale.save();
 };
-
-AdminSales.statics.findOneForAdminId = function (adminId) {
-  return this.findOne({adminId}).populate(
+AdminSales.statics.findOneForAdminId = function (adminID) {
+  return this.findOne({adminID}).populate(
     "products.productData",
     "title sellingPrice buyingPrice imageUrl"
   );
 };
 
-AdminSales.statics.getSalesForAdminIdWithinAnInterval = async function (
-  adminId,
+AdminSales.statics.findByAdminIdAndDelete = async function (adminID) {
+  await this.findOneAndDelete({adminID});
+};
+AdminSales.statics.findSalesForAdminIDWithinAnInterval = async function (
+  adminID,
   fromTime,
   toTIme
 ) {
-  const adminSales = await this.findOneForAdminId(adminId);
+  const adminSales = await this.findOneForAdminId(adminID);
   if (!adminSales) return [];
   const productsToDisplay = adminSales.findSalesWithinAnInterval(
     fromTime,
@@ -53,14 +55,25 @@ AdminSales.statics.getSalesForAdminIdWithinAnInterval = async function (
   return adminSalesServices.calculatProductsSalesData(productsToDisplay);
 };
 
-AdminSales.statics.deleteById = function (Id) {
-  return this.findByIdAndDelete(Id);
+AdminSales.statics.findSalesForAdminIDWithinAnInterval = async function (
+  adminID,
+  fromTime,
+  toTIme
+) {
+  const adminSales = await this.findOneForAdminId(adminID);
+  if (!adminSales) return [];
+  const productsToDisplay = adminSales.findSalesWithinAnInterval(
+    fromTime,
+    toTIme
+  );
+  return adminSalesServices.calculatProductsSalesData(productsToDisplay);
 };
+
 AdminSales.methods.findSalesWithinAnInterval = function (
   fromTime = Date.now() - 1000 * 60 * 60 * 24 * 7,
   toTIme = Date.now()
 ) {
-  const soldProducts = this.getSoldProducts();
+  const soldProducts = this.products;
   return adminSalesServices.getProductsWithinAnInterval(
     soldProducts,
     fromTime,
@@ -68,17 +81,13 @@ AdminSales.methods.findSalesWithinAnInterval = function (
   );
 };
 
-AdminSales.methods.addOrderedProduct = async function (saleDetails) {
+AdminSales.methods.addOrderedProducts = async function (saleDetails) {
   const soldProducts = this.products;
   this.products = adminSalesServices.addSoldProducts(soldProducts, saleDetails);
   return this.save();
 };
 
-AdminSales.methods.getSoldProducts = function () {
-  return this.products;
-};
-
-AdminSales.methods.clearSoldProducts = async function () {
+AdminSales.methods.clearProducts = async function () {
   this.products = [];
   return await this.save();
 };

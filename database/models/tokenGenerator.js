@@ -4,27 +4,28 @@ const crypto = require("crypto");
 const Schema = mongoose.Schema;
 
 const tokenValidityPeriodInMs = 1000 * 60 * 60;
+
 const tokenGenerator = new Schema({
-  requesterId: {
+  requesterID: {
     type: Schema.Types.ObjectId,
     required: true,
   },
   token: {
     type: String,
-    default: crypto.randomBytes(32).toString("hex"),
   },
   expiryTime: {
     type: Date,
-    default: Date.now() + tokenValidityPeriodInMs,
   },
 });
 
-tokenGenerator.statics.createNewForId = async function (Id) {
-  const token = new this({
-    requesterId: Id,
+tokenGenerator.statics.createOneForID = async function (requesterID) {
+  const tokenDetails = new this({
+    requesterID,
+    token: crypto.randomBytes(32).toString("hex"),
+    expiryTime: Date.now() + tokenValidityPeriodInMs,
   });
-  await token.save();
-  return token;
+  await tokenDetails.save();
+  return tokenDetails;
 };
 
 tokenGenerator.statics.findTokenDetails = async function (token) {
@@ -35,22 +36,13 @@ tokenGenerator.statics.findTokenDetails = async function (token) {
   return tokenDetails;
 };
 
-tokenGenerator.statics.getRequesterIdforToken = async function (token) {
+tokenGenerator.statics.findRequesterIDForToken = async function (token) {
   const tokenDetails = await this.findOne({token});
   if (!tokenDetails) return null;
-  return await tokenDetails.getRequesterId();
+  return tokenDetails.requesterID;
 };
-tokenGenerator.statics.deleteTokenById = function (tokenId) {
-  return this.findByIdAndDelete(tokenId);
-};
-tokenGenerator.methods.getRequesterId = function () {
-  return this.requesterId;
-};
-tokenGenerator.methods.getToken = function () {
-  return this.token;
-};
-tokenGenerator.methods.getTokenId = function () {
-  return this._id;
+tokenGenerator.statics.delete = async function () {
+  await this.deleteOne();
 };
 
 module.exports = mongoose.model("Token", tokenGenerator);

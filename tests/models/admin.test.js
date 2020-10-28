@@ -2,7 +2,7 @@ const {Admin} = require("../../database/models");
 const {connectToDb, closeConnectionToBd} = require("../config");
 
 const baseTest = require("./baseAdminAndUser");
-describe("---Admin", () => {
+describe.skip("---Admin", () => {
   beforeAll(async () => {
     await connectToDb();
   });

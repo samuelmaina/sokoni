@@ -37,9 +37,6 @@ exports.PRODUCT_PROPERTIES = {
   percentageProfit: {
     type: Number,
   },
-  expirationPeriod: {
-    type: Number,
-  },
   description: {
     type: String,
   },

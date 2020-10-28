@@ -45,7 +45,6 @@ exports.getProductPerCategory = async (req, res, next) => {
         paginationData,
         categories,
       })
-      .activePath("/")
       .render();
   } catch (error) {
     next(error);
@@ -54,6 +53,7 @@ exports.getProductPerCategory = async (req, res, next) => {
 exports.getProducts = async (req, res, next) => {
   try {
     const page = +req.query.page || 1;
+    const categories = await Product.getPresentCategories();
     const {
       paginationData,
       products,
@@ -65,6 +65,7 @@ exports.getProducts = async (req, res, next) => {
       .appendDataToResBody({
         paginationData,
         prods: products,
+        categories,
       })
       .render();
   } catch (err) {
@@ -155,19 +156,18 @@ exports.postToCart = async (req, res, next) => {
     next(error);
   }
 };
+
 exports.getCart = async (req, res, next) => {
   try {
-    const {cartProducts, total} = await User.findCartProductsAndTheirTotalForId(
-      req.user._id
-    );
+    const {cart, total} = await req.user.populateCartProductsDetails();
     req.session.total = total;
-    req.session.orderedProducts = cartProducts;
+    req.session.orderedProducts = cart;
 
     new Renderer(res)
       .templatePath("shop/cart")
       .pageTitle("Your Cart")
       .appendDataToResBody({
-        products: cartProducts,
+        products: cart,
         total,
       })
       .activePath("/cart")
@@ -206,10 +206,8 @@ exports.createOrder = async (req, res, next) => {
     const order = await Order.createNew(orderData);
     await req.user.clearCart();
     res.redirect("/orders");
-    const populatedOrder = await Order.findByIdAndPopulateProductsDetails(
-      order._id
-    );
-    await addToAdminSales(populatedOrder.orderedProducts, next);
+    await order.populateDetails();
+    await addToAdminSales(order.orderedProducts, next);
   } catch (error) {
     next(error);
   }
@@ -270,7 +268,7 @@ const addToAdminSales = async (orderedProducts, next) => {
       );
 
       if (!adminSales) {
-        adminSales = await AdminSale.createNew(productDetails.adminId);
+        adminSales = await AdminSales.createNew(productDetails.adminId);
       }
       const saleDetails = {
         quantity: product.quantity,

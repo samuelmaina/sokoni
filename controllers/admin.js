@@ -6,6 +6,14 @@ const {deleteFile, validationResults, Renderer, Flash} = require("../util");
 
 const {Product, AdminSales} = require("../database/models");
 
+//when admins don't interact with page for
+//so long,the session is deleted.If they interact with it afterwards,
+// the req.session will be null and reading the admin._id will throw and error.
+const returnAdminIdIfAdminIdIsThere = req => {
+  if (req.session.admin) return req.session.admin._id;
+  else return null;
+};
+
 exports.getAddProduct = (req, res, next) => {
   new Renderer(res)
     .templatePath("admin/edit-product")
@@ -33,7 +41,7 @@ exports.postAddProduct = async (req, res, next) => {
 
     const productData = req.body;
     productData.imageUrl = image.path;
-    productData.adminId = req.session.admin._id;
+    productData.adminId = returnAdminIdIfAdminIdIsThere(req);
     await Product.createNew(productData);
     flash
       .appendInfo("Product created successfully created")
@@ -46,7 +54,7 @@ exports.postAddProduct = async (req, res, next) => {
 exports.getEditProduct = async (req, res, next) => {
   try {
     const flash = new Flash(req, res);
-    const adminId = req.session.admin._id;
+    const adminId = returnAdminIdIfAdminIdIsThere(req);
     const {edit, page} = req.query;
 
     const prodId = req.params.id;
@@ -91,7 +99,7 @@ exports.postEditProduct = async (req, res, next) => {
       });
     const productData = req.body;
 
-    const adminId = req.session.admin._id;
+    const adminId = returnAdminIdIfAdminIdIsThere(req);
     if (image) {
       productData.imageUrl = image.path;
     }
@@ -121,7 +129,7 @@ exports.postEditProduct = async (req, res, next) => {
 exports.getProducts = async (req, res, next) => {
   try {
     const renderer = new Renderer(res);
-    const currentAdminId = req.session.admin._id;
+    const currentAdminId = returnAdminIdIfAdminIdIsThere(req);
     const page = +req.query.page || 1;
     const {paginationData, products} = await Product.findPageProductsForAdminId(
       currentAdminId,
@@ -145,7 +153,7 @@ exports.getProducts = async (req, res, next) => {
 exports.deleteProduct = async (req, res, next) => {
   try {
     const flash = new Flash(req, res);
-    const adminId = req.session.admin._id;
+    const adminId = returnAdminIdIfAdminIdIsThere(req);
     const prodId = req.params.id;
     const prod = await Product.findById(prodId);
     if (!prod || !prod.isCreatedByAdminId(adminId)) {
@@ -170,8 +178,7 @@ exports.deleteProduct = async (req, res, next) => {
 exports.getAdminSales = async (req, res, next) => {
   try {
     const renderer = new Renderer(res);
-    const adminId = req.session.admin._id;
-    const errorMessage = "";
+    const adminId = returnAdminIdIfAdminIdIsThere(req);
 
     //the following fromTime and toTime is just used for testing purposes
     // their values are supposed to be picked on the front end preferably

@@ -17,7 +17,7 @@ exports.closeApp = async () => {
   server.close(err => {
     if (err) {
       throw new Error(err);
-      //although unlistened on the current port, the server is still running,
+      //although the server unlistened from the current port, it is still running,
       //and jest will warn of some unstopped operations.
     }
   });

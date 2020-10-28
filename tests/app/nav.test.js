@@ -5,7 +5,7 @@ const {
   createNewAdminWithData,
   clearTheDb,
 } = require("../utils/generalUtils");
-const Page = require("./utils/Auth");
+const {Auth} = require("./utils");
 
 const {clearSessions} = require("./utils/session");
 
@@ -21,11 +21,11 @@ const data = {
   email: "samuelmayna@gmail.com",
   password: "Smain68219",
 };
-describe("Ensure that all the links on the nav bar are working", () => {
+describe.skip("Nav Links", () => {
   beforeAll(async () => {
     await startApp(PORT);
     await clearTheDb();
-    page = new Page(getNewDriverInstance());
+    page = new Auth(getNewDriverInstance());
   }, TEST_MAX_TIME);
   afterAll(async () => {
     await page.close();
@@ -91,7 +91,7 @@ describe("Ensure that all the links on the nav bar are working", () => {
     const logInUrl = `${baseAuth}/user/log-in`;
     const type = "user";
     beforeAll(async () => {
-      await login;
+      await login(logInUrl, "user");
       const title = await page.getTitle();
       //when user is logged successfully the app redirects to Products.
       assert.equal(title, "Products", new Error("Unable to login the user"));

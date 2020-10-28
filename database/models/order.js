@@ -1,7 +1,9 @@
 const mongoose = require("mongoose");
+
 const Schema = mongoose.Schema;
+
 const Order = new Schema({
-  orderedProducts: [
+  products: [
     {
       productData: {
         type: Schema.Types.ObjectId,
@@ -10,10 +12,6 @@ const Order = new Schema({
       quantity: {type: Number},
     },
   ],
-  total: {
-    type: Number,
-    required: true,
-  },
   userId: {
     type: Schema.Types.ObjectId,
     ref: "User",
@@ -25,27 +23,27 @@ const Order = new Schema({
   },
 });
 
-Order.statics.createNew = function (orderData) {
+const byAscendingOrderTime = {time: -1};
+
+const pathToPopulate = "products.productData";
+
+Order.statics.createOne = function (orderData) {
   const order = new this({
     userId: orderData.userId,
-    orderedProducts: orderData.orderedProducts,
-    total: orderData.total,
+    products: orderData.products,
   });
   return order.save();
 };
-const byAscendingOrderTime = {time: -1};
 
-Order.statics.findWithPopulated = async function (
-  query,
-  pathToPopulate,
-  whatToPopulate
-) {
-  return await this.find(query)
-    .populate(pathToPopulate, whatToPopulate)
-    .sort(byAscendingOrderTime);
+Order.statics.findByIdAndPopulateProductsDetails = async function (id) {
+  const byIdQuery = {_id: id};
+  const orders = await this.findWithPopulated(
+    byIdQuery,
+    pathToPopulate,
+    "title sellingPrice"
+  );
+  return orders[0];
 };
-const pathToPopulate = "orderedProducts.productData";
-
 Order.statics.findAllforUserId = function (userId) {
   const byUserIdQuery = {userId};
   return this.findWithPopulated(
@@ -55,28 +53,23 @@ Order.statics.findAllforUserId = function (userId) {
   );
 };
 
-Order.statics.findByIdAndPopulateProductsDetails = async function (id) {
-  const byIdQuery = {_id: id};
-  const populatePath = pathToPopulate;
-  const whatToPopulate = " title sellingPrice adminId";
-  //the normal findById return one document but find({id:id}) returns
-  //an array with just one document.so we need to return first element to mimic findById.
-  return (
-    await this.findWithPopulated(byIdQuery, populatePath, whatToPopulate)
-  )[0];
-};
-
 Order.methods.isOrderedById = function (Id) {
   return Id.toString() === this.userId.toString();
 };
-Order.methods.getOrderedProducts = function () {
-  return this.orderedProducts;
+Order.methods.populateDetails = function () {
+  const whatToPopulate = "title sellingPrice adminId";
+  return this.populate(pathToPopulate, whatToPopulate).execPopulate();
 };
-Order.methods.getTotal = function () {
-  return this.total;
-};
-Order.methods.getUserId = function () {
-  return this.userId;
+
+//helper methods
+Order.statics.findWithPopulated = async function (
+  query,
+  pathToPopulate,
+  whatToPopulate
+) {
+  return await this.find(query)
+    .populate(pathToPopulate, whatToPopulate)
+    .sort(byAscendingOrderTime);
 };
 
 module.exports = mongoose.model("Order", Order);

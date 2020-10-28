@@ -11,7 +11,7 @@ const connectToDb = async () => {
 
 const closeConnectionToBd = async () => {
   try {
-    return await mongoose.disconnect();
+    await mongoose.disconnect();
   } catch (error) {
     throw new Error(error);
   }

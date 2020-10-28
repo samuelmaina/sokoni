@@ -5,8 +5,7 @@ const {
   createNewAdminWithData,
   createNewUserWithData,
 } = require("../utils/generalUtils");
-const Page = require("./utils/Auth");
-const session = require("./utils/session");
+const {Auth, session, utilLogin} = require("./utils");
 
 const MAX_SETUP_TIME = 3000;
 const MAX_TESTING_TIME = 30000;
@@ -21,10 +20,10 @@ const data = {
   password: "Smaina6891",
 };
 let page;
-describe("E2E tests", () => {
+describe.skip("Auth", () => {
   beforeAll(async () => {
     await startApp(PORT);
-    page = await new Page(getNewDriverInstance());
+    page = await new Auth(getNewDriverInstance());
   }, MAX_SETUP_TIME);
   afterAll(async () => {
     await closeApp();
@@ -46,7 +45,7 @@ describe("E2E tests", () => {
         async () => {
           await signUp(signUpUrl, data);
           const expectedTitle = "Admin Log In";
-          await validateTitleAndInfo(expectedTitle, expectedInfo);
+          await ensureHasTitleAndInfo(expectedTitle, expectedInfo);
         },
         MAX_TESTING_TIME
       );
@@ -61,7 +60,7 @@ describe("E2E tests", () => {
         const expectedErrorMessage =
           "Name too short or it contains symbols.Enter only alphanumerics.";
         const expectedTitle = "Admin Sign Up";
-        await validateTitleAndError(expectedTitle, expectedErrorMessage);
+        await ensureHasTitleAndError(expectedTitle, expectedErrorMessage);
       });
     });
 
@@ -73,7 +72,7 @@ describe("E2E tests", () => {
       it("valid credentials", async () => {
         await signUp(signUpUrl, data);
         const expectedTitle = "User Log In";
-        await validateTitleAndInfo(expectedTitle, expectedInfo);
+        await ensureHasTitleAndInfo(expectedTitle, expectedInfo);
       });
       it("invalid credentials", async () => {
         const {name, password} = data;
@@ -85,7 +84,7 @@ describe("E2E tests", () => {
         await signUp(signUpUrl, invalidEmailData);
         const expectedTitle = "User Sign Up";
         const expectedErrorMessage = "Please enter a valid email";
-        await validateTitleAndError(expectedTitle, expectedErrorMessage);
+        await ensureHasTitleAndError(expectedTitle, expectedErrorMessage);
       });
     });
   });
@@ -118,7 +117,7 @@ describe("E2E tests", () => {
         };
         await login(logInUrl, invalidData);
         const title = "Admin Log In";
-        await validateTitleAndError(title, error);
+        await ensureHasTitleAndError(title, error);
       });
     });
     describe("-user", () => {
@@ -142,7 +141,7 @@ describe("E2E tests", () => {
         };
         await login(logInUrl, invalidData);
         const title = "User Log In";
-        await validateTitleAndError(title, error);
+        await ensureHasTitleAndError(title, error);
       });
     });
   });
@@ -160,14 +159,14 @@ describe("E2E tests", () => {
         const title = "Admin Log In";
         const info =
           "A link has been sent to your email. Please click the link to reset password.";
-        await validateTitleAndInfo(title, info);
+        await ensureHasTitleAndInfo(title, info);
       });
       it("invalid email", async () => {
         const invalidEmail = "samuelmayna@gmail.com123";
         await reset(resetUrl, invalidEmail);
         const title = "Admin Reset Password";
         const error = "Please enter a valid email.";
-        await validateTitleAndError(title, error);
+        await ensureHasTitleAndError(title, error);
       });
     });
     describe("user", () => {
@@ -183,25 +182,26 @@ describe("E2E tests", () => {
         const title = "User Log In";
         const info =
           "A link has been sent to your email. Please click the link to reset password.";
-        await validateTitleAndInfo(title, info);
+        await ensureHasTitleAndInfo(title, info);
       });
       it("invalid email", async () => {
         const invalidEmail = "samuelmayna@gmail.com123";
         await reset(resetUrl, invalidEmail);
         const title = "User Reset Password";
         const error = "Please enter a valid email.";
-        await validateTitleAndError(title, error);
+        await ensureHasTitleAndError(title, error);
       });
     });
   });
 });
-const validateTitleAndError = async (expectedTitle, expectedErrorMessage) => {
+const ensureHasTitleAndError = async (expectedTitle, expectedErrorMessage) => {
   const title = await page.getTitle();
   const error = await page.getError();
   expect(title).toEqual(expectedTitle);
   expect(error).toEqual(expectedErrorMessage);
 };
-const validateTitleAndInfo = async (expectedTitle, expectedInfo) => {
+
+const ensureHasTitleAndInfo = async (expectedTitle, expectedInfo) => {
   const title = await page.getTitle();
   const info = await page.getInfo();
   expect(title).toEqual(expectedTitle);
@@ -209,29 +209,21 @@ const validateTitleAndInfo = async (expectedTitle, expectedInfo) => {
 };
 
 const signUp = async (signUpUrl, data) => {
-  try {
-    await page.openUrl(signUpUrl);
+  await page.openUrl(signUpUrl);
 
-    await page.enterName(data.name);
-    await page.enterEmail(data.email);
-    await page.enterPassword(data.password);
-    await page.enterConfirmPassword(data.password);
+  await page.enterName(data.name);
+  await page.enterEmail(data.email);
+  await page.enterPassword(data.password);
+  await page.enterConfirmPassword(data.password);
 
-    await page.submit("signup");
-  } catch (error) {
-    throw new Error(error);
-  }
+  await page.submit("signup");
 };
 const login = async (loginUrl, data) => {
-  try {
-    await page.openUrl(loginUrl);
+  await page.openUrl(loginUrl);
 
-    await page.enterEmail(data.email);
-    await page.enterPassword(data.password);
-    await page.submit("login");
-  } catch (error) {
-    throw new Error(error);
-  }
+  await page.enterEmail(data.email);
+  await page.enterPassword(data.password);
+  await page.submit("login");
 };
 
 const reset = async (resetUrl, email) => {

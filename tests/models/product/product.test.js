@@ -1,6 +1,6 @@
 const {Product} = require("../../../database/models/index");
 
-const TRIALS = 20;
+const TRIALS = 10;
 
 const {
   verifyIDsAreEqual,
@@ -28,7 +28,7 @@ const {
 
 const adminId = "Id2348vf888fjth883";
 
-describe("--Product ", () => {
+describe.skip("--Product ", () => {
   beforeAll(async () => {
     await connectToDb();
   });
@@ -39,12 +39,12 @@ describe("--Product ", () => {
   afterEach(async () => {
     await clearTheDb();
   });
-  it("createNew create a complete product with sellingPrice added to it", async () => {
+  it("createOne create a complete product with sellingPrice added to it", async () => {
     const productData = getRandomProductData(adminId);
     //the productData has sellingPrice added to it by createNew.so we need to
     //copy(by destructuring) it so that we can maintain its previous properties.
     const productCopy = {...productData};
-    product = await Product.createNew(productData);
+    product = await Product.createOne(productData);
     // see that the previous properties are captured in the created product
     for (const key in productCopy) {
       if (key == "adminId") {
@@ -64,11 +64,9 @@ describe("--Product ", () => {
       beforeEach(async () => {
         products = await createTestProducts(adminId, TRIALS);
       });
-      it(`getProductsWhoseQuantityIsGreaterThanZero get present products and the pagination Data for a page`, async () => {
+      it(`findProductsForPage get present products and the pagination Data for a page`, async () => {
         const page = 2;
-        const renderData = await Product.getProductsWhoseQuantityIsGreaterThanZero(
-          page
-        );
+        const renderData = await Product.findProductsForPage(page);
         const paginationData = await calculatePaginationData(page);
         const renderedProducts = renderData.products;
         ensureNoOfProductsAreWithinPRODUCTS_PER_PAGE(renderedProducts);
@@ -76,6 +74,39 @@ describe("--Product ", () => {
         verifyEqual(renderData.paginationData, paginationData);
       });
 
+      it(`findCategories() return the number of categories for all the products`, async () => {
+        const expectedCategories = ["category 1", "category 2", "category 3"];
+        await feedProductsWithTestCategories(products, expectedCategories);
+        const categories = await Product.findCategories();
+        verifyEqual(categories, expectedCategories);
+      });
+      it(`findCategoryProductsForPage returns products with a certain category`, async () => {
+        const expectedCategories = [
+          "category 1",
+          "category 2",
+          "category 3",
+          "category 4",
+        ];
+        const page = 1;
+        await feedProductsWithTestCategories(products, expectedCategories);
+        //would have used a forEach method but it seems to have problems with async functions.
+        for (let index = 0; index < expectedCategories.length; index++) {
+          const category = expectedCategories[index];
+          const renderData = await Product.findCategoryProductsForPage(
+            category,
+            page
+          );
+          const {paginationData, products} = renderData;
+          products.forEach(element => {
+            verifyEqual(element.category, category);
+          });
+          ensureProductsHavePositiveQuantity(products);
+          const receivedPaginationData = await calculatePaginationData(page, {
+            category,
+          });
+          verifyEqual(receivedPaginationData, paginationData);
+        }
+      });
       it(`findPageProductsForAdminId get number of products(with positive quantity) and the 
           pagination Data for an admin for  a page`, async () => {
         const page = 2;
@@ -100,37 +131,6 @@ describe("--Product ", () => {
         ensureNoOfProductsAreWithinPRODUCTS_PER_PAGE(renderedProducts);
         verifyEqual(renderData.paginationData, paginationData);
       });
-
-      it(`getPresentCategories return the number of categories for all the products`, async () => {
-        const expectedCategories = ["category 1", "category 2", "category 3"];
-        await feedProductsWithTestCategories(products, expectedCategories);
-        const categories = await Product.getPresentCategories();
-        verifyEqual(categories, expectedCategories);
-      });
-      it(`findCategoryProducts returns products with a certain category`, async () => {
-        const expectedCategories = [
-          "category 1",
-          "category 2",
-          "category 3",
-          "category4",
-        ];
-        const page = 1;
-        await feedProductsWithTestCategories(products, expectedCategories);
-        //would have used a forEach method but it seems to have problems with async functions.
-        for (let index = 0; index < expectedCategories.length; index++) {
-          const category = expectedCategories[index];
-          const renderData = await Product.findCategoryProducts(category, page);
-          const {paginationData, products} = renderData;
-          products.forEach(element => {
-            verifyEqual(element.category, category);
-          });
-          ensureProductsHavePositiveQuantity(products);
-          const receivedPaginationData = await calculatePaginationData(page, {
-            category,
-          });
-          verifyEqual(receivedPaginationData, paginationData);
-        }
-      });
     });
     describe("instance methods", () => {
       let product;
@@ -143,24 +143,24 @@ describe("--Product ", () => {
         verifyFalsy(product.isCreatedByAdminId(trialAdminId));
       });
 
-      it(` increaseQuantityBy increases a product quantity`, async () => {
+      it(`incrementQuantity increases a product quantity`, async () => {
         let initial, final, increment;
         initial = 50;
         increment = 89;
         final = initial + increment;
         product.quantity = initial;
         await product.save();
-        await product.increaseQuantityBy(increment);
+        await product.incrementQuantity(increment);
         verifyEqual(product.quantity, final);
       });
-      it(` reduceQuantityBy reduces a product quantity`, async () => {
+      it(`decrementQuantity reduces a product quantity`, async () => {
         let initial, final, decrement;
         initial = 100;
         decrement = 45;
         final = initial - decrement;
         product.quantity = initial;
         await product.save();
-        await product.reduceQuantityBy(decrement);
+        await product.decrementQuantity(decrement);
         verifyEqual(product.quantity, final);
       });
       describe(`updateDetails updates product's details`, () => {
@@ -199,6 +199,12 @@ describe("--Product ", () => {
           //ensure previous Image is not changed.
           verifyEqual(previousImageUrl, product.imageUrl);
         });
+      });
+      it("deleteProduct() deletes current product", async () => {
+        const productId = product.id;
+        await product.deleteProduct();
+        const foundProduct = await Product.findById(productId);
+        expect(foundProduct).toBeNull();
       });
     });
   });

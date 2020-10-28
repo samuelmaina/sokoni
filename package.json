@@ -4,7 +4,7 @@
   "description": "Online shop",
   "main": "app.js",
   "scripts": {
-    "test": "jest --runInBand",
+    "test": "jest --verbose --runInBand ",
     "start": "nodemon node index.js"
   },
   "author": "Samuel Maina",
@@ -38,6 +38,7 @@
     "pdfkit": "^0.10.0",
     "request": "^2.88.2",
     "selenium-webdriver": "^4.0.0-alpha.7",
+    "sinon": "^9.2.0",
     "supertest": "^4.0.2"
   }
 }

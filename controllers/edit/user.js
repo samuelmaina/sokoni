@@ -25,7 +25,8 @@ exports.postEditDetails = async (req, res, next) => {
         .appendPreviousData(req.body)
         .redirect("change-details");
     }
-    await req.user.updateNameAndEmail(req.body);
+    const {name, email} = req.body;
+    await req.user.update();
     flash.appendInfo(`Details successfully updated`).redirect(DASHBOARD_PATH);
   } catch (error) {
     next(error);
