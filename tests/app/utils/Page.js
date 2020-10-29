@@ -11,6 +11,11 @@ class Page {
       throw new Error(error);
     }
   }
+
+  async getElementsWithClassName(className) {
+    return await this.driver.findElements(By.className(className));
+  }
+
   async clickById(id) {
     try {
       await this.driver.findElement(By.css(`#${id}`)).click();
@@ -25,10 +30,19 @@ class Page {
       throw new Error(error);
     }
   }
+  async enterTextById(id, data) {
+    try {
+      return await this.driver.findElement(By.css(`#${id}`)).sendKeys(data);
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
   async findElementsByClassName(className) {
     try {
       return await this.driver.findElements(By.className(className));
-    } catch (error) {}
+    } catch (error) {
+      throw new Error(error);
+    }
   }
   async clickByCss(cssPath) {
     try {
@@ -76,7 +90,7 @@ class Page {
   }
   async clickByClassName(className) {
     try {
-      await this.driver.findElement(By.className(className)).getText();
+      await this.driver.findElement(By.className(className)).click();
     } catch (error) {
       throw new Error(error);
     }

@@ -1,4 +1,4 @@
-const {Renderer} = require("../../util");
+const {Renderer} = require("../../utils");
 
 const BaseAuth = require("./base");
 const {User} = require("../../database/models");

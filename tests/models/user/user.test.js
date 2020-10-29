@@ -9,8 +9,8 @@ const {
 const {
   createNewUser,
   createTestProducts,
-  createNewAdmin,
   clearTheDb,
+  generateMongooseId,
 } = require("../../utils/generalUtils");
 
 const userUtils = require("./util");
@@ -23,10 +23,10 @@ const baseTest = require("../baseAdminAndUser");
 const {connectToDb, closeConnectionToBd} = require("../../config");
 
 let user;
-let admin;
+const adminId = generateMongooseId();
 let products = [];
 
-describe.skip("----User Database", () => {
+describe("----User Database", () => {
   beforeAll(async () => {
     await connectToDb();
   });
@@ -37,8 +37,7 @@ describe.skip("----User Database", () => {
   describe("Purchase Tests", () => {
     beforeAll(async () => {
       user = await createNewUser();
-      admin = await createNewAdmin();
-      products = await createTestProducts(admin.id, TRIALS);
+      products = await createTestProducts(adminId, TRIALS);
     }, MAX_TEST_TIME);
     afterAll(async () => {
       await clearTheDb();

@@ -1,17 +1,17 @@
-const path = require("path");
-
-require("dotenv").config();
-
-const {deleteFile, validationResults, Renderer, Flash} = require("../util");
+const {
+  fileManipulators,
+  validationResults,
+  Renderer,
+  Flash,
+} = require("../utils");
 
 const {Product, AdminSales} = require("../database/models");
 
 //when admins don't interact with page for
-//so long,the session is deleted.If they interact with it afterwards,
-// the req.session will be null and reading the admin._id will throw and error.
-const returnAdminIdIfAdminIdIsThere = req => {
+//too long,the session is expired.reading admin._id from it will throw an error.
+const returnAdminIdIfAdminIsInSession = req => {
   if (req.session.admin) return req.session.admin._id;
-  else return null;
+  return null;
 };
 
 exports.getAddProduct = (req, res, next) => {
@@ -41,7 +41,7 @@ exports.postAddProduct = async (req, res, next) => {
 
     const productData = req.body;
     productData.imageUrl = image.path;
-    productData.adminId = returnAdminIdIfAdminIdIsThere(req);
+    productData.adminId = returnAdminIdIfAdminIsInSession(req);
     await Product.createNew(productData);
     flash
       .appendInfo("Product created successfully created")
@@ -54,7 +54,7 @@ exports.postAddProduct = async (req, res, next) => {
 exports.getEditProduct = async (req, res, next) => {
   try {
     const flash = new Flash(req, res);
-    const adminId = returnAdminIdIfAdminIdIsThere(req);
+    const adminId = returnAdminIdIfAdminIsInSession(req);
     const {edit, page} = req.query;
 
     const prodId = req.params.id;
@@ -99,7 +99,7 @@ exports.postEditProduct = async (req, res, next) => {
       });
     const productData = req.body;
 
-    const adminId = returnAdminIdIfAdminIdIsThere(req);
+    const adminId = returnAdminIdIfAdminIsInSession(req);
     if (image) {
       productData.imageUrl = image.path;
     }
@@ -129,7 +129,7 @@ exports.postEditProduct = async (req, res, next) => {
 exports.getProducts = async (req, res, next) => {
   try {
     const renderer = new Renderer(res);
-    const currentAdminId = returnAdminIdIfAdminIdIsThere(req);
+    const currentAdminId = returnAdminIdIfAdminIsInSession(req);
     const page = +req.query.page || 1;
     const {paginationData, products} = await Product.findPageProductsForAdminId(
       currentAdminId,
@@ -153,7 +153,7 @@ exports.getProducts = async (req, res, next) => {
 exports.deleteProduct = async (req, res, next) => {
   try {
     const flash = new Flash(req, res);
-    const adminId = returnAdminIdIfAdminIdIsThere(req);
+    const adminId = returnAdminIdIfAdminIsInSession(req);
     const prodId = req.params.id;
     const prod = await Product.findById(prodId);
     if (!prod || !prod.isCreatedByAdminId(adminId)) {
@@ -161,11 +161,7 @@ exports.deleteProduct = async (req, res, next) => {
         .appendError("You can't delete this product")
         .redirect("/admin/products");
     }
-    deleteFile(path.resolve(prod.imageUrl));
-    /*to avoid race condition first delete the image 
-    using the product's image url and then delete the product data
-    */
-
+    fileManipulators.deleteFile(prod.imageUrl);
     await Product.deleteById(prodId);
     flash
       .appendInfo("Product deleted successfully")
@@ -178,7 +174,7 @@ exports.deleteProduct = async (req, res, next) => {
 exports.getAdminSales = async (req, res, next) => {
   try {
     const renderer = new Renderer(res);
-    const adminId = returnAdminIdIfAdminIdIsThere(req);
+    const adminId = returnAdminIdIfAdminIsInSession(req);
 
     //the following fromTime and toTime is just used for testing purposes
     // their values are supposed to be picked on the front end preferably
@@ -188,7 +184,7 @@ exports.getAdminSales = async (req, res, next) => {
     if (fromTime > Date.now() || toTime > Date.now()) {
       return res.redirect("/products");
     }
-    const salesProfits = await AdminSales.getSalesForAdminIdWithinAnInterval(
+    const salesProfits = await AdminSales.findSalesForAdminIDWithinAnInterval(
       adminId,
       fromTime,
       toTime

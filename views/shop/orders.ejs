@@ -11,7 +11,7 @@
         <h1 class="order_header">Order - # <%= order._id %></h1>
         <h1><%= order.time.toDateString()%></h1>
         <ul class="orders__products">
-            <% order.orderedProducts.forEach(p=> { %>
+            <% order.products.forEach(p=> { %>
             <strong>
 
                 <li class="orders__products-item"> Name: <%= p.productData.title %> (<%= p.quantity %>)</li>

@@ -4,11 +4,12 @@ const router = express.Router();
 const {account} = require("../../controllers");
 const controller = account.user;
 
-const accountValidator = require("../../util/validators/accounting");
+const {validators} = require("../../utils");
+const {accounting} = validators;
 
 router
   .route("/deposit")
   .get(controller.getDeposit)
-  .post(accountValidator.userPayment, controller.postDeposit);
+  .post(accounting.userPayment, controller.postDeposit);
 
 module.exports = router;

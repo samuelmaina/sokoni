@@ -1,15 +1,13 @@
 const mongoose = require("mongoose");
-const path = require("path");
-const fs = require("fs");
 
 const {ProductService} = require("../services");
 
-const imageDeleter = require("../../util/deleteFile");
+const {fileManipulators} = require("../../utils");
 
 let {PRODUCTS_PER_PAGE} = require("../../config");
+
 const POSITIVE_QUNTITY_QUERY = {quantity: {$gt: 0}};
 
-PRODUCTS_PER_PAGE = Number(PRODUCTS_PER_PAGE);
 const Schema = mongoose.Schema;
 
 const productSchema = {
@@ -97,7 +95,7 @@ Product.statics.findProductsForPage = async function (page = 1) {
 };
 
 Product.statics.findCategories = async function () {
-  const products = await this.getAllProductsWhoseQuantityIsGreaterThanZero();
+  const products = await this.find(POSITIVE_QUNTITY_QUERY);
   return ProductService.findCategoriesPresent(products);
 };
 
@@ -148,12 +146,7 @@ Product.methods.decrementQuantity = async function (quantity) {
 
 Product.methods.updateDetails = async function (productData) {
   if (this.imageUrl !== productData.imageUrl) {
-    const imagePath = path.resolve(this.imageUrl);
-    fs.exists(imagePath, exists => {
-      if (exists) {
-        imageDeleter(imagePath);
-      }
-    });
+    fileManipulators.deleteFile(this.imageUrl);
   }
   ProductService.calculateSellingPrice(productData);
   for (const property in productData) {
@@ -163,10 +156,6 @@ Product.methods.updateDetails = async function (productData) {
 };
 Product.methods.deleteProduct = async function () {
   await this.deleteOne();
-};
-
-Product.statics.getAllProductsWhoseQuantityIsGreaterThanZero = async function () {
-  return await this.find(POSITIVE_QUNTITY_QUERY);
 };
 
 Product.statics.getProductsPerPage = async function (page) {

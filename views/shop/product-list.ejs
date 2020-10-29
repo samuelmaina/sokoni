@@ -26,7 +26,6 @@
             <a href="/product/<%= product.id %>" class="btn">Details</a>
             <% if (isUserLoggedIn) { %>
             <%- include('../includes/add-to-cart.ejs', {product: product,page:paginationData.currentPage}) %>
-
             <% } %>
         </div>
     </article>

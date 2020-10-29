@@ -2,18 +2,15 @@ const {AdminSales} = require("../database/models");
 
 const path = require("path");
 
-const {Flash, Renderer, pipeInvoicePdf} = require("../util");
+const {Flash, Renderer, pipeInvoicePdf} = require("../utils");
 
-const {Product, User, Order} = require("../database/models");
+const {Product, Order} = require("../database/models");
 
 exports.getIndex = async (req, res, next) => {
   try {
-    const categories = await Product.getPresentCategories();
+    const categories = await Product.findCategories();
     const page = +req.query.page || 1;
-    const {
-      paginationData,
-      products,
-    } = await Product.getProductsWhoseQuantityIsGreaterThanZero(page);
+    const {paginationData, products} = await Product.findProductsForPage(page);
     new Renderer(res)
       .templatePath("shop/index")
       .pageTitle("SM Online Shop")
@@ -32,11 +29,11 @@ exports.getProductPerCategory = async (req, res, next) => {
   try {
     const page = +req.query.page || 1;
     const category = req.params.category;
-    const categories = await Product.getPresentCategories();
-    const {paginationData, products} = await Product.findCategoryProducts(
-      category,
-      page
-    );
+    const categories = await Product.findCategories();
+    const {
+      paginationData,
+      products,
+    } = await Product.findCategoryProductsForPage(category, page);
     return new Renderer(res)
       .templatePath("shop/index")
       .pageTitle(`${category}`)
@@ -53,11 +50,8 @@ exports.getProductPerCategory = async (req, res, next) => {
 exports.getProducts = async (req, res, next) => {
   try {
     const page = +req.query.page || 1;
-    const categories = await Product.getPresentCategories();
-    const {
-      paginationData,
-      products,
-    } = await Product.getProductsWhoseQuantityIsGreaterThanZero(page);
+    const categories = await Product.findCategories();
+    const {paginationData, products} = await Product.findProductsForPage(page);
     new Renderer(res)
       .templatePath("shop/product-list")
       .pageTitle("Products")
@@ -100,7 +94,7 @@ exports.getAddToCart = async (req, res, next) => {
   const product = await Product.findById(productId);
   new Renderer(res)
     .templatePath("shop/add-to-cart")
-    .pageTitle("Add product")
+    .pageTitle("Add To Cart")
     .appendDataToResBody({
       product,
       page,
@@ -114,7 +108,7 @@ exports.postToCart = async (req, res, next) => {
     let errorMessage, info;
     const renderer = new Renderer(res)
       .templatePath("shop/add-to-cart")
-      .pageTitle("Add product")
+      .pageTitle("Add To Cart")
       .appendDataToResBody({
         page,
         previousData,
@@ -128,14 +122,14 @@ exports.postToCart = async (req, res, next) => {
       errorMessage = "add 1 or more products as quantity";
       return renderer.appendError(errorMessage).render();
     }
-    const currentQuantity = product.getQuantity();
+    const currentQuantity = product.quantity;
     if (currentQuantity < quantity) {
       info = `On stock quantity is ${currentQuantity}.Please request less quantity`;
       return renderer.appendInfo(info).render();
     }
     if (product) {
       const total = product.sellingPrice * quantity;
-      const currentBalance = req.user.getCurrentBalance();
+      const currentBalance = req.user.balance;
       if (!(currentBalance >= total)) {
         errorMessage = `Dear customer you don't have enough balance to complete
          this transaction. Please reduce your quantity or  recharge Kshs ${(
@@ -143,14 +137,14 @@ exports.postToCart = async (req, res, next) => {
          ).toFixed(2)} in your account and try again.`;
         return renderer.appendError(errorMessage).render();
       } else {
-        await req.user.reduceBalance(total);
+        await req.user.decrementBalance(total);
       }
 
-      await req.user.addProductIdToCart(productId, quantity);
-      await product.reduceQuantityBy(quantity);
+      await req.user.addProductsToCart(productId, quantity);
+      await product.decrementQuantity(quantity);
     }
     new Flash(req, res)
-      .appendInfo("Product successfully added to the cart")
+      .appendInfo("Product successfully added to cart.")
       .redirect(`products?page=${page}`);
   } catch (error) {
     next(error);
@@ -203,11 +197,11 @@ exports.createOrder = async (req, res, next) => {
       orderedProducts: orderedProducts,
       total: productTotal,
     };
-    const order = await Order.createNew(orderData);
+    const order = await Order.createOne(orderData);
     await req.user.clearCart();
     res.redirect("/orders");
     await order.populateDetails();
-    await addToAdminSales(order.orderedProducts, next);
+    await addToAdminSales(order.products, next);
   } catch (error) {
     next(error);
   }
@@ -272,7 +266,7 @@ const addToAdminSales = async (orderedProducts, next) => {
       }
       const saleDetails = {
         quantity: product.quantity,
-        productId: productDetails._id,
+        productId: proquantityductDetails._id,
       };
       await adminSales.addOrderedProduct(saleDetails);
     }

@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
-const {MONGO_TEST_URI} = require("../config");
-const connector = require("../util/connectToDb");
+require("dotenv").config();
+
+const connector = require("../utils/connectToDb");
+
+const MONGO_TEST_URI = process.env.MONGO_TEST_URI;
+
 const connectToDb = async () => {
   try {
     await connector(MONGO_TEST_URI);

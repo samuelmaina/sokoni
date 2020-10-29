@@ -1,11 +1,10 @@
 const express = require("express");
 
-const fileUploader = require("../../appMiddlewares/fileUploader");
-
-let utils = require("../../util");
-const {product} = utils.validators;
-const validators = product;
 const {admin} = require("../../controllers");
+
+let {validators} = require("../../utils");
+const {product} = validators;
+validators = product;
 const controller = admin;
 
 const router = express.Router();

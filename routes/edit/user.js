@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-let {validators} = require("../../util");
-const updateValidators = validators.auth;
+let {validators} = require("../../utils");
+const authValidators = validators.auth;
 
 const {edit} = require("../../controllers");
 const userEditController = edit.user;
@@ -9,13 +9,13 @@ const userEditController = edit.user;
 router.get("/change-details", userEditController.getEditDetails);
 router.post(
   "/change-details",
-  updateValidators.changeDetailsValidator,
+  authValidators.changeDetailsValidator,
   userEditController.postEditDetails
 );
 router.get("/change-password", userEditController.getChangePassword);
 router.post(
   "/change-password",
-  updateValidators.newPasswordValidator,
+  authValidators.newPasswordValidator,
   userEditController.postChangePassword
 );
 module.exports = router;

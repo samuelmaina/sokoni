@@ -1,8 +1,13 @@
 const bcrypt = require("bcrypt");
 const assert = require("assert");
+const mongoose = require("mongoose");
 const {User, Admin, Product} = require("../../database/models");
 
 const Models = require("../../database/models");
+
+exports.generateMongooseId = () => {
+  return mongoose.Types.ObjectId();
+};
 
 exports.clearTheDb = async () => {
   try {
@@ -22,36 +27,6 @@ exports.clearTheDb = async () => {
     console.log(error);
     throw new Error(error);
   }
-};
-
-exports.PRODUCT_PROPERTIES = {
-  title: {
-    type: String,
-  },
-  imageUrl: {
-    type: String,
-  },
-  buyingPrice: {
-    type: Number,
-  },
-  percentageProfit: {
-    type: Number,
-  },
-  description: {
-    type: String,
-  },
-  quantity: {
-    type: Number,
-  },
-  adminId: {
-    type: String,
-  },
-  category: {
-    type: String,
-  },
-  brand: {
-    type: String,
-  },
 };
 
 exports.clearDataFromAModel = async Model => {
@@ -152,4 +127,33 @@ exports.getRandomProductData = adminId => {
     }
   }
   return data;
+};
+exports.PRODUCT_PROPERTIES = {
+  title: {
+    type: String,
+  },
+  imageUrl: {
+    type: String,
+  },
+  buyingPrice: {
+    type: Number,
+  },
+  percentageProfit: {
+    type: Number,
+  },
+  description: {
+    type: String,
+  },
+  quantity: {
+    type: Number,
+  },
+  adminId: {
+    type: String,
+  },
+  category: {
+    type: String,
+  },
+  brand: {
+    type: String,
+  },
 };

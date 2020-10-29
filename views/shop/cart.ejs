@@ -31,7 +31,7 @@
         <strong class="grid cart__item ">Total Price <span class="total">ksh <%= total %></span></strong> <br>
         <form action="/create-order" method="POST">
             <%- include('../includes/csurf.ejs') %>
-            <input class="btn cart__item " type="submit" value='Order Now!!'>
+            <input id='order-now' class="btn cart__item " type="submit" value='Order Now!!'>
         </form>
 
         <% } else { %>

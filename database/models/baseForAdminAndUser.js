@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+
+const {BaseServices} = require("../services");
+const {hashPassword, confirmPassword} = BaseServices;
 
 const Schema = mongoose.Schema;
 const baseOptions = {
@@ -62,7 +64,7 @@ Base.statics.findOneWithCredentials = async function (email, password) {
 };
 
 Base.methods.isPasswordCorrect = async function (password) {
-  const isPwdValid = await bcrypt.compare(password, this.password);
+  const isPwdValid = await confirmPassword(password, this.password);
   return isPwdValid;
 };
 Base.methods.update = async function (field, data) {
@@ -78,10 +80,6 @@ Base.methods.update = async function (field, data) {
 
 Base.methods.deleteAccount = async function () {
   await this.deleteOne();
-};
-
-const hashPassword = password => {
-  return bcrypt.hash(password, 12);
 };
 
 const Member = mongoose.model("Base", Base);

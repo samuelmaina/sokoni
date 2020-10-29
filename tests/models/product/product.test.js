@@ -14,6 +14,7 @@ const {
   getRandomProductData,
   clearTheDb,
   createTestProducts,
+  generateMongooseId,
 } = require("../../utils/generalUtils");
 
 const {
@@ -26,9 +27,9 @@ const {
   getRandomProductDataWithNoImageUrl,
 } = require("./util");
 
-const adminId = "Id2348vf888fjth883";
+const adminId = generateMongooseId();
 
-describe.skip("--Product ", () => {
+describe("--Product ", () => {
   beforeAll(async () => {
     await connectToDb();
   });

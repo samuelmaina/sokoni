@@ -1,41 +1,50 @@
+const {
+  createTestProducts,
+  clearTheDb,
+  generateMongooseId,
+} = require("../utils/generalUtils");
+
 const {startApp, getNewDriverInstance, closeApp} = require("./config");
 const {feedProductsWithTestCategories} = require("../models/product/util");
-const {createTestProducts, clearTheDb} = require("../utils/generalUtils");
 
 const {Page} = require("./utils");
 
+const adminId = generateMongooseId();
+
 let page;
+
+const TRIALS = 10;
 
 const MAX_TEST_PERIOD = 20000;
 
 const PORT = 5000;
 const base = `http://localhost:${PORT}`;
 const homePage = `${base}/`;
-describe.skip("Shop Navigation", () => {
+
+describe("The HomePage(Shop) can be navigated", () => {
   let products = [];
   beforeAll(async () => {
-    page = new Page(getNewDriverInstance());
     await startApp(PORT);
-    const TRIALS = 10;
-    const adminId = "Id4684veru994334";
+    page = new Page(getNewDriverInstance());
     products = await createTestProducts(adminId, TRIALS);
-  }, MAX_TEST_PERIOD);
-  beforeEach(async () => {
-    await page.openUrl(homePage);
   }, MAX_TEST_PERIOD);
 
   afterAll(async () => {
     await page.close();
-
     await clearTheDb();
     await closeApp();
   });
+  beforeEach(async () => {
+    await page.openUrl(homePage);
+  }, MAX_TEST_PERIOD);
+
   it(
     "should click category links",
     async () => {
       const categories = ["category 1", "category 2", "category 3"];
       await feedProductsWithTestCategories(products, categories);
       for (const category of categories) {
+        //reload incase the there are errors.
         await page.openUrl(homePage);
         await page.clickLink(category);
         const title = await page.getTitle();
@@ -50,7 +59,7 @@ describe.skip("Shop Navigation", () => {
   it(
     "should click the Add to Cart button",
     async () => {
-      await page.clickByCss('input[type = "submit"]');
+      await page.clickByClassName("add-to-cart-btn");
       const title = await page.getTitle();
 
       //user can not add to cart when they are not logged in.

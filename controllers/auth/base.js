@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const {TokenGenerator} = require("../../database/models");
 
-const {validationResults, Renderer, Flash} = require("../../util");
+const {validationResults, Renderer, Flash} = require("../../utils");
 
 class Auth {
   constructor(Model, type) {
@@ -141,7 +141,7 @@ class Auth {
           .appendError(` No ${this.person} by that email exits`)
           .redirect(this.routes.reset);
       }
-      await TokenGenerator.createOneForId(document.id);
+      await TokenGenerator.createOneForID(document.id);
       // transporter.send({
       //   //http://localhost:3000/auth/user/new-password/8c4c25d10c8194101a037fdbd2870e9996b5e3d786f662003116a6e92ea327bc
       //   from: "samuelsonlineshop@online.com",

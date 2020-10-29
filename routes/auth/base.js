@@ -1,5 +1,5 @@
-let {validators} = require("../../util");
-validators = validators.auth;
+let {validators} = require("../../utils");
+authValidator = validators.auth;
 
 const routes = {
   signUp: `/sign-up`,
@@ -13,8 +13,8 @@ class BaseRouting {
     this.router = router;
     let signUpValidator;
     if (controller.type === "admin")
-      signUpValidator = validators.adminSignUpValidator;
-    else signUpValidator = validators.userSignUpValidator;
+      signUpValidator = authValidator.adminSignUpValidator;
+    else signUpValidator = authValidator.userSignUpValidator;
 
     this.router
       .route(routes.signUp)
@@ -28,7 +28,7 @@ class BaseRouting {
         controller.getLogin(req, res, next);
       })
       .post(
-        validators.loginValidator,
+        authValidator.loginValidator,
         (req, res, next) => controller.postLogin(req, res, next),
         (req, res, next) => controller.initializeSession(req, res, next)
       );
@@ -36,7 +36,7 @@ class BaseRouting {
     this.router
       .route(routes.reset)
       .get((req, res, next) => controller.getReset(req, res, next))
-      .post(validators.validateReset, (req, res, next) =>
+      .post(authValidator.validateReset, (req, res, next) =>
         controller.postReset(req, res, next)
       );
 
@@ -46,7 +46,7 @@ class BaseRouting {
       )
       .post(
         routes.newPassword,
-        validators.newPasswordValidator,
+        authValidator.newPasswordValidator,
         (req, res, next) => controller.postNewPassword(req, res, next)
       );
     this.router.post(routes.logOut, (req, res, next) =>

@@ -1,4 +1,4 @@
-const {Flash, Renderer, validationResults} = require("../../util");
+const {Flash, Renderer, validationResults} = require("../../utils");
 
 const DASHBOARD_PATH = "/auth/user/dashboard";
 

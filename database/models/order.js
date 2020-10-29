@@ -42,6 +42,7 @@ Order.statics.findByIdAndPopulateProductsDetails = async function (id) {
     pathToPopulate,
     "title sellingPrice"
   );
+
   return orders[0];
 };
 Order.statics.findAllforUserId = function (userId) {

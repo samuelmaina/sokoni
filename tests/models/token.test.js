@@ -44,6 +44,8 @@ describe.skip("Token Generator", () => {
       ensureTokenIsNotExpired(expiryTime);
     }
     const genTokensLength = generatedTokens.length;
+
+    //had to dd this since the first version created same consequtive token strings.
     generatedTokens.forEach((token, index) => {
       if (index < genTokensLength - 1) {
         assert.notEqual(token, generatedTokens[index + 1]);

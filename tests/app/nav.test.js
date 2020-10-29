@@ -5,6 +5,7 @@ const {
   createNewAdminWithData,
   clearTheDb,
 } = require("../utils/generalUtils");
+
 const {Auth} = require("./utils");
 
 const {clearSessions} = require("./utils/session");
@@ -24,7 +25,6 @@ const data = {
 describe.skip("Nav Links", () => {
   beforeAll(async () => {
     await startApp(PORT);
-    await clearTheDb();
     page = new Auth(getNewDriverInstance());
   }, TEST_MAX_TIME);
   afterAll(async () => {
@@ -41,6 +41,7 @@ describe.skip("Nav Links", () => {
     TEST_MAX_TIME
   ); //so we need to assign it more time for it to complete. //this is the this is the first page to be opened.It will take longer than expected
   describe("Guest links", () => {
+    //reopen homepage incase of failure.
     beforeEach(async () => {
       await page.openUrl(homePage);
     });
@@ -194,6 +195,7 @@ const clickLinkAndReturnNewTitle = async link => {
   const title = await page.getTitle();
   return title;
 };
+
 const login = async (loginUrl, type) => {
   try {
     switch (type) {
