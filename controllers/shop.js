@@ -190,12 +190,10 @@ exports.postCartDeleteProduct = async (req, res, next) => {
 exports.createOrder = async (req, res, next) => {
   try {
     const orderedProducts = req.session.orderedProducts;
-    const productTotal = req.session.total;
     const userId = req.user._id;
     const orderData = {
       userId: userId,
-      orderedProducts: orderedProducts,
-      total: productTotal,
+      products: orderedProducts,
     };
     const order = await Order.createOne(orderData);
     await req.user.clearCart();

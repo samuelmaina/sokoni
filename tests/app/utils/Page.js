@@ -32,7 +32,9 @@ class Page {
   }
   async enterTextById(id, data) {
     try {
-      return await this.driver.findElement(By.css(`#${id}`)).sendKeys(data);
+      const element = await this.driver.findElement(By.css(`#${id}`));
+      await element.clear();
+      await element.sendKeys(data);
     } catch (error) {
       throw new Error(error);
     }
@@ -69,7 +71,10 @@ class Page {
 
   async enterDataByName(name, data) {
     try {
-      await this.driver.findElement(By.name(name)).sendKeys(data);
+      const element = await this.driver.findElement(By.name(name));
+      //clear the previous rendered data if any.
+      await element.clear();
+      await element.sendKeys(data);
     } catch (error) {
       throw new Error(error);
     }

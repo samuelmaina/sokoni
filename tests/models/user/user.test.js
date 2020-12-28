@@ -11,6 +11,7 @@ const {
   createTestProducts,
   clearTheDb,
   generateMongooseId,
+  generateRandomMongooseIds,
 } = require("../../utils/generalUtils");
 
 const userUtils = require("./util");
@@ -20,24 +21,21 @@ const TRIALS = 20;
 
 const baseTest = require("../baseAdminAndUser");
 
-const {connectToDb, closeConnectionToBd} = require("../../config");
+const {includeSetUpAndTearDown} = require("../utils");
 
 let user;
-const adminId = generateMongooseId();
 let products = [];
 
-describe("----User Database", () => {
-  beforeAll(async () => {
-    await connectToDb();
-  });
-  afterAll(async () => {
-    await closeConnectionToBd();
-  });
+describe.skip("----User Database", () => {
+  includeSetUpAndTearDown();
   baseTest(User);
   describe("Purchase Tests", () => {
     beforeAll(async () => {
       user = await createNewUser();
-      products = await createTestProducts(adminId, TRIALS);
+      products = await createTestProducts(
+        generateRandomMongooseIds(TRIALS),
+        TRIALS
+      );
     }, MAX_TEST_TIME);
     afterAll(async () => {
       await clearTheDb();

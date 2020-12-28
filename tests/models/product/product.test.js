@@ -1,7 +1,10 @@
 const {Product} = require("../../../database/models/index");
 
-const TRIALS = 10;
+const TRIALS = 10000;
 
+const MAX_WAITING_TIME_IN_MS = 200000;
+
+const PERCENTAGE_OWNERSHIP = 0.001;
 const {
   verifyIDsAreEqual,
   verifyEqual,
@@ -9,15 +12,17 @@ const {
   verifyFalsy,
 } = require("../../utils/testsUtils");
 
-const {connectToDb, closeConnectionToBd} = require("../../config");
+const {includeSetUpAndTearDown} = require("../utils");
 const {
   getRandomProductData,
   clearTheDb,
+  createTrialAdmins,
   createTestProducts,
-  generateMongooseId,
+  generateRandomMongooseIds,
 } = require("../../utils/generalUtils");
 
 const {
+  fetchAdminIdsFromAdmins,
   verifyErrorIsThrownWhenAnyProductDataMisses,
   hasWellCalculatedSellingPrice,
   calculatePaginationData,
@@ -27,20 +32,15 @@ const {
   getRandomProductDataWithNoImageUrl,
 } = require("./util");
 
-const adminId = generateMongooseId();
+describe.skip("--Product ", () => {
+  includeSetUpAndTearDown();
+  let admins = [],
+    products = [],
+    adminIds = [];
 
-describe("--Product ", () => {
-  beforeAll(async () => {
-    await connectToDb();
-  });
-  afterAll(async () => {
-    await closeConnectionToBd();
-  });
-  let product;
-  afterEach(async () => {
-    await clearTheDb();
-  });
   it("createOne create a complete product with sellingPrice added to it", async () => {
+    let product = [];
+    const adminId = generateRandomMongooseIds(1)[0];
     const productData = getRandomProductData(adminId);
     //the productData has sellingPrice added to it by createNew.so we need to
     //copy(by destructuring) it so that we can maintain its previous properties.
@@ -57,90 +57,123 @@ describe("--Product ", () => {
     verifyTruthy(hasWellCalculatedSellingPrice(product));
     //need the adminId since we are also creating random product data
     //in this function.
-    verifyErrorIsThrownWhenAnyProductDataMisses(adminId);
+    await verifyErrorIsThrownWhenAnyProductDataMisses(adminId);
   });
   describe("After Creation", () => {
-    let products = [];
     describe("Static Methods", () => {
-      beforeEach(async () => {
-        products = await createTestProducts(adminId, TRIALS);
-      });
-      it(`findProductsForPage get present products and the pagination Data for a page`, async () => {
-        const page = 2;
-        const renderData = await Product.findProductsForPage(page);
-        const paginationData = await calculatePaginationData(page);
-        const renderedProducts = renderData.products;
-        ensureNoOfProductsAreWithinPRODUCTS_PER_PAGE(renderedProducts);
-        ensureProductsHavePositiveQuantity(renderedProducts);
-        verifyEqual(renderData.paginationData, paginationData);
-      });
-
-      it(`findCategories() return the number of categories for all the products`, async () => {
-        const expectedCategories = ["category 1", "category 2", "category 3"];
-        await feedProductsWithTestCategories(products, expectedCategories);
-        const categories = await Product.findCategories();
-        verifyEqual(categories, expectedCategories);
-      });
-      it(`findCategoryProductsForPage returns products with a certain category`, async () => {
-        const expectedCategories = [
-          "category 1",
-          "category 2",
-          "category 3",
-          "category 4",
-        ];
-        const page = 1;
-        await feedProductsWithTestCategories(products, expectedCategories);
-        //would have used a forEach method but it seems to have problems with async functions.
-        for (let index = 0; index < expectedCategories.length; index++) {
-          const category = expectedCategories[index];
-          const renderData = await Product.findCategoryProductsForPage(
-            category,
-            page
-          );
-          const {paginationData, products} = renderData;
-          products.forEach(element => {
-            verifyEqual(element.category, category);
-          });
-          ensureProductsHavePositiveQuantity(products);
-          const receivedPaginationData = await calculatePaginationData(page, {
-            category,
-          });
-          verifyEqual(receivedPaginationData, paginationData);
-        }
-      });
-      it(`findPageProductsForAdminId get number of products(with positive quantity) and the 
-          pagination Data for an admin for  a page`, async () => {
-        const page = 2;
-        const renderData = await Product.findPageProductsForAdminId(
-          adminId,
-          page
-        );
-        const createdByPresentAdminId = {adminId};
-        const paginationData = await calculatePaginationData(
-          page,
-          createdByPresentAdminId
+      beforeAll(async () => {
+        await clearTheDb();
+        admins = await createTrialAdmins(
+          Math.floor(TRIALS * PERCENTAGE_OWNERSHIP)
         );
 
-        const renderedProducts = renderData.products;
-        const numberOfRenderedProducts = renderedProducts.length;
+        adminIds = fetchAdminIdsFromAdmins(admins);
+        products = await createTestProducts(adminIds, TRIALS);
+      }, MAX_WAITING_TIME_IN_MS);
 
-        //ensure that all the renderedProducts have the adminId as their creator.
-        for (let index = 0; index < numberOfRenderedProducts; index++) {
-          verifyIDsAreEqual(renderedProducts[index].adminId, adminId);
-        }
-        ensureProductsHavePositiveQuantity(renderedProducts);
-        ensureNoOfProductsAreWithinPRODUCTS_PER_PAGE(renderedProducts);
-        verifyEqual(renderData.paginationData, paginationData);
-      });
+      afterAll(async () => {
+        await clearTheDb();
+      }, MAX_WAITING_TIME_IN_MS);
+
+      it(
+        `findProductsForPage get present products and the pagination Data for a page`,
+        async () => {
+          const page = 2;
+          const renderData = await Product.findProductsForPage(page);
+          const paginationData = await calculatePaginationData(page);
+          const renderedProducts = renderData.products;
+          ensureNoOfProductsAreWithinPRODUCTS_PER_PAGE(renderedProducts);
+          ensureProductsHavePositiveQuantity(renderedProducts);
+          verifyEqual(renderData.paginationData, paginationData);
+        },
+        MAX_WAITING_TIME_IN_MS
+      );
+
+      it(
+        `findCategories() return the number of c
+      ategories for all the products`,
+        async () => {
+          const expectedCategories = ["category 1", "category 2", "category 3"];
+          await feedProductsWithTestCategories(products, expectedCategories);
+          const categories = await Product.findCategories();
+          verifyEqual(categories, expectedCategories);
+        },
+        MAX_WAITING_TIME_IN_MS
+      );
+      it(
+        `findCategoryProductsForPage returns products with a certain category`,
+        async () => {
+          const expectedCategories = [
+            "category 1",
+            "category 2",
+            "category 3",
+            "category 4",
+          ];
+          const page = 1;
+          await feedProductsWithTestCategories(products, expectedCategories);
+          //would have used a forEach method but it seems to have problems with async functions.
+          for (let index = 0; index < expectedCategories.length; index++) {
+            const category = expectedCategories[index];
+            const renderData = await Product.findCategoryProductsForPage(
+              category,
+              page
+            );
+            const {paginationData, products} = renderData;
+            products.forEach(element => {
+              verifyEqual(element.category, category);
+            });
+            ensureProductsHavePositiveQuantity(products);
+            const receivedPaginationData = await calculatePaginationData(page, {
+              category,
+            });
+            verifyEqual(receivedPaginationData, paginationData);
+          }
+        },
+        MAX_WAITING_TIME_IN_MS
+      );
+      it(
+        `findPageProductsForAdminId get number of products(with positive quantity) and the 
+          pagination Data for an admin for  a page`,
+        async () => {
+          const page = 1;
+          for (const adminId of adminIds) {
+            const renderData = await Product.findPageProductsForAdminId(
+              adminId,
+              page
+            );
+            const createdByPresentAdminId = {adminId};
+            const paginationData = await calculatePaginationData(
+              page,
+              createdByPresentAdminId
+            );
+
+            const renderedProducts = renderData.products;
+            const numberOfRenderedProducts = renderedProducts.length;
+            //ensure that all the renderedProducts have the adminId as their creator.
+            for (let index = 0; index < numberOfRenderedProducts; index++) {
+              verifyIDsAreEqual(renderedProducts[index].adminId, adminId);
+            }
+            ensureProductsHavePositiveQuantity(renderedProducts);
+            ensureNoOfProductsAreWithinPRODUCTS_PER_PAGE(renderedProducts);
+            verifyEqual(renderData.paginationData, paginationData);
+          }
+        },
+        MAX_WAITING_TIME_IN_MS
+      );
     });
     describe("instance methods", () => {
       let product;
+      let adminId;
       beforeEach(async () => {
-        product = (await createTestProducts(adminId, 1))[0];
+        product = (await createTestProducts(adminIds, 1))[0];
+        adminId = adminIds[0];
       });
-      it(` isCreatedByAdminId returns true if the adminId created a product and false otherwise`, async () => {
+      afterEach(async () => {
+        await clearTheDb();
+      });
+      it(`isCreatedByAdminId returns true if the adminId created a product and false otherwise`, async () => {
         const trialAdminId = "ID2343949949994";
-        verifyTruthy(product.isCreatedByAdminId(adminId));
+        verifyTruthy(product.isCreatedByAdminId(adminIds[0]));
         verifyFalsy(product.isCreatedByAdminId(trialAdminId));
       });
 

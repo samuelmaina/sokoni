@@ -8,11 +8,11 @@
     <div class="grid">
         <article class="card">
             <form class="login-form" action="<%= postPath%>" method="POST">
-                <%- include('./textFields/name.ejs') %>
-                <%- include('./textFields/email.ejs') %>
-                <%- include('./textFields/password.ejs') %>
-                <%- include('./textFields/confirmPassword.ejs') %>
-                <%- include('./textFields/csurf.ejs') %>
+                <%- include('../includes/textFields/name.ejs') %>
+                <%- include('../includes/textFields/email.ejs') %>
+                <%- include('../includes/textFields/password.ejs') %>
+                <%- include('../includes/textFields/confirmPassword.ejs') %>
+                <%- include('../includes/csurf.ejs') %>
                 <input class="btn" id="signup" type="submit" value="Sign Up">
             </form>
         </article>

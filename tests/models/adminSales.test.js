@@ -1,45 +1,36 @@
 const {AdminSales} = require("../../database/models");
 
-const {connectToDb, closeConnectionToBd} = require("../config");
+const {includeSetUpAndTearDown} = require("./utils");
 const {
-  createNewAdmin,
+  generateMongooseId,
   createTestProducts,
   clearTheDb,
 } = require("../utils/generalUtils");
 
 const {verifyEqual, verifyIDsAreEqual} = require("../utils/testsUtils");
 
-let admin;
+const adminId = generateMongooseId();
 let products = [];
 
 describe.skip("AdminSales", () => {
-  beforeAll(async () => {
-    await connectToDb();
-  });
-  afterAll(async () => {
-    await closeConnectionToBd();
-  });
-
+  includeSetUpAndTearDown();
   beforeEach(async () => {
-    admin = await createNewAdmin();
-    products = await createTestProducts(admin.id, 10);
+    products = await createTestProducts(adminId, 10);
   });
   afterEach(async () => {
     await clearTheDb();
   });
   it("createOne creates new adminSales", async () => {
-    const adminSale = await AdminSales.createOne(admin.id);
-    verifyIDsAreEqual(adminSale.adminID, admin.id);
+    const adminSale = await AdminSales.createOne(adminId);
+    verifyIDsAreEqual(adminSale.adminID, adminId);
   });
   describe("After Creation", () => {
     describe("Static", () => {
       it(`findOneForAdminId return sales for an admin with with each product 
           having title sellingPrice buyingPrice imageUrl populated`, async () => {
-        const adminSales = await createNewAdminSales(admin.id);
+        const adminSales = await createNewAdminSales(adminId);
         await feedSomeProductsToAdminSales(adminSales);
-        const populatedAdminSales = await AdminSales.findOneForAdminId(
-          admin.id
-        );
+        const populatedAdminSales = await AdminSales.findOneForAdminId(adminId);
         ensureProductsHaveAccurateProperties(populatedAdminSales.products, [
           "title",
           "sellingPrice",
@@ -48,12 +39,12 @@ describe.skip("AdminSales", () => {
         ]);
       });
       it(`findSalesForAdminWithinAnInterval return the sale for period of time`, async () => {
-        const adminSales = await createNewAdminSales(admin.id);
+        const adminSales = await createNewAdminSales(adminId);
         await feedSomeProductsToAdminSales(adminSales);
         const fromTime = Date.now() - 2000;
         const toTime = Date.now();
         const products = await AdminSales.findSalesForAdminIDWithinAnInterval(
-          admin.id,
+          adminId,
           fromTime,
           toTime
         );
@@ -66,21 +57,21 @@ describe.skip("AdminSales", () => {
         //verify that the productSales  are within the range time.
       });
       it("findByAdminIdAndDelete deletes adminID sales", async () => {
-        const adminSales = await createNewAdminSales(admin.id);
+        const adminSales = await createNewAdminSales(adminId);
         await feedSomeProductsToAdminSales(adminSales);
 
-        let resultDoc = await AdminSales.findOne({adminID: admin.id});
+        let resultDoc = await AdminSales.findOne({adminID: adminId});
         expect(resultDoc).toHaveProperty("adminID");
 
-        await AdminSales.findByAdminIdAndDelete(admin.id);
+        await AdminSales.findByAdminIdAndDelete(adminId);
 
-        resultDoc = await AdminSales.findOne({adminID: admin.id});
+        resultDoc = await AdminSales.findOne({adminID: adminId});
         expect(resultDoc).toBeNull();
       });
     });
     describe("Instance", () => {
       it("addOrderedProducts adds a product to  admin Sales", async () => {
-        const adminSales = await createNewAdminSales(admin.id);
+        const adminSales = await createNewAdminSales(adminId);
         //used to store the random generated quantities for testing purposes.
         const quantities = [];
         for (let index = 0; index < products.length; index++) {
@@ -110,7 +101,7 @@ describe.skip("AdminSales", () => {
         }
       });
       it("clearProducts clears products for adminID", async () => {
-        const adminSales = await createNewAdminSales(admin.id);
+        const adminSales = await createNewAdminSales(adminId);
         await feedSomeProductsToAdminSales(adminSales);
         await adminSales.clearProducts();
         expect(adminSales.products.length).toEqual(0);

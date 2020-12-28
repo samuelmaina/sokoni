@@ -21,7 +21,7 @@ const PORT = 5000;
 const base = `http://localhost:${PORT}`;
 const homePage = `${base}/`;
 
-describe("The HomePage(Shop) can be navigated", () => {
+describe.skip("The HomePage(Shop) can be navigated", () => {
   let products = [];
   beforeAll(async () => {
     await startApp(PORT);

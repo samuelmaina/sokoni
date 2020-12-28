@@ -1,14 +1,16 @@
+const {TokenGenerator, User, Admin} = require("../../database/models");
+
 const {startApp, closeApp, getNewDriverInstance} = require("./config");
 
 const {
   clearTheDb,
   createNewAdminWithData,
   createNewUserWithData,
+  confirmPassword,
 } = require("../utils/generalUtils");
-const {Auth, session, utilLogin} = require("./utils");
+const {Auth, session} = require("./utils");
 
-const MAX_SETUP_TIME = 3000;
-const MAX_TESTING_TIME = 30000;
+const MAX_SETUP_TIME = 25000;
 
 const PORT = 8080;
 const base = `http://localhost:${PORT}`;
@@ -17,38 +19,37 @@ const baseAuth = `${base}/auth`;
 const data = {
   name: "Samuel Maina",
   email: "samuelmayna@gmail.com",
-  password: "Smaina6891",
+  password: "Smaina6891?",
 };
 let page;
 describe.skip("Auth", () => {
   beforeAll(async () => {
     await startApp(PORT);
     page = await new Auth(getNewDriverInstance());
-  }, MAX_SETUP_TIME);
+  });
   afterAll(async () => {
-    await closeApp();
     await page.close();
+    await clearTheDb();
+    await closeApp();
   });
 
   describe("should sign up for both users and admins", () => {
-    //Since we are using data above to sign up both user and admin,their
-    //successful sign up message are the same.
+    //success message for any successful sign up.
     const expectedInfo = `Dear ${data.name}, You have successfully signed up`;
 
     describe("-admin", () => {
       const signUpUrl = `${baseAuth}/admin/sign-up`;
+      beforeEach(async () => {
+        await page.openUrl(signUpUrl);
+      }, MAX_SETUP_TIME);
       afterEach(async () => {
         await clearTheDb();
       });
-      it(
-        "valid credentials",
-        async () => {
-          await signUp(signUpUrl, data);
-          const expectedTitle = "Admin Log In";
-          await ensureHasTitleAndInfo(expectedTitle, expectedInfo);
-        },
-        MAX_TESTING_TIME
-      );
+      it("valid credentials", async () => {
+        await signUp(signUpUrl, data);
+        const expectedTitle = "Admin Log In";
+        await ensureHasTitleAndInfo(expectedTitle, expectedInfo);
+      });
       it("invalid credentials", async () => {
         const {email, password} = data;
         const invalidNameData = {
@@ -68,7 +69,7 @@ describe.skip("Auth", () => {
       const signUpUrl = `${baseAuth}/user/sign-up`;
       afterEach(async () => {
         await clearTheDb();
-      }, MAX_SETUP_TIME);
+      });
       it("valid credentials", async () => {
         await signUp(signUpUrl, data);
         const expectedTitle = "User Log In";
@@ -90,7 +91,7 @@ describe.skip("Auth", () => {
   });
 
   describe("should Login for both users and admins", () => {
-    //error thrown for any unsuccessful login.
+    //error rendered for incorrect values.
     const error = "Invalid Email or Password";
     afterEach(async () => {
       await session.clearSessions();
@@ -102,14 +103,14 @@ describe.skip("Auth", () => {
       });
       afterEach(async () => {
         await clearTheDb();
-      }, MAX_SETUP_TIME);
+      });
 
-      it("valid credentials", async () => {
+      it("Correct credentials", async () => {
         await login(logInUrl, data);
         const title = await page.getTitle();
         expect(title).toEqual("Your Products");
       });
-      it("invalid credentials", async () => {
+      it("inCorrect credentials", async () => {
         const {password} = data;
         const invalidData = {
           email: "someemail@gmail.com",
@@ -127,17 +128,17 @@ describe.skip("Auth", () => {
       });
       afterEach(async () => {
         await clearTheDb();
-      }, MAX_SETUP_TIME);
-      it("valid credentials", async () => {
+      });
+      it("Correct credentials", async () => {
         await login(logInUrl, data);
         const title = await page.getTitle();
         expect(title).toEqual("Products");
       });
-      it("invalid credentials", async () => {
+      it("inCorrect credentials", async () => {
         const {email} = data;
         const invalidData = {
           email,
-          password: "somepssword2233",
+          password: "somepssword2233?",
         };
         await login(logInUrl, invalidData);
         const title = "User Log In";
@@ -146,20 +147,49 @@ describe.skip("Auth", () => {
     });
   });
   describe("Can click reset and submit reset email", () => {
+    const newPassword = "Smainachez5885:?";
+
+    const passwords = {
+      password: newPassword,
+      confirmPassword: newPassword,
+    };
+
     describe("admin", () => {
       const resetUrl = `${baseAuth}/admin/reset`;
+      let admin;
       beforeEach(async () => {
-        await createNewAdminWithData(data);
+        admin = await createNewAdminWithData(data);
       });
       afterEach(async () => {
         await clearTheDb();
       });
       it("valid email", async () => {
+        const adminId = admin.id;
         await reset(resetUrl, data.email);
         const title = "Admin Log In";
         const info =
           "A link has been sent to your email. Please click the link to reset password.";
         await ensureHasTitleAndInfo(title, info);
+        const tokenDetails = await TokenGenerator.findOne({
+          requesterID: adminId,
+        });
+        await enterNewPassword(tokenDetails.token, "admin", passwords);
+        await ensureHasTitleAndInfo(
+          "Admin Log In",
+          "Password reset successful"
+        );
+        // ensure that the password is  also changed in the database.
+        const {password} = await fetchDataFromModelById(Admin, adminId);
+        const passwordIsNewPassword = await confirmPassword(
+          passwords.password,
+          password
+        );
+        expect(passwordIsNewPassword).toBeTruthy();
+
+        const tokenDetaislAfterSuccessfulReset = await TokenGenerator.findOne({
+          requesterID: adminId,
+        });
+        expect(tokenDetaislAfterSuccessfulReset).toBeNull();
       });
       it("invalid email", async () => {
         const invalidEmail = "samuelmayna@gmail.com123";
@@ -171,18 +201,38 @@ describe.skip("Auth", () => {
     });
     describe("user", () => {
       const resetUrl = `${baseAuth}/user/reset`;
+      let user;
       beforeEach(async () => {
-        await createNewUserWithData(data);
+        user = await createNewUserWithData(data);
       });
       afterEach(async () => {
         await clearTheDb();
       });
       it("valid email", async () => {
+        const userId = user.id;
         await reset(resetUrl, data.email);
         const title = "User Log In";
         const info =
           "A link has been sent to your email. Please click the link to reset password.";
-        await ensureHasTitleAndInfo(title, info);
+        ensureHasTitleAndInfo(title, info);
+        const tokenDetails = await TokenGenerator.findOne({
+          requesterID: userId,
+        });
+        await page.hold(200);
+        await enterNewPassword(tokenDetails.token, "user", passwords);
+        await ensureHasTitleAndInfo("User Log In", "Password reset successful");
+        // ensure that the password is  also changed in the database.
+        const {password} = await fetchDataFromModelById(User, userId);
+        const passwordIsNewPassword = await confirmPassword(
+          passwords.password,
+          password
+        );
+        expect(passwordIsNewPassword).toBeTruthy();
+
+        const tokenDetaislAfterSuccessfulReset = await TokenGenerator.findOne({
+          requesterID: userId,
+        });
+        expect(tokenDetaislAfterSuccessfulReset).toBeNull();
       });
       it("invalid email", async () => {
         const invalidEmail = "samuelmayna@gmail.com123";
@@ -230,4 +280,15 @@ const reset = async (resetUrl, email) => {
   await page.openUrl(resetUrl);
   await page.enterEmail(email);
   await page.submit("reset");
+};
+const enterNewPassword = async (token, type, passwords) => {
+  const newPasswordUrl = `${base}/auth/${type}/new-password/${token}`;
+  await page.openUrl(newPasswordUrl);
+  await page.enterDataByName("password", passwords.password);
+  await page.enterDataByName("confirmPassword", passwords.confirmPassword);
+  await page.clickById("change-password");
+};
+
+const fetchDataFromModelById = async (Model, id) => {
+  return await Model.findById(id);
 };

@@ -8,9 +8,9 @@
     <div class=" form grid">
         <article class="card">
             <form class="login-form" action="<%= postPath%>" method="POST">
-                <%- include('./textFields/email.ejs') %>
-                <%- include('./textFields/password.ejs') %>
-                <%- include('./textFields/csurf.ejs') %>
+                <%- include('../includes/textFields/email.ejs') %>
+                <%- include('../includes/textFields/password.ejs') %>
+                <%- include('../includes/csurf.ejs') %>
                 <input class="btn" id="login" type="submit" value="Login">
             </form>
             <div class='centered'>

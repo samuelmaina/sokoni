@@ -6,6 +6,8 @@ const app = require("../../app");
 
 let server;
 
+const includeSetUpAndTearDown = () => {};
+
 exports.startApp = async PORT => {
   await connectToDb();
   server = app.listen(PORT);

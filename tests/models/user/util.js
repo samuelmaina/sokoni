@@ -2,7 +2,7 @@ exports.resetCart = async user => {
   user.cart = [];
   await user.save();
 };
-exports.getTotals = (products = [], quantity) => {
+exports.getTotals = (products = []) => {
   let total = 0.0;
   for (const product of products) {
     const {productData, quantity} = product;
@@ -13,13 +13,15 @@ exports.getTotals = (products = [], quantity) => {
 };
 
 exports.addTRIALProductsToCart = async (user, products = [], quantity) => {
+  const cart = user.cart;
   for (const product of products) {
-    await addProductToCart(user, product.id, quantity);
+    addProductToCart(cart, product.id, quantity);
   }
+  user.set("cart", cart);
+  return await user.save();
 };
-const addProductToCart = async (user, productId, quantity) => {
-  const userCart = user.cart;
-  const productIndex = userCart.findIndex(product => {
+const addProductToCart = async (cart, productId, quantity) => {
+  const productIndex = cart.findIndex(product => {
     return product.productData.toString() === productId.toString();
   });
   const data = {
@@ -27,12 +29,10 @@ const addProductToCart = async (user, productId, quantity) => {
     quantity,
   };
   if (productIndex < 0) {
-    userCart.push(data);
+    cart.push(data);
   } else {
-    userCart[productIndex].quantity += quantity;
+    cart[productIndex].quantity += quantity;
   }
-  user.cart = userCart;
-  user = await user.save();
 };
 
 exports.ensureProductsHaveProperties = (products, properties) => {

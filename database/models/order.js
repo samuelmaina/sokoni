@@ -1,4 +1,9 @@
 const mongoose = require("mongoose");
+const {
+  ensureIsMongooseId,
+  ensureIsPositiveInt,
+  ensureIsObject,
+} = require("./utils");
 
 const Schema = mongoose.Schema;
 
@@ -8,14 +13,16 @@ const Order = new Schema({
       productData: {
         type: Schema.Types.ObjectId,
         ref: "Product",
+        maxlenght: 22,
       },
-      quantity: {type: Number},
+      quantity: {type: Number, min: 0, max: 2000},
     },
   ],
   userId: {
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
+    maxlength: 20,
   },
   time: {
     type: Date,
@@ -27,7 +34,10 @@ const byAscendingOrderTime = {time: -1};
 
 const pathToPopulate = "products.productData";
 
-Order.statics.createOne = function (orderData) {
+const {statics, methods} = Order;
+
+statics.createOne = function (orderData) {
+  ensureIsObject(orderData);
   const order = new this({
     userId: orderData.userId,
     products: orderData.products,
@@ -35,7 +45,8 @@ Order.statics.createOne = function (orderData) {
   return order.save();
 };
 
-Order.statics.findByIdAndPopulateProductsDetails = async function (id) {
+statics.findByIdAndPopulateProductsDetails = async function (id) {
+  ensureIsMongooseId(id);
   const byIdQuery = {_id: id};
   const orders = await this.findWithPopulated(
     byIdQuery,
@@ -45,7 +56,8 @@ Order.statics.findByIdAndPopulateProductsDetails = async function (id) {
 
   return orders[0];
 };
-Order.statics.findAllforUserId = function (userId) {
+statics.findAllforUserId = function (userId) {
+  ensureIsMongooseId(userId);
   const byUserIdQuery = {userId};
   return this.findWithPopulated(
     byUserIdQuery,
@@ -54,16 +66,17 @@ Order.statics.findAllforUserId = function (userId) {
   );
 };
 
-Order.methods.isOrderedById = function (Id) {
+methods.isOrderedById = function (Id) {
+  ensureIsMongooseId(id);
   return Id.toString() === this.userId.toString();
 };
-Order.methods.populateDetails = function () {
+methods.populateDetails = function () {
   const whatToPopulate = "title sellingPrice adminId";
   return this.populate(pathToPopulate, whatToPopulate).execPopulate();
 };
 
-//helper methods
-Order.statics.findWithPopulated = async function (
+//helper statics
+statics.findWithPopulated = async function (
   query,
   pathToPopulate,
   whatToPopulate

@@ -1,7 +1,14 @@
 const mongoose = require("mongoose");
 
 const {BaseServices} = require("../services");
-const {hashPassword, confirmPassword} = BaseServices;
+const {
+  hashPassword,
+  confirmPassword,
+  errorMessages,
+  ranges,
+  rejectIfFieldErroneous,
+  ensureDataHasValidFields,
+} = BaseServices;
 
 const Schema = mongoose.Schema;
 const baseOptions = {
@@ -13,47 +20,57 @@ const Base = new Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: errorMessages.name,
       trim: true,
+      minlength: ranges.name[0],
+      maxlength: ranges.name[1],
     },
     email: {
       type: String,
-      required: true,
+      required: errorMessages.email,
       trim: true,
       lowercase: true,
+      minlength: ranges.email[0],
+      maxlength: ranges.email[1],
     },
     tel: {
       type: String,
-      required: true,
-      default: "0700000000",
+      required: errorMessages.tel,
+      minlength: ranges.tel,
+      maxlength: ranges.tel,
+      default: "+254700000000",
     },
     password: {
       type: String,
       required: true,
       trim: true,
+      //password will be hashed
+      //.It will take more space.
+      maxlength: 80,
+      minlength: 10,
     },
   },
   baseOptions
 );
 
-/**
- * same as at the native create function of the model,but the password
- * is hashed before being stored.
- */
-Base.statics.createOne = async function (memberData) {
-  const hashedPassword = await hashPassword(memberData.password);
+const {statics, methods} = Base;
+
+statics.createOne = async function (data) {
+  const fieldsThatMustBePresent = ["name", "email", "password"];
+  ensureDataHasValidFields(data, fieldsThatMustBePresent);
+  const hashedPassword = await hashPassword(data.password);
   const newMember = new this({
-    name: memberData.name,
-    email: memberData.email,
+    name: data.name,
+    email: data.email,
     password: hashedPassword,
   });
   return await newMember.save();
 };
 
-Base.statics.findByEmail = function (email) {
+statics.findByEmail = function (email) {
   return this.findOne({email});
 };
-Base.statics.findOneWithCredentials = async function (email, password) {
+statics.findOneWithCredentials = async function (email, password) {
   const member = await this.findByEmail(email);
   if (!member) {
     return null;
@@ -63,22 +80,30 @@ Base.statics.findOneWithCredentials = async function (email, password) {
   else return null;
 };
 
-Base.methods.isPasswordCorrect = async function (password) {
+methods.isPasswordCorrect = async function (password) {
   const isPwdValid = await confirmPassword(password, this.password);
   return isPwdValid;
 };
-Base.methods.update = async function (field, data) {
-  //for password we need to hash it
-  //before it is stored in the database.
+
+methods.update = async function (field, data) {
+  rejectIfFieldErroneous(field, data);
   if (field === "password") {
-    this[field] = await hashPassword(data);
-    return await this.save();
+    data = await hashPassword(data);
   }
-  this[field] = data;
+  this.set(field, data);
   await this.save();
 };
+methods.updateManyFields = async function (data) {
+  const fieldsToValidate = Object.getOwnPropertyNames(data);
+  ensureDataHasValidFields(data, fieldsToValidate);
+  for (const key in data) {
+    if (data.hasOwnProperty(key)) {
+      await this.update(key, data[key]);
+    }
+  }
+};
 
-Base.methods.deleteAccount = async function () {
+methods.deleteAccount = async function () {
   await this.deleteOne();
 };
 

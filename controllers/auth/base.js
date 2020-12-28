@@ -143,7 +143,7 @@ class Auth {
       }
       await TokenGenerator.createOneForID(document.id);
       // transporter.send({
-      //   //http://localhost:3000/auth/user/new-password/8c4c25d10c8194101a037fdbd2870e9996b5e3d786f662003116a6e92ea327bc
+      //   //http://localhost:3000/auth/user/new-password/57543e4605348c1d428f72eff767487bd255983f74119b2b221cab4f2c28bbf3
       //   from: "samuelsonlineshop@online.com",
       //   to: document.email,
       //   subject: "Reset Password",
@@ -167,8 +167,8 @@ class Auth {
   async getNewPassword(req, res, next) {
     try {
       const flash = new Flash(req, res);
-      const tokenString = req.params.token;
-      const tokenDetails = await TokenGenerator.findTokenDetails(tokenString);
+      const token = req.params.token;
+      const tokenDetails = await TokenGenerator.findTokenDetails(token);
       if (!tokenDetails) {
         return flash
           .appendError("Too late for reset.Please try again")
@@ -181,7 +181,7 @@ class Auth {
         .pathToPost(this.routes.newPassword)
         .activePath("/login")
         .appendDataToResBody({
-          token: tokenString,
+          token,
         })
         .render();
     } catch (error) {
@@ -208,13 +208,11 @@ class Auth {
       }
 
       const tokenDetails = await TokenGenerator.findTokenDetails(token);
-      const document = await this.Model.findById(tokenDetails.getRequesterId());
+      const document = await this.Model.findById(tokenDetails.requesterID);
 
-      let resettingToSamePassword;
-      if (document)
-        resettingToSamePassword = await document.checkIfPasswordIsValid(
-          password
-        );
+      const resettingToSamePassword = await document.isPasswordCorrect(
+        password
+      );
       if (resettingToSamePassword) {
         return renderer
           .appendError(
@@ -222,9 +220,11 @@ class Auth {
           )
           .render();
       }
-      await document.update("password", password);
-      flash.appendInfo("Password reset successful").redirect(this.routes.logIn);
-      await TokenGenerator.deleteTokenById(tokenDetails.id);
+      await document.update({password});
+      new Flash(req, res)
+        .appendInfo("Password reset successful")
+        .redirect(this.routes.logIn);
+      tokenDetails.delete();
     } catch (error) {
       next(error);
     }

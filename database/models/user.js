@@ -3,6 +3,11 @@ const Base = require("./baseForAdminAndUser");
 
 const {UserServices} = require("../services/index");
 
+const {
+  ensureIsMongooseId,
+  ensureIsPositiveInt,
+  ensureIsPositiveFloat,
+} = require("./utils");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -22,13 +27,18 @@ const userSchema = new Schema({
   },
 });
 
-userSchema.methods.addProductsToCart = function (productId, quantity) {
+const {methods} = userSchema;
+
+methods.addProductsToCart = function (productId, quantity) {
+  ensureIsMongooseId(productId);
+  ensureIsPositiveInt(quantity);
   const cart = this.cart;
   this.cart = UserServices.addProductIdToCart(cart, productId, quantity);
   return this.save();
 };
 
-userSchema.methods.deleteProductsFromCart = async function (prodId) {
+methods.deleteProductsFromCart = async function (prodId) {
+  ensureIsMongooseId(prodId);
   const cart = this.cart;
   const {updatedCart, deletedQuantity} = UserServices.deleteProductIdfromCart(
     cart,
@@ -39,7 +49,7 @@ userSchema.methods.deleteProductsFromCart = async function (prodId) {
   return deletedQuantity;
 };
 
-userSchema.methods.populateCartProductsDetails = async function () {
+methods.populateCartProductsDetails = async function () {
   await this.populate("cart.productData", "sellingPrice title").execPopulate();
   const cart = this.cart;
   const total = UserServices.calculateProductsTotals(cart);
@@ -49,22 +59,21 @@ userSchema.methods.populateCartProductsDetails = async function () {
   };
 };
 
-userSchema.methods.clearCart = function () {
+methods.clearCart = function () {
   this.cart = [];
   return this.save();
 };
 
-userSchema.methods.incrementBalance = function (amount) {
-  if (amount < 0) {
-    throw new Error("we can not increment such amount");
-  }
+methods.incrementBalance = function (amount) {
+  ensureIsPositiveFloat(amount);
   let increment = +amount;
   let balance = +this.balance;
   balance += increment;
   this.balance = Number(balance.toFixed(2));
   return this.save();
 };
-userSchema.methods.decrementBalance = function (amount) {
+methods.decrementBalance = function (amount) {
+  ensureIsPositiveFloat(amount);
   let reduction = amount;
   let balance = this.balance;
   if (balance >= amount) balance -= reduction;

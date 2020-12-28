@@ -8,40 +8,42 @@ const AdminSales = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Admin",
     required: true,
+    maxlength: 20,
   },
   products: [
     {
       productData: {
         type: Schema.Types.ObjectId,
         ref: "Product",
+        maxlength: 20,
       },
       sales: [
         {
-          quantity: {type: Number},
+          quantity: {type: Number, max: 2000},
           soldAt: {type: Date},
         },
       ],
     },
   ],
 });
-
-AdminSales.statics.createOne = async function (adminID) {
+const {statics, methods} = AdminSales;
+statics.createOne = async function (adminID) {
   const adminSale = new this({
     adminID,
   });
   return await adminSale.save();
 };
-AdminSales.statics.findOneForAdminId = function (adminID) {
+statics.findOneForAdminId = function (adminID) {
   return this.findOne({adminID}).populate(
     "products.productData",
     "title sellingPrice buyingPrice imageUrl"
   );
 };
 
-AdminSales.statics.findByAdminIdAndDelete = async function (adminID) {
+statics.findByAdminIdAndDelete = async function (adminID) {
   await this.findOneAndDelete({adminID});
 };
-AdminSales.statics.findSalesForAdminIDWithinAnInterval = async function (
+statics.findSalesForAdminIDWithinAnInterval = async function (
   adminID,
   fromTime,
   toTIme
@@ -55,7 +57,7 @@ AdminSales.statics.findSalesForAdminIDWithinAnInterval = async function (
   return adminSalesServices.calculatProductsSalesData(productsToDisplay);
 };
 
-AdminSales.statics.findSalesForAdminIDWithinAnInterval = async function (
+statics.findSalesForAdminIDWithinAnInterval = async function (
   adminID,
   fromTime,
   toTIme
@@ -69,7 +71,7 @@ AdminSales.statics.findSalesForAdminIDWithinAnInterval = async function (
   return adminSalesServices.calculatProductsSalesData(productsToDisplay);
 };
 
-AdminSales.methods.findSalesWithinAnInterval = function (
+methods.findSalesWithinAnInterval = function (
   fromTime = Date.now() - 1000 * 60 * 60 * 24 * 7,
   toTIme = Date.now()
 ) {
@@ -81,13 +83,13 @@ AdminSales.methods.findSalesWithinAnInterval = function (
   );
 };
 
-AdminSales.methods.addOrderedProducts = async function (saleDetails) {
+methods.addOrderedProducts = async function (saleDetails) {
   const soldProducts = this.products;
   this.products = adminSalesServices.addSoldProducts(soldProducts, saleDetails);
   return this.save();
 };
 
-AdminSales.methods.clearProducts = async function () {
+methods.clearProducts = async function () {
   this.products = [];
   return await this.save();
 };

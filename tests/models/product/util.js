@@ -1,4 +1,3 @@
-const {throws} = require("assert");
 const {PRODUCTS_PER_PAGE} = require("../../../config");
 
 const {verifyTruthy} = require("../../utils/testsUtils");
@@ -69,19 +68,12 @@ const totalProductsForQuery = async (query = {}) => {
   return await Product.find(query).countDocuments();
 };
 
-exports.verifyErrorIsThrownWhenAnyProductDataMisses = adminId => {
+exports.verifyErrorIsThrownWhenAnyProductDataMisses = async adminId => {
   let message;
   for (const prop in PRODUCT_PROPERTIES) {
     message = `${prop} is expected`;
     const trial = this.getRandomProductDataWithoutADataItem(prop, adminId);
-    throws(
-      () => {
-        Product.createOne(trial).catch(err => {
-          throw new Error(err);
-        });
-      },
-      {message}
-    );
+    await expect(Product.createOne(trial)).rejects.toThrowError(message);
   }
 };
 
@@ -94,4 +86,12 @@ exports.getRandomProductDataWithoutADataItem = (dataItemToMiss, adminId) => {
     }
   }
   return appropriateData;
+};
+
+exports.fetchAdminIdsFromAdmins = admins => {
+  const ids = [];
+  for (const admin of admins) {
+    ids.push(admin.id);
+  }
+  return ids;
 };

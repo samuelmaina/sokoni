@@ -1,7 +1,6 @@
-const {User, Admin} = require("../../database/models");
-
 const body = require("express-validator/").check;
-
+const User = require("../../database/models/user");
+const Admin = require("../../database/models/admin");
 const nameValidator = body(
   "name",
   "Name too short or it contains symbols.Enter only alphanumerics."
@@ -15,9 +14,10 @@ const emailValidator = body("email")
 
 const passwordValidator = body(
   "password",
-  "The password should be 8 or more character and should be must contain symbols"
+  "The password should be 8 or more character and must contain symbols"
 )
   .isLength({min: 8})
+  .not()
   .isAlphanumeric();
 
 const confirmPasswordValidator = body("confirmPassword").custom(

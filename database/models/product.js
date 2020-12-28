@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
 
 const {ProductService} = require("../services");
+const {
+  ensureIsMongooseId,
+  ensureIsPositiveInt,
+  ensureIsObject,
+} = require("./utils");
 
 const {fileManipulators} = require("../../utils");
 
@@ -15,20 +20,31 @@ const productSchema = {
     type: String,
     required: true,
     trim: true,
+    maxlength: 20,
+    minlength: 5,
   },
   imageUrl: {
     type: String,
     required: true,
     trim: true,
+    maxlength: 20,
+    minlength: 5,
   },
   buyingPrice: {
     type: Number,
     required: true,
+    min: 1.0,
+    max: 1000000,
   },
   percentageProfit: {
     type: Number,
+    required: true,
     min: 0,
+    max: 100,
   },
+  //this one is always calculated by
+  //the server so no need
+  //to specify it in the schema.
   sellingPrice: {
     type: Number,
   },
@@ -37,10 +53,14 @@ const productSchema = {
     type: String,
     required: true,
     trim: true,
+    maxlength: 40,
+    minlength: 10,
   },
   quantity: {
     type: Number,
     required: true,
+    max: 20000,
+    min: 0,
   },
   adminId: {
     type: Schema.Types.ObjectId,
@@ -64,28 +84,17 @@ const productSchema = {
 const Product = new Schema(productSchema, {
   timestamps: true,
 });
+const {statics, methods} = Product;
 
-Product.statics.createOne = function (productData) {
-  //check if all the properties are there.
-  for (const key in productSchema) {
-    if (productSchema.hasOwnProperty(key)) {
-      if (key === "sellingPrice") {
-        continue;
-      }
-      if (!productData[key]) {
-        throw new Error(`${key} is expected`);
-      }
-    }
-  }
+statics.createOne = async function (productData) {
+  ensureAllProductPropArePresent(productData);
   ProductService.calculateSellingPrice(productData);
   const product = new this(productData);
-  return product.save();
+  return await product.save();
 };
 
-Product.statics.findProductsForPage = async function (page = 1) {
-  if (!Number.isInteger(page) || page < 1) {
-    throw new Error("Page must be a positive whole number");
-  }
+statics.findProductsForPage = async function (page = 1) {
+  ensureIsPositiveInt(page);
   const paginationData = await this.calculatePaginationData(page);
   const products = await this.getProductsPerPage(page);
   return {
@@ -94,15 +103,13 @@ Product.statics.findProductsForPage = async function (page = 1) {
   };
 };
 
-Product.statics.findCategories = async function () {
+statics.findCategories = async function () {
   const products = await this.find(POSITIVE_QUNTITY_QUERY);
   return ProductService.findCategoriesPresent(products);
 };
 
-Product.statics.findCategoryProductsForPage = async function (
-  category,
-  page = 1
-) {
+statics.findCategoryProductsForPage = async function (category, page = 1) {
+  ensureIsPositiveInt(page);
   const categoryQuery = {category};
   const paginationData = await this.calculatePaginationData(
     page,
@@ -114,8 +121,9 @@ Product.statics.findCategoryProductsForPage = async function (
     paginationData,
   };
 };
-
-Product.statics.findPageProductsForAdminId = async function (adminId, page) {
+statics.findPageProductsForAdminId = async function (adminId, page) {
+  ensureIsMongooseId(adminId);
+  ensureIsPositiveInt(page);
   const query = {adminId};
   const paginationData = await this.calculatePaginationData(page, query);
   const products = await this.getProductsPerPageForQuery(page, query);
@@ -125,17 +133,17 @@ Product.statics.findPageProductsForAdminId = async function (adminId, page) {
   };
 };
 
-Product.methods.isCreatedByAdminId = function (adminId) {
+methods.isCreatedByAdminId = function (adminId) {
+  ensureIsMongooseId(adminId);
   return this.adminId.toString() === adminId.toString();
 };
-Product.methods.incrementQuantity = async function (quantity) {
-  if (quantity < 1) {
-    throw new Error("can not increase a quantity less than 1");
-  }
+methods.incrementQuantity = async function (quantity) {
+  ensureIsPositiveInt(quantity);
   this.quantity += quantity;
   return await this.save();
 };
-Product.methods.decrementQuantity = async function (quantity) {
+methods.decrementQuantity = async function (quantity) {
+  ensureIsPositiveInt(quantity);
   let currentQuantity = this.quantity;
   if (currentQuantity < quantity)
     throw new Error("can not reduce such a quantity");
@@ -144,7 +152,8 @@ Product.methods.decrementQuantity = async function (quantity) {
   return await this.save();
 };
 
-Product.methods.updateDetails = async function (productData) {
+methods.updateDetails = async function (productData) {
+  ensureIsObject(productData);
   if (this.imageUrl !== productData.imageUrl) {
     fileManipulators.deleteFile(this.imageUrl);
   }
@@ -154,15 +163,16 @@ Product.methods.updateDetails = async function (productData) {
   }
   return await this.save();
 };
-Product.methods.deleteProduct = async function () {
+methods.deleteProduct = async function () {
   await this.deleteOne();
 };
 
-Product.statics.getProductsPerPage = async function (page) {
+//static helpers.
+statics.getProductsPerPage = async function (page) {
   return await this.getProductsPerPageForQuery(page, POSITIVE_QUNTITY_QUERY);
 };
 
-Product.statics.totalOfProductsMeetingQuery = async function (query) {
+statics.totalOfProductsMeetingQuery = async function (query) {
   //the products fetched must have a positive quantity.So merge
   // POSITIVE_QUNTITY_QUERY with the query.
   for (const property in POSITIVE_QUNTITY_QUERY) {
@@ -171,14 +181,28 @@ Product.statics.totalOfProductsMeetingQuery = async function (query) {
   return await this.find(query).countDocuments();
 };
 
-Product.statics.calculatePaginationData = async function (page, query = {}) {
+statics.calculatePaginationData = async function (page, query = {}) {
   const total = await this.totalOfProductsMeetingQuery(query);
   return ProductService.calculatePaginationData(page, total);
 };
 
-Product.statics.getProductsPerPageForQuery = async function (page, query) {
+statics.getProductsPerPageForQuery = async function (page, query) {
   return await this.find(query)
     .skip((page - 1) * PRODUCTS_PER_PAGE)
     .limit(PRODUCTS_PER_PAGE);
 };
+const ensureAllProductPropArePresent = data => {
+  //check if all the properties are there.
+  for (const key in productSchema) {
+    if (productSchema.hasOwnProperty(key)) {
+      if (key === "sellingPrice") {
+        continue;
+      }
+      if (!data[key]) {
+        throw new Error(`${key} is expected`);
+      }
+    }
+  }
+};
+
 module.exports = mongoose.model("Product", Product);

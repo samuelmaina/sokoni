@@ -1,11 +1,9 @@
-const mongoose = require("mongoose");
-
-const {connectToDb, closeConnectionToBd} = require("../config");
+const {includeSetUpAndTearDown} = require("./utils");
 
 const {
   createTestProducts,
-  createNewUser,
   clearTheDb,
+  generateMongooseId,
 } = require("../utils/generalUtils");
 const {verifyIDsAreEqual, verifyEqual} = require("../utils/testsUtils");
 
@@ -14,40 +12,38 @@ const {Order} = require("../../database/models");
 const TRIALS = 10;
 const QUANTITY = 5;
 
-const adminId = mongoose.Types.ObjectId();
-const userId = mongoose.Types.ObjectId();
+const adminId = generateMongooseId();
+const userId = generateMongooseId();
 describe.skip("Order ", () => {
-  beforeAll(async () => {
-    await connectToDb();
-  });
-  afterAll(async () => {
-    await closeConnectionToBd();
-  });
+  includeSetUpAndTearDown();
   afterEach(async () => {
     await clearTheDb();
   });
 
-  it("createOne creates a new Order", async () => {
-    const products = await createTestProducts(adminId, 4);
-    const orderData = createOrderData(products, userId);
+  describe("Creation", () => {
+    it("createOne creates a new Order", async () => {
+      const arr = [adminId];
+      const products = await createTestProducts(arr, TRIALS);
+      const orderData = createOrderData(products, userId, 0);
 
-    const expectedOrder = await new Order(orderData).save();
-    const createdOrder = await Order.createOne(orderData);
+      const expectedOrder = await new Order(orderData).save();
+      const createdOrder = await Order.createOne(orderData);
 
-    const orderedProducts = createdOrder.products;
-    const expectedProducts = expectedOrder.products;
+      const orderedProducts = createdOrder.products;
+      const expectedProducts = expectedOrder.products;
 
-    orderedProducts.forEach((product, index) => {
-      verifyEqual(product.productData, expectedProducts[index].productData);
+      orderedProducts.forEach((product, index) => {
+        verifyEqual(product.productData, expectedProducts[index].productData);
+      });
+
+      verifyIDsAreEqual(createdOrder.userId, userId);
     });
-
-    verifyIDsAreEqual(createdOrder.userId, userId);
   });
 
   describe("After Creation", () => {
-    let products = [];
-    let orders;
-    let ordersData;
+    let products = [],
+      orders = [],
+      ordersData;
     beforeEach(async () => {
       ordersData = await createSomeOrders(TRIALS, userId);
       orders = ordersData.orders;
@@ -57,6 +53,11 @@ describe.skip("Order ", () => {
       it("findAllforUserId  returns populated  orders sorted by ascending order time", async () => {
         const populatedOrders = await Order.findAllforUserId(userId);
         ensureOrdersAreInDescendingTime(populatedOrders);
+        const properties = ["title", "sellingPrice"];
+        for (const order of populatedOrders) {
+          verifyIDsAreEqual(order.userId, userId);
+          ensureProductsHaveProperties(order.products, properties, products);
+        }
       });
       it(`findByIdAndPopulateProductsDetails finds
           an order with the given id with title and selling price
@@ -70,16 +71,15 @@ describe.skip("Order ", () => {
           verifyIDsAreEqual(populatedOrder.userId, userId);
           const properties = ["title", "sellingPrice"];
           const orderedProducts = populatedOrder.products;
-          //products is used to make sure that the orderedProduct's properties
-          //have the right data since it was the array used to create the order.
+
           ensureProductsHaveProperties(orderedProducts, properties, products);
         }
       });
     });
     describe("Instance  Methods", () => {
-      it(`populateDetails() populates title and sellingPrice of each ordered product.`, async () => {
+      it(`populateDetails() populates title, sellingPrice and adminId of each ordered product.`, async () => {
         for (const order of orders) {
-          const properties = ["title", "sellingPrice"];
+          const properties = ["title", "sellingPrice", "adminId"];
           await order.populateDetails();
           ensureProductsHaveProperties(order.products, properties, products);
         }
@@ -88,30 +88,40 @@ describe.skip("Order ", () => {
   });
 });
 
+/**
+ *
+ * @param {*} products test products
+ * @param {*} properties expected properties
+ * @param {*} expectedProducts products used to create the order.They are used to ensure that
+ * the test products properties hold the right data.
+ *
+ */
 const ensureProductsHaveProperties = (
   products = [],
   properties,
-  expectedProduct
+  expectedProducts
 ) => {
   expect(products.length).toBeGreaterThan(0);
 
-  //the values are entered in line, i.e products[0] is assigned to products[0]
-  //in the order.we expect then to match.
+  //the values are entered in line, i.e products[0] is assigned
+  //to products[0] in the order.we expect then to match.
   products.forEach((product, index) => {
     for (const prop of properties) {
       expect(product.productData).toHaveProperty(
         prop,
-        expectedProduct[index][prop]
+        expectedProducts[index][prop]
       );
     }
   });
 };
 
-const createSomeOrders = async (howMany, userId) => {
+const createSomeOrders = async (howMany, userIds = []) => {
   const orders = [];
-  const products = await createTestProducts(adminId, howMany);
+  const products = await createTestProducts([adminId], howMany);
+  const noOfUserIds = userIds.length;
   for (let index = 0; index < howMany; index++) {
-    const orderData = createOrderData(products, userId);
+    const userId = index % noOfUserIds;
+    const orderData = createOrderData(products, userIds[userId], index);
     const order = await new Order(orderData).save();
     orders.push(order);
   }
@@ -121,7 +131,11 @@ const createSomeOrders = async (howMany, userId) => {
   };
 };
 
-const createOrderData = (products = [], userId) => {
+/**
+ * @param {*} products array of products to  be ordered.
+ * @param {*} multiple time in seconds from now.
+ */
+const createOrderData = (products = [], userId, multiple) => {
   const orderedProducts = products.map(product => {
     const productData = product.id;
     //the caller expects the quantity to be in small letters.
@@ -130,6 +144,7 @@ const createOrderData = (products = [], userId) => {
   });
   return {
     userId,
+    time: Date.now() + multiple * 1000,
     products: orderedProducts,
   };
 };
@@ -142,9 +157,10 @@ const ensureOrdersAreInDescendingTime = orders => {
   orders.forEach((order, index) => {
     if (index < ordersLength - 1) {
       const nextOrder = orders[index + 1];
-      expect(Date.parse(order.time)).toBeGreaterThanOrEqual(
-        Date.parse(nextOrder.time)
-      );
+      expect(parseDate(order.time)).toBeGreaterThan(parseDate(nextOrder.time));
     }
   });
+};
+const parseDate = date => {
+  return Date.parse(date);
 };

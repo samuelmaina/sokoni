@@ -5,7 +5,7 @@ const DASHBOARD_PATH = "/auth/user/dashboard";
 exports.getDeposit = (req, res, next) => {
   return new Renderer(res)
     .templatePath("accounting/deposit")
-    .pageTitle("Deposit the funds")
+    .pageTitle("Deposit")
     .activePath("/dashboard")
     .pathToPost("deposit")
     .render();

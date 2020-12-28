@@ -1,5 +1,5 @@
 let {validators} = require("../../utils");
-authValidator = validators.auth;
+const authValidator = validators.auth;
 
 const routes = {
   signUp: `/sign-up`,
