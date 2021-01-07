@@ -12,8 +12,7 @@ const tokenGenerator = new Schema({
     maxlength: 20,
     minlength: 10,
   },
-  //Token must be 64 strings
-  //long.
+
   token: {
     type: String,
     maxlength: 64,

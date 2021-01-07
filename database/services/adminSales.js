@@ -1,8 +1,8 @@
-exports.addSoldProducts = (products, saleDetails) => {
-  const productIndex = products.findIndex(product => {
+exports.addSale = (productArray, saleDetails) => {
+  const productIndex = productArray.findIndex(product => {
     return product.productData.toString() === saleDetails.productId.toString();
   });
-  const updatedProducts = [...products];
+  const updatedProducts = [...productArray];
   if (productIndex >= 0) {
     updatedProducts[productIndex].sales.push({
       quantity: saleDetails.quantity,
@@ -21,39 +21,41 @@ exports.addSoldProducts = (products, saleDetails) => {
   }
   return updatedProducts;
 };
-exports.getProductsWithinAnInterval = (products, fromTime, toTIme) => {
+
+exports.getProductsSalesSoldWithinInterval = (products, fromTime, toTIme) => {
   const productsToDisplay = [];
   for (const product of products) {
-    let salesMeetingCriterion = product.sales.filter(sale => {
+    let salesSoldWithinInterval = product.sales.filter(sale => {
       return sale.soldAt >= fromTime && sale.soldAt <= toTIme;
     });
     productsToDisplay.push({
       productData: product.productData,
-      sales: salesMeetingCriterion,
+      sales: salesSoldWithinInterval,
     });
   }
   return productsToDisplay;
 };
+
 exports.calculatProductsSalesData = products => {
   let productsAndTheirProfits = [];
   products.forEach(product => {
     let profit = 0.0;
-    let totalSales = 0.0;
-    product.sales.forEach(sale => {
-      const quantity = sale.quantity;
-      const sellingPrice = product.productData.sellingPrice;
-      const buyingPrice = product.productData.buyingPrice;
-      totalSales += quantity * sellingPrice;
-      profit += quantity * (sellingPrice - buyingPrice);
-    });
-    profit = profit.toFixed(2);
-    totalSales = totalSales.toFixed(2);
+    let total = 0.0;
+    calculateSalesTotalAndProfit();
+    const {title, imageUrl, sellingPrice, buyingPrice} = product.productData;
     productsAndTheirProfits.push({
-      title: product.productData.title,
-      profit: profit,
-      totalSales: totalSales,
-      imageUrl: product.productData.imageUrl,
+      title,
+      profit,
+      total,
+      imageUrl,
     });
+    const calculateSalesTotalAndProfit = () => {
+      product.sales.forEach(sale => {
+        const quantity = sale.quantity;
+        total += quantity * sellingPrice;
+        profit += quantity * (sellingPrice - buyingPrice);
+      });
+    };
   });
   productsAndTheirProfits.sort((el1, el2) => {
     return el1.profit <= el2.profit;

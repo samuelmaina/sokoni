@@ -67,8 +67,9 @@ statics.createOne = async function (data) {
   return await newMember.save();
 };
 
-statics.findByEmail = function (email) {
-  return this.findOne({email});
+statics.findByEmail = async function (email) {
+  rejectIfFieldErroneous("email", email);
+  return await this.findOne({email});
 };
 statics.findOneWithCredentials = async function (email, password) {
   const member = await this.findByEmail(email);
@@ -81,6 +82,7 @@ statics.findOneWithCredentials = async function (email, password) {
 };
 
 methods.isPasswordCorrect = async function (password) {
+  rejectIfFieldErroneous("password", password);
   const isPwdValid = await confirmPassword(password, this.password);
   return isPwdValid;
 };

@@ -1,64 +1,60 @@
 const body = require("express-validator").check;
 
-const productInfoValidation = [
-  body("title")
-    .isLength({min: 5, max: 15})
-    .withMessage(
-      "Please provide the product with a title which is between 5 and 15 characters long"
-    )
-    .trim(),
-  body("buyingPrice")
-    .isNumeric()
-    .withMessage("buyingPrice must be a number")
-    .custom(value => {
-      if (value < 0) {
-        throw new Error("buyingPrice must be a positive real number");
-      }
-      return true;
-    }),
-  body("percentageProfit")
-    .isNumeric()
-    .withMessage("percentageProfit must be a number")
-    .custom(value => {
-      if (value < 0) {
-        throw new Error("percentageProfit must be a positive real number");
-      }
-      return true;
-    }),
-  body("expirationPeriod")
-    .isNumeric()
-    .withMessage("expirationPeriod must be a number")
-    .custom(value => {
-      if (value < 0) {
-        throw new Error("expirationPeriod must be a positive real number");
-      }
-      return true;
-    }),
-  body("quantity")
-    .isInt()
-    .withMessage("Quantity must be positive whole number")
-    .custom(value => {
-      if (value < 1) {
-        throw new Error(
-          "quantity must be greater than zero and must be a whole number"
-        );
-      }
-      return true;
-    }),
-  body("description")
-    .isLength({min: 10})
-    .withMessage("Very short description.Please type atleast 10 words")
-    .trim(),
-  body("brand")
-    .isLength({min: 3, max: 20})
-    .withMessage("brand should be 3-20 characters long")
-    .trim(),
-  body("category")
-    .isLength({min: 3, max: 20})
-    .withMessage("category should be 3-20 characters long")
-    .trim(),
-];
+exports.titleValidator = body("title")
+  .isString()
+  .withMessage("Title must be a string.")
+  .isLength({min: 5, max: 20})
+  .withMessage("Title should be 5-20 characters long.");
 
-module.exports = {
-  productInfoValidation,
-};
+exports.buyingPriceValidator = body("buyingPrice")
+  .isNumeric()
+  .withMessage("Buying price must be a number")
+  .custom(value => {
+    if (!(value >= 100 && value <= 200000)) {
+      throw new Error("Buying price must range from 100 to 200000");
+    }
+    return true;
+  });
+exports.percentageProfitValidator = body("percentageProfit")
+  .isNumeric()
+  .withMessage("Percentage profit must be a number.")
+  .custom(value => {
+    if (!(value >= 0 && value <= 300)) {
+      throw new Error("Percentage profit must range from 0 to 300.");
+    }
+    return true;
+  });
+exports.expirationPeriodValidator = body("expirationPeriod")
+  .isNumeric()
+  .withMessage("expirationPeriod must be a number")
+  .custom(value => {
+    if (value < 0) {
+      throw new Error("expirationPeriod must be a positive real number");
+    }
+    return true;
+  });
+exports.quntityValidator = body("quantity")
+  .isInt()
+  .withMessage("Quantity must be positive whole number")
+  .custom(value => {
+    if (value < 1) {
+      throw new Error(
+        "quantity must be greater than zero and must be a whole number"
+      );
+    }
+    return true;
+  });
+
+exports.descriptionValidator = body("description")
+  .isLength({min: 10})
+  .withMessage("Very short description.Please type atleast 10 words")
+  .trim();
+exports.brandValidator = body("brand")
+  .isLength({min: 3, max: 20})
+  .withMessage("brand should be 3-20 characters long")
+  .trim();
+
+exports.categoryValidator = body("category")
+  .isLength({min: 3, max: 20})
+  .withMessage("category should be 3-20 characters long")
+  .trim();

@@ -4,7 +4,27 @@ const {admin} = require("../../controllers");
 
 let {validators} = require("../../utils");
 const {product} = validators;
-validators = product;
+const {
+  titleValidator,
+  buyingPriceValidator,
+  percentageProfitValidator,
+  expirationPeriodValidator,
+  quntityValidator,
+  descriptionValidator,
+  brandValidator,
+  categoryValidator,
+} = product;
+const productValidators = [
+  titleValidator,
+  buyingPriceValidator,
+  percentageProfitValidator,
+  expirationPeriodValidator,
+  quntityValidator,
+  descriptionValidator,
+  brandValidator,
+  categoryValidator,
+];
+
 const controller = admin;
 
 const router = express.Router();
@@ -12,14 +32,10 @@ const router = express.Router();
 router
   .route("/add-product")
   .get(controller.getAddProduct)
-  .post(validators.productInfoValidation, controller.postAddProduct);
+  .post(productValidators, controller.postAddProduct);
 
 router.get("/edit-product/:id", controller.getEditProduct);
-router.post(
-  "/edit-product",
-  validators.productInfoValidation,
-  controller.postEditProduct
-);
+router.post("/edit-product", productValidators, controller.postEditProduct);
 
 router.get("/products", controller.getProducts);
 router.delete("/product/:id", controller.deleteProduct);

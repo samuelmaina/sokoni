@@ -1,6 +1,10 @@
 const {PRODUCTS_PER_PAGE} = require("../../../config");
 
-const {verifyTruthy} = require("../../utils/testsUtils");
+const {
+  verifyTruthy,
+  verifyEqual,
+  verifyIDsAreEqual,
+} = require("../../utils/testsUtils");
 const {Product} = require("../../../database/models");
 
 const {
@@ -8,6 +12,16 @@ const {
   getRandomProductData,
 } = require("../../utils/generalUtils");
 
+const ranges = {
+  title: [5, 20],
+  imageUrl: [5, 20],
+  buyingPrice: [1, 100000],
+  percentageProfit: [0, 100],
+  description: [10, 40],
+  quantity: [0, 2000],
+  category: [5, 20],
+  brand: [5, 20],
+};
 exports.hasWellCalculatedSellingPrice = product => {
   let {sellingPrice, buyingPrice, percentageProfit} = product;
   if (sellingPrice) {
@@ -28,7 +42,7 @@ exports.feedProductsWithTestCategories = async (
   const noOfCategories = categories.length;
   if (noOfCategories > TRIALS) {
     throw new Error(
-      "Some products will not be assigned categories which may affect testing."
+      "Some categories will miss products.This may lead to faulty tests."
     );
   }
   let categoryIndex;
@@ -43,6 +57,19 @@ exports.getRandomProductDataWithNoImageUrl = adminId => {
   return this.getRandomProductDataWithoutADataItem("imageUrl", adminId);
 };
 
+exports.verifyProductHasProperties = (product, properties) => {
+  for (const key in properties) {
+    //Ids require special comparison.
+    if (key == "adminId") {
+      verifyIDsAreEqual(properties[key], properties[key]);
+      continue;
+    }
+    //sellingPrice is verified on its own.
+    if (key === "sellingPrice") continue;
+    verifyEqual(properties[key], product[key]);
+  }
+  verifyTruthy(this.hasWellCalculatedSellingPrice(product));
+};
 exports.ensureNoOfProductsAreWithinPRODUCTS_PER_PAGE = (products = []) => {
   verifyTruthy(products.length <= PRODUCTS_PER_PAGE);
 };
@@ -68,12 +95,21 @@ const totalProductsForQuery = async (query = {}) => {
   return await Product.find(query).countDocuments();
 };
 
-exports.verifyErrorIsThrownWhenAnyProductDataMisses = async adminId => {
-  let message;
-  for (const prop in PRODUCT_PROPERTIES) {
-    message = `${prop} is expected`;
-    const trial = this.getRandomProductDataWithoutADataItem(prop, adminId);
-    await expect(Product.createOne(trial)).rejects.toThrowError(message);
+exports.verifyErrorIsThrownWhenAnyProductDataMissesOrIsOutOfRange = async adminId => {
+  for (const dataItem in PRODUCT_PROPERTIES) {
+    let ifInvalidErrorMessage = `Invalid ${dataItem}`;
+    let ifMissingErrorMessage = `${dataItem} is expected.`;
+    let trial = this.getRandomProductDataWithoutADataItem(dataItem, adminId);
+    await expect(Product.createOne(trial)).rejects.toThrow(
+      ifMissingErrorMessage
+    );
+    trial = this.getRandomProductDataWithInValidDataItem(dataItem, adminId);
+    if (dataItem === "adminId") {
+      ifInvalidErrorMessage = "Invalid mongoose Id.";
+    }
+    await expect(Product.createOne(trial)).rejects.toThrow(
+      ifInvalidErrorMessage
+    );
   }
 };
 
@@ -86,6 +122,43 @@ exports.getRandomProductDataWithoutADataItem = (dataItemToMiss, adminId) => {
     }
   }
   return appropriateData;
+};
+exports.getRandomProductDataWithInValidDataItem = (dataItemToMiss, adminId) => {
+  const data = getRandomProductData(adminId);
+  const appropriateData = {};
+  for (const key in data) {
+    if (data.hasOwnProperty(key)) {
+      if (key === dataItemToMiss) {
+        const typeOfgeneratedData = typeof data[key];
+        if (typeOfgeneratedData === "string") {
+          let upperLimitLength = ranges[key][1];
+          appropriateData[key] = generateNlongString(upperLimitLength + 10);
+        }
+        if (typeOfgeneratedData === "number") {
+          let upperLimit = ranges[key][1];
+          appropriateData[key] = upperLimit + 20;
+        }
+        if (key === "adminId") {
+          appropriateData[key] = `Idrueiujfkdjfk784${Math.floor(
+            Math.random() * 2000
+          )}`;
+        }
+
+        continue;
+      }
+    }
+    appropriateData[key] = data[key];
+  }
+  return appropriateData;
+};
+
+const generateNlongString = N => {
+  const character = "s";
+  let string = "";
+  for (let i = 0; i < N; i++) {
+    string += character;
+  }
+  return string;
 };
 
 exports.fetchAdminIdsFromAdmins = admins => {

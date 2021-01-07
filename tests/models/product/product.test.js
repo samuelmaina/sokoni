@@ -1,15 +1,16 @@
 const {Product} = require("../../../database/models/index");
 
-const TRIALS = 10000;
+const NUMBER_OF_TRIAL_PRODUCTS = 100;
 
-const MAX_WAITING_TIME_IN_MS = 200000;
+const MAX_TESTING_TIME_IN_MS = 200000;
 
-const PERCENTAGE_OWNERSHIP = 0.001;
+const RATIO_OF_ADMINS_TO_PRODUCTS = 0.1;
 const {
   verifyIDsAreEqual,
   verifyEqual,
   verifyTruthy,
   verifyFalsy,
+  verifyNull,
 } = require("../../utils/testsUtils");
 
 const {includeSetUpAndTearDown} = require("../utils");
@@ -23,8 +24,8 @@ const {
 
 const {
   fetchAdminIdsFromAdmins,
-  verifyErrorIsThrownWhenAnyProductDataMisses,
-  hasWellCalculatedSellingPrice,
+  verifyProductHasProperties,
+  verifyErrorIsThrownWhenAnyProductDataMissesOrIsOutOfRange,
   calculatePaginationData,
   ensureNoOfProductsAreWithinPRODUCTS_PER_PAGE,
   ensureProductsHavePositiveQuantity,
@@ -42,41 +43,30 @@ describe.skip("--Product ", () => {
     let product = [];
     const adminId = generateRandomMongooseIds(1)[0];
     const productData = getRandomProductData(adminId);
-    //the productData has sellingPrice added to it by createNew.so we need to
-    //copy(by destructuring) it so that we can maintain its previous properties.
-    const productCopy = {...productData};
     product = await Product.createOne(productData);
-    // see that the previous properties are captured in the created product
-    for (const key in productCopy) {
-      if (key == "adminId") {
-        verifyIDsAreEqual(productCopy[key], adminId);
-        continue;
-      }
-      verifyEqual(product[key], productData[key]);
-    }
-    verifyTruthy(hasWellCalculatedSellingPrice(product));
-    //need the adminId since we are also creating random product data
-    //in this function.
-    await verifyErrorIsThrownWhenAnyProductDataMisses(adminId);
+    verifyProductHasProperties(product, productData);
+    await expect(Product.createOne({})).rejects.toThrow("Invalid Object.");
+    await verifyErrorIsThrownWhenAnyProductDataMissesOrIsOutOfRange(adminId);
   });
   describe("After Creation", () => {
     describe("Static Methods", () => {
       beforeAll(async () => {
         await clearTheDb();
         admins = await createTrialAdmins(
-          Math.floor(TRIALS * PERCENTAGE_OWNERSHIP)
+          Math.floor(NUMBER_OF_TRIAL_PRODUCTS * RATIO_OF_ADMINS_TO_PRODUCTS)
         );
 
         adminIds = fetchAdminIdsFromAdmins(admins);
-        products = await createTestProducts(adminIds, TRIALS);
-      }, MAX_WAITING_TIME_IN_MS);
+        products = await createTestProducts(adminIds, NUMBER_OF_TRIAL_PRODUCTS);
+      }, MAX_TESTING_TIME_IN_MS);
 
       afterAll(async () => {
         await clearTheDb();
-      }, MAX_WAITING_TIME_IN_MS);
+      }, MAX_TESTING_TIME_IN_MS);
 
       it(
-        `findProductsForPage get present products and the pagination Data for a page`,
+        `findProductsForPage get present products and the 
+         pagination Data for a page`,
         async () => {
           const page = 2;
           const renderData = await Product.findProductsForPage(page);
@@ -86,22 +76,23 @@ describe.skip("--Product ", () => {
           ensureProductsHavePositiveQuantity(renderedProducts);
           verifyEqual(renderData.paginationData, paginationData);
         },
-        MAX_WAITING_TIME_IN_MS
+        MAX_TESTING_TIME_IN_MS
       );
 
       it(
-        `findCategories() return the number of c
-      ategories for all the products`,
+        `findCategories() return the number of categories 
+         for all the products`,
         async () => {
           const expectedCategories = ["category 1", "category 2", "category 3"];
           await feedProductsWithTestCategories(products, expectedCategories);
           const categories = await Product.findCategories();
           verifyEqual(categories, expectedCategories);
         },
-        MAX_WAITING_TIME_IN_MS
+        MAX_TESTING_TIME_IN_MS
       );
       it(
-        `findCategoryProductsForPage returns products with a certain category`,
+        `findCategoryProductsForPage returns products with a 
+         certain category`,
         async () => {
           const expectedCategories = [
             "category 1",
@@ -129,11 +120,11 @@ describe.skip("--Product ", () => {
             verifyEqual(receivedPaginationData, paginationData);
           }
         },
-        MAX_WAITING_TIME_IN_MS
+        MAX_TESTING_TIME_IN_MS
       );
       it(
-        `findPageProductsForAdminId get number of products(with positive quantity) and the 
-          pagination Data for an admin for  a page`,
+        `findPageProductsForAdminId get number of products(with positive quantity)
+         and the pagination Data for an admin for  a page`,
         async () => {
           const page = 1;
           for (const adminId of adminIds) {
@@ -158,7 +149,7 @@ describe.skip("--Product ", () => {
             verifyEqual(renderData.paginationData, paginationData);
           }
         },
-        MAX_WAITING_TIME_IN_MS
+        MAX_TESTING_TIME_IN_MS
       );
     });
     describe("instance methods", () => {
@@ -172,65 +163,42 @@ describe.skip("--Product ", () => {
         await clearTheDb();
       });
       it(`isCreatedByAdminId returns true if the adminId created a product and false otherwise`, async () => {
-        const trialAdminId = "ID2343949949994";
-        verifyTruthy(product.isCreatedByAdminId(adminIds[0]));
+        const trialAdminId = generateRandomMongooseIds(1)[0];
+        verifyTruthy(product.isCreatedByAdminId(adminId));
         verifyFalsy(product.isCreatedByAdminId(trialAdminId));
       });
 
       it(`incrementQuantity increases a product quantity`, async () => {
         let initial, final, increment;
-        initial = 50;
+        initial = 20;
+        await setQuantityTo(initial);
         increment = 89;
         final = initial + increment;
-        product.quantity = initial;
-        await product.save();
         await product.incrementQuantity(increment);
         verifyEqual(product.quantity, final);
+        await rejectsIfIncrementsNegatives();
       });
       it(`decrementQuantity reduces a product quantity`, async () => {
         let initial, final, decrement;
-        initial = 100;
-        decrement = 45;
+        initial = 400;
+        await setQuantityTo(initial);
+        decrement = 100;
         final = initial - decrement;
-        product.quantity = initial;
-        await product.save();
         await product.decrementQuantity(decrement);
         verifyEqual(product.quantity, final);
+        await rejectsIfDecemenetMakesQuantityNonPositive();
       });
       describe(`updateDetails updates product's details`, () => {
         it("When the product image is changed.", async () => {
           const data = getRandomProductData(adminId);
-          //we need to copy since updataDetails adds sellingPrice data.
-          //we will test sellingPrice separately.
-          let dataCopy = {...data};
           await product.updateDetails(data);
-          for (const key in dataCopy) {
-            if (dataCopy.hasOwnProperty(key))
-              if (key === "adminId") {
-                verifyIDsAreEqual(dataCopy[key], adminId);
-                continue;
-              }
-            verifyEqual(dataCopy[key], product[key]);
-          }
-          verifyTruthy(hasWellCalculatedSellingPrice(product));
+          verifyProductHasProperties(product, data);
         });
         it("When the product image is not changed.(image not provided).", async () => {
           const previousImageUrl = product.imageUrl;
           const data = getRandomProductDataWithNoImageUrl(adminId);
-          //we need to copy since updataDetails adds sellingPrice data.
-          //we will test sellingPrice separately.
-          let dataCopy = {...data};
           await product.updateDetails(data);
-          for (const key in dataCopy) {
-            if (dataCopy.hasOwnProperty(key))
-              if (key === "adminId") {
-                verifyIDsAreEqual(dataCopy[key], adminId);
-                continue;
-              }
-            verifyEqual(dataCopy[key], product[key]);
-          }
-          verifyTruthy(hasWellCalculatedSellingPrice(product));
-          //ensure previous Image is not changed.
+          verifyProductHasProperties(product, data);
           verifyEqual(previousImageUrl, product.imageUrl);
         });
       });
@@ -238,8 +206,34 @@ describe.skip("--Product ", () => {
         const productId = product.id;
         await product.deleteProduct();
         const foundProduct = await Product.findById(productId);
-        expect(foundProduct).toBeNull();
+        verifyNull(foundProduct);
       });
+
+      async function setQuantityTo(quantity) {
+        product.quantity = quantity;
+        await product.save();
+      }
+
+      const rejectsIfIncrementsNegatives = async () => {
+        const errorMessage = "Value must be positive integer.";
+        let increment = 0;
+        await expect(product.incrementQuantity(increment)).rejects.toThrow(
+          errorMessage
+        );
+        increment = -1;
+        await expect(product.incrementQuantity(increment)).rejects.toThrow(
+          errorMessage
+        );
+      };
+      const rejectsIfDecemenetMakesQuantityNonPositive = async () => {
+        let decrement, initial;
+        initial = 400;
+        await setQuantityTo(initial);
+        decrement = initial + 1;
+        await expect(product.decrementQuantity(decrement)).rejects.toThrow(
+          "No Enough Money to decrement."
+        );
+      };
     });
   });
 });

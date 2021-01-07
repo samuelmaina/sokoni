@@ -1,5 +1,20 @@
 let {validators} = require("../../utils");
-const authValidator = validators.auth;
+const {
+  nameValidator,
+  emailValidator,
+  passwordValidator,
+  confirmPasswordValidator,
+} = validators.auth;
+
+const signUpValidator = [
+  nameValidator,
+  emailValidator,
+  passwordValidator,
+  confirmPasswordValidator,
+];
+const loginValidator = [emailValidator, passwordValidator];
+const resetValidator = [emailValidator];
+const newPasswordValidator = [passwordValidator, confirmPasswordValidator];
 
 const routes = {
   signUp: `/sign-up`,
@@ -11,10 +26,6 @@ const routes = {
 class BaseRouting {
   constructor(router, controller) {
     this.router = router;
-    let signUpValidator;
-    if (controller.type === "admin")
-      signUpValidator = authValidator.adminSignUpValidator;
-    else signUpValidator = authValidator.userSignUpValidator;
 
     this.router
       .route(routes.signUp)
@@ -28,7 +39,7 @@ class BaseRouting {
         controller.getLogin(req, res, next);
       })
       .post(
-        authValidator.loginValidator,
+        loginValidator,
         (req, res, next) => controller.postLogin(req, res, next),
         (req, res, next) => controller.initializeSession(req, res, next)
       );
@@ -36,7 +47,7 @@ class BaseRouting {
     this.router
       .route(routes.reset)
       .get((req, res, next) => controller.getReset(req, res, next))
-      .post(authValidator.validateReset, (req, res, next) =>
+      .post(resetValidator, (req, res, next) =>
         controller.postReset(req, res, next)
       );
 
@@ -44,10 +55,8 @@ class BaseRouting {
       .get(`${routes.newPassword}/:token`, (req, res, next) =>
         controller.getNewPassword(req, res, next)
       )
-      .post(
-        routes.newPassword,
-        authValidator.newPasswordValidator,
-        (req, res, next) => controller.postNewPassword(req, res, next)
+      .post(routes.newPassword, newPasswordValidator, (req, res, next) =>
+        controller.postNewPassword(req, res, next)
       );
     this.router.post(routes.logOut, (req, res, next) =>
       controller.postLogout(req, res, next)

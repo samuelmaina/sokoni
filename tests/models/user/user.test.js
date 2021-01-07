@@ -10,14 +10,14 @@ const {
   createNewUser,
   createTestProducts,
   clearTheDb,
-  generateMongooseId,
   generateRandomMongooseIds,
 } = require("../../utils/generalUtils");
 
 const userUtils = require("./util");
-const MAX_TEST_TIME = 1000;
 
-const TRIALS = 20;
+const MAX_TEST_TIME = 5000;
+
+const TRIALS = 50;
 
 const baseTest = require("../baseAdminAndUser");
 
@@ -48,7 +48,8 @@ describe.skip("----User Database", () => {
         "addProductsToCart add products to cart",
         async () => {
           for (let index = 0; index < TRIALS; index++) {
-            await user.addProductsToCart(products[index].id, TRIALS);
+            let productId = products[index].id;
+            await user.addProductsToCart(productId, TRIALS);
           }
           const userCart = user.cart;
           let product;
@@ -151,9 +152,9 @@ describe.skip("----User Database", () => {
         verifyEqual(user.balance, final);
       });
     });
+    const resetUserBalance = async balance => {
+      user.balance = balance;
+      await user.save();
+    };
   });
 });
-const resetUserBalance = async balance => {
-  user.balance = balance;
-  await user.save();
-};

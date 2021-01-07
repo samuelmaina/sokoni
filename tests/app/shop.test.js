@@ -15,7 +15,7 @@ let page;
 
 const TRIALS = 10;
 
-const MAX_TEST_PERIOD = 20000;
+const MAX_TEST_PERIOD = 30000;
 
 const PORT = 5000;
 const base = `http://localhost:${PORT}`;
@@ -26,7 +26,7 @@ describe.skip("The HomePage(Shop) can be navigated", () => {
   beforeAll(async () => {
     await startApp(PORT);
     page = new Page(getNewDriverInstance());
-    products = await createTestProducts(adminId, TRIALS);
+    products = await createTestProducts([adminId], TRIALS);
   }, MAX_TEST_PERIOD);
 
   afterAll(async () => {

@@ -34,14 +34,14 @@ class Auth {
   }
   async postSignUp(req, res, next) {
     try {
-      const flash = new Flash(req, res);
-      const previousData = req.body;
+      const flash = new Flash(req, res).appendPreviousData(req.body);
       const validationErrors = validationResults(req);
       if (validationErrors) {
-        return flash
-          .appendError(validationErrors)
-          .appendPreviousData(previousData)
-          .redirect(this.routes.signUp);
+        return flash.appendError(validationErrors).redirect(this.routes.signUp);
+      }
+      const existingEmail = await this.Model.findByEmail(req.body.email);
+      if (existingEmail) {
+        return flash.appendError(existingEmail);
       }
       await this.Model.createOne(req.body);
       const successSignUpMessage = `Dear ${req.body.name}, You have successfully signed up`;

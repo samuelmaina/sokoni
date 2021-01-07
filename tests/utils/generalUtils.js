@@ -12,11 +12,11 @@ exports.ensureIsMongooseId = id => {
   if (!isId) {
     throw new Error("The Id is not valid.");
   }
-  const castedId = new ObjectId(id);
-  const isInValid = castedId !== id;
-  if (isInValid) {
-    throw new Error("Invalid Mongosse id.");
-  }
+  //const castedId = new ObjectId(id);
+  // // const isInValid = castedId !== id;
+  // // if (isInValid) {
+  // //   throw new Error("Invalid Mongosse id.");
+  // // }
 };
 
 exports.hashPassword = async password => {
@@ -110,7 +110,7 @@ exports.createTestProducts = async (adminIDs = [], quantity = 1) => {
 };
 
 exports.getRandomProductData = adminId => {
-  // this.ensureIsMongooseId(adminId);
+  this.ensureIsMongooseId(adminId);
   const data = {};
   const PRODUCT_PROPERTIES = this.PRODUCT_PROPERTIES;
   for (const key in PRODUCT_PROPERTIES) {
@@ -215,7 +215,7 @@ const ensureArrayIsNotEmptyNullOrUndefinded = array => {
 };
 
 const ensureValueIsPositiveInt = value => {
-  if (!Number.isInteger(value) || value < 1) {
+  if (!(Number.isInteger(value) && value > 0)) {
     throw new Error("Value not a positive integer.");
   }
 };

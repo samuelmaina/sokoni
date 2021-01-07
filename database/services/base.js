@@ -12,8 +12,8 @@ exports.confirmPassword = async (password, hashedPassword) => {
 
 const ranges = {
   name: [5, 20],
-  email: [8, 30],
-  password: [8, 20],
+  email: [8, 25],
+  password: [8, 15],
   //tel is standard for all country( 13 numbers long)
   tel: 13,
 };
@@ -28,31 +28,16 @@ exports.errorMessages = errorMessages;
 exports.ranges = ranges;
 
 exports.ensureDataHasValidFields = (data, fields) => {
-  const ensureDataHasValidField = field => {
-    const fieldData = data[field];
-    if (typeof fieldData !== "string") {
-      throw new Error(errorMessages.nonString);
-    }
-    const fieldLength = fieldData.length;
-
-    if (field === "tel") {
-      if (fieldLength !== ranges.tel) {
-        throw new Error(errorMessages.tel);
-      }
-      return;
-    }
-    if (!(fieldLength >= ranges[field][0] && fieldLength <= ranges[field][1])) {
-      throw new Error(errorMessages[field]);
-    }
-  };
-
   for (const field of fields) {
-    ensureDataHasValidField(field);
+    this.rejectIfFieldErroneous(field, data[field]);
   }
 };
 
 exports.rejectIfFieldErroneous = (field, data) => {
-  if (typeof field !== "string") {
+  if (!(typeof field === "string")) {
+    throw new Error("Can not check such a field.");
+  }
+  if (typeof data !== "string") {
     throw new Error(errorMessages.nonString);
   }
   const dataLength = data.length;
@@ -63,14 +48,14 @@ exports.rejectIfFieldErroneous = (field, data) => {
   }
   if (field === "email") {
     if (!(dataLength >= ranges.email[0] && dataLength <= ranges.email[1])) {
-      throw new Error(errorMessages.name);
+      throw new Error(errorMessages.email);
     }
   }
   if (field === "password") {
     if (
       !(dataLength >= ranges.password[0] && dataLength <= ranges.password[1])
     ) {
-      throw new Error(errorMessages.name);
+      throw new Error(errorMessages.password);
     }
   }
   if (field === "tel") {
