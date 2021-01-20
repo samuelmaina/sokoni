@@ -1,6 +1,6 @@
 const session = require("express-session");
 const MongoDBSession = require("connect-mongodb-session")(session);
-const {SESSION_SECRET, SESSION_STORE} = require("../config");
+const {SESSION_SECRET, SESSION_STORE} = require("../config/env");
 
 /**
  * @param {number} validityPeriodInMs- the Time limit in which the

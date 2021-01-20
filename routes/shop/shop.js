@@ -1,4 +1,4 @@
-const {userRoutesProtect} = require("../../authmiddleware");
+const {ensureUserIsAuth} = require("../../authmiddleware");
 
 const express = require("express");
 
@@ -12,20 +12,18 @@ router.get("/products", shop.getProducts);
 
 router.get("/product/:productId", shop.getProduct);
 router.get("/category/:category", shop.getProductPerCategory);
-router.post("/add-to-cart", userRoutesProtect, shop.getAddToCart);
+router.post("/add-to-cart", ensureUserIsAuth, shop.getAddToCart);
 router
   .route("/cart")
-  .get(userRoutesProtect, shop.getCart)
-  .post(userRoutesProtect, shop.postToCart);
+  .get(ensureUserIsAuth, shop.getCart)
+  .post(ensureUserIsAuth, shop.postToCart);
 
-router.post("/cart-delete-item", userRoutesProtect, shop.postCartDeleteProduct);
+router.post("/cart-delete-item", ensureUserIsAuth, shop.postCartDeleteProduct);
 
-router.get("/orders", userRoutesProtect, shop.getOrders);
+router.get("/orders", ensureUserIsAuth, shop.getOrders);
 
-router.post("/create-order", userRoutesProtect, shop.createOrder);
+router.post("/create-order", ensureUserIsAuth, shop.createOrder);
 
-router.get("/orders/:orderId", userRoutesProtect, shop.createInvoicePdf);
-
-// router.get('/checkout', shop.getCheckout);
+router.get("/orders/:orderId", ensureUserIsAuth, shop.createInvoicePdf);
 
 module.exports = router;

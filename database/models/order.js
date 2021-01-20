@@ -1,4 +1,7 @@
 const mongoose = require("mongoose");
+
+const ranges = require("../../config/constraints");
+
 const {
   ensureIsMongooseId,
   ensureIsPositiveInt,
@@ -11,18 +14,26 @@ const Order = new Schema({
   products: [
     {
       productData: {
+        required: true,
         type: Schema.Types.ObjectId,
         ref: "Product",
-        maxlenght: 22,
+        maxlenght: ranges.mongooseId,
+        minlenght: ranges.mongooseId,
       },
-      quantity: {type: Number, min: 0, max: 2000},
+      quantity: {
+        required: true,
+        type: Number,
+        min: ranges.order.quantity.min,
+        max: ranges.order.quantity.max,
+      },
     },
   ],
   userId: {
     type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
-    maxlength: 20,
+    maxlength: ranges.mongooseId,
+    minlength: ranges.mongooseId,
   },
   time: {
     type: Date,

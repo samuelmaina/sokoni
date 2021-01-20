@@ -1,14 +1,20 @@
 const {
+  verifyThrowsError,
+  verifyDoesNotThrowError,
+} = require("../utils/testsUtils");
+
+const {
   ensureIsMongooseId,
   ensureIsNonEmptyObject,
   ensureIsPositiveFloat,
   ensureIsPositiveInt,
   ensureStringIsLength,
+  throwErrorIfStringLengthNotInRange,
 } = require("../../database/models/utils");
 
 const {generateMongooseId} = require("../utils/generalUtils");
 
-describe.skip("Utils tests", () => {
+describe.skip("--Utils", () => {
   let undefined;
   const nullValue = null;
   const text = "text";
@@ -16,19 +22,37 @@ describe.skip("Utils tests", () => {
   const object = {
     name: "object",
   };
-  const float = 1;
+  const float = 1.2;
+  it("throwErrorIfStringLengthNotInRange", () => {
+    let error, min, max;
+    min = 4;
+    max = 7;
+    error = `string must be ${min} to ${max} characters long.`;
+    //throw on invalid
+    for (const invalid of [12345, "tes", "longtest"]) {
+      verifyThrowsError(() => {
+        throwErrorIfStringLengthNotInRange(invalid, min, max, error);
+      }, error);
+    }
+    //does not throw on valids.
+    for (const valid of ["test", "test12"]) {
+      verifyDoesNotThrowError(() => {
+        throwErrorIfStringLengthNotInRange(valid, min, max, error);
+      });
+    }
+  });
   it(`ensureIsMongooseId throws when passed non-mongoose ids.`, async () => {
-    const errorMessage = "Invalid mongoose Id.";
+    const errorMessage = "Id is not a valid mongoose id.";
     const validMongooseId = generateMongooseId();
-    expect(() => {
-      ensureIsMongooseId(validMongooseId);
-    }).not.toThrow();
+    verifyDoesNotThrowError(() => {
+      ensureIsMongooseId(validMongooseId, errorMessage);
+    }, errorMessage);
 
-    const invalidMongooseIds = [object, undefined, nullValue, text, array];
-    for (const id of invalidMongooseIds) {
-      expect(() => {
+    const invalids = [object, undefined, nullValue, text, array];
+    for (const id of invalids) {
+      verifyThrowsError(() => {
         ensureIsMongooseId(id);
-      }).toThrow(errorMessage);
+      }, errorMessage);
     }
   });
   it(`ensureIsNonEmptyObject throws when passed non-objects
@@ -37,76 +61,75 @@ describe.skip("Utils tests", () => {
     const validObject = {
       name: "John Doe",
     };
-    expect(() => {
+    verifyDoesNotThrowError(() => {
       ensureIsNonEmptyObject(validObject);
-    }).not.toThrow();
+    });
     const emptyObject = {};
-    expect(() => {
+    verifyThrowsError(() => {
       ensureIsNonEmptyObject(emptyObject);
-    }).toThrow(errorMessage);
+    }, errorMessage);
     //Arrays are objects in js
     //but should be rejected
     //in our case.
     const nonObjectData = [array, undefined, nullValue, float, text];
     for (const data of nonObjectData) {
-      expect(() => {
+      verifyThrowsError(() => {
         ensureIsNonEmptyObject(data);
-      }).toThrow(errorMessage);
+      }, errorMessage);
     }
   });
   it(`ensureIsPositiveFloat throws when passed non-positive
       floats`, () => {
-    const errorMessage = "Value must be positive float.";
+    const errorMessage = `Value must be positive float.`;
     const validPositiveFloat = 1.1;
-    expect(() => {
+    verifyDoesNotThrowError(() => {
       ensureIsPositiveFloat(validPositiveFloat);
-    }).not.toThrow();
+    });
     const nonPositiveFloat = 0.0;
-    expect(() => {
+
+    verifyThrowsError(() => {
       ensureIsPositiveFloat(nonPositiveFloat);
-    }).toThrow(errorMessage);
+    }, errorMessage);
+
     //should not throw when passed
     //positive ints.
     const positiveInteger = 1;
-    expect(() => {
+
+    verifyDoesNotThrowError(() => {
       ensureIsPositiveFloat(positiveInteger);
-    }).not.toThrow();
+    });
 
     const nonNumericData = [undefined, nullValue, text, array, object];
     for (const data of nonNumericData) {
-      expect(() => {
+      verifyThrowsError(() => {
         ensureIsPositiveFloat(data);
-      }).toThrow(errorMessage);
+      }, errorMessage);
     }
   });
   it(`ensureIsPositiveInt throws on non-positive
      ints`, () => {
     const errorMessage = "Value must be positive integer.";
     const validPositiveInt = 1;
-    expect(() => {
+    verifyDoesNotThrowError(() => {
       ensureIsPositiveInt(validPositiveInt);
-    }).not.toThrow();
+    });
     const nonPositiveInt = 0;
-    expect(() => {
+    verifyThrowsError(() => {
       ensureIsPositiveInt(nonPositiveInt);
-    }).toThrow(errorMessage);
+    }, errorMessage);
+
     //should throw when passed
     // float.
     let float = 1.1;
-    expect(() => {
+    verifyThrowsError(() => {
       ensureIsPositiveInt(float);
-    }).toThrow(errorMessage);
-
-    float = 0.8;
-    expect(() => {
-      ensureIsPositiveInt(float);
-    }).toThrow(errorMessage);
+    }, errorMessage);
 
     const nonNumericData = [undefined, nullValue, text, array, object];
     for (const data of nonNumericData) {
-      expect(() => {
+      verifyThrowsError(() => {
         ensureIsPositiveInt(data);
-      }).toThrow(errorMessage);
+      }, errorMessage);
     }
   });
   it(`ensureStringIsLength throws when length of string
@@ -114,34 +137,33 @@ describe.skip("Utils tests", () => {
     let length = 4;
     const errorMessage = `String must be of length ${length}.`;
     let validString = "test";
-
-    expect(() => {
+    verifyDoesNotThrowError(() => {
       ensureStringIsLength(validString, length);
-    }).not.toThrow();
+    });
 
     const shorter = "tes";
-    expect(() => {
+    verifyThrowsError(() => {
       ensureStringIsLength(shorter, length);
-    }).toThrow(errorMessage);
+    }, errorMessage);
 
     const longer = "tes";
-    expect(() => {
+    verifyThrowsError(() => {
       ensureStringIsLength(longer, length);
-    }).toThrow(errorMessage);
+    }, errorMessage);
     length = 0;
     validString = "";
-    expect(() => {
+    verifyDoesNotThrowError(() => {
       ensureStringIsLength(validString, length);
-    }).not.toThrow();
+    });
     const nonString = 4444;
     length = 4;
-    expect(() => {
+    verifyThrowsError(() => {
       ensureStringIsLength(nonString, length);
-    }).toThrow(errorMessage);
+    }, errorMessage);
     const invalidLength = -2;
     validString = "text";
-    expect(() => {
+    verifyThrowsError(() => {
       ensureStringIsLength(validString, invalidLength);
-    }).toThrow("Invalid length.");
+    }, "Invalid length.");
   });
 });

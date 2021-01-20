@@ -1,20 +1,10 @@
-let {validators} = require("../../utils");
+let {auth} = require("../../validators");
 const {
-  nameValidator,
-  emailValidator,
-  passwordValidator,
-  confirmPasswordValidator,
-} = validators.auth;
-
-const signUpValidator = [
-  nameValidator,
-  emailValidator,
-  passwordValidator,
-  confirmPasswordValidator,
-];
-const loginValidator = [emailValidator, passwordValidator];
-const resetValidator = [emailValidator];
-const newPasswordValidator = [passwordValidator, confirmPasswordValidator];
+  signUpValidator,
+  loginValidator,
+  resetValidator,
+  newPasswordValidator,
+} = auth;
 
 const routes = {
   signUp: `/sign-up`,

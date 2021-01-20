@@ -10,7 +10,7 @@ const {Product, AdminSales} = require("../database/models");
 //when admins don't interact with page for
 //too long,the session is expired.reading admin._id from it will throw an error.
 const returnAdminIdIfAdminIsInSession = req => {
-  if (req.session.admin) return req.session.admin._id;
+  if (req.session && req.session.admin) return req.session.admin._id;
   return null;
 };
 

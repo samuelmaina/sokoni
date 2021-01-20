@@ -1,76 +1,61 @@
 <%- include('../includes/head.ejs') %>
 <link rel="stylesheet" href="/css/forms.css">
 <link rel="stylesheet" href="/css/product.css">
-<style>
-    .image {
-        border-radius: 20px;
-        margin-left: 33%;
-        height: 20rem;
-        width: 18rem;
-    }
-</style>
 </head>
 
 <body>
-    <%- include('../includes/navigation.ejs') %>
+    <%- include('../includes/navigation') %>
     <div class="grid">
         <article class="card">
             <form class="product-form" action="/admin/<% if (editing) { %>edit-product<% } else { %>add-product<% }%>"
                 method="POST" enctype="multipart/form-data">
-                <%if(editing){%>
-                <div class="form-control">
-                    <img src="/<%= previousData.imageUrl %>" class="image">
-                    <label for="file">Change Product image</label>
-                    <input type="file" name="image" id="image" value="Select Product Image">
-                    <% }%>
-                    <div class="form-control">
-                        <label for="title">Title</label>
-                        <input type="text" name="title" id="title" value="<%= previousData.title %>">
-                    </div>
-                    <%if(!editing){%>
-                    <div class="form-control">
-                        <label for="file">Product Image</label>
-                        <input type="file" name="image" id="image" value="Select Product Image" />
-                    </div>
-                    <% }%>
-                    <div class="form-control">
-                        <label for="buyingPrice">Buying Price</label>
-                        <input type="number" name="buyingPrice" id="buyingPrice" step="0.01"
-                            value="<%= previousData.buyingPrice %>">
-                    </div>
-                    <div class="form-control">
-                        <label for="percentageProfit">Percentage Profit</label>
-                        <input type="number" name="percentageProfit" id="percentageProfit" step="0.01"
-                            value="<%= previousData.percentageProfit %>">
-                    </div>
-                    <div class="form-control">
-                        <label for="expirationPeriod">Expiration Period</label>
-                        <input type="number" name="expirationPeriod" id="expirationPeriod"
-                            value="<%= previousData.expirationPeriod%>">
-                    </div>
-                    <div class="form-control">
-                        <label for="quantity">Quantity</label>
-                        <input type="number" name="quantity" id="quantity" value="<%= previousData.quantity%>">
 
-                        <div class="form-control">
-                            <label for="brand">Brand</label>
-                            <input type="text" name="brand" id="brand" value="<%= previousData.brand%>"> </div>
-                        <div class=" form-control">
-                            <label for="category">Category</label>
-                            <input type="text" name="category" id="category" value="<%= previousData.category%>"> </div>
-                        <div class="form-control">
-                            <label for="description"> Product Description</label>
-                            <textarea name="description" id="description"
-                                rows="5"> <%= previousData.description%></textarea>
-                        </div>
-                        <% if (editing) { %>
-                        <input type="hidden" value="<%=previousData.id %>" name="id">
-                        <input type="hidden" value="<%=page %>" name="page">
-                        <input type="hidden" value="<%=previousData.imageUrl %>" name="imageUrl">
-                        <% } %>
-                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                        <input class="btn" type="submit"
-                            value='<% if (editing) { %>Update Product<% } else { %>Add Product<% } %> '>
+                <%if(editing){%>
+                <%- include('./includes/present-prod-image.ejs') %>
+                <% }%>
+
+                <%- include('./includes/string-field',{
+                    label:'Title',
+                    fieldName:'title'
+                }) %>
+
+                <%if(!editing){%>
+                <%- include('./includes/image-picker.ejs') %>
+                <% }%>
+
+                <%- include('./includes/float-field',{
+                    label:'Buying Price',
+                    fieldName:'buyingPrice'
+                 }) %>
+                <%- include('./includes/float-field',{
+                    label:'Percentage Profit',
+                    fieldName:'percentageProfit'
+                }) %>
+                <%- include('./includes/int-field',{
+                    label:'Quantity',
+                    fieldName:'quantity'
+                }) %>
+                <%- include('./includes/string-field',{
+                    label:'Brand',
+                    fieldName:'brand'
+                }) %>
+                <%- include('./includes/string-field',{
+                    label:'Category',
+                    fieldName:'category'
+                }) %>
+                <%- include('./includes/string-field',{
+                    label:'Product Description',
+                    fieldName:'description'
+                }) %>
+
+                <% if (editing) { %>
+                <input type="hidden" value="<%=previousData.id %>" name="id">
+                <input type="hidden" value="<%=page %>" name="page">
+                <input type="hidden" value="<%=previousData.imageUrl %>" name="imageUrl">
+                <% } %>
+                <%- include('../includes/csurf') %>
+                <input class="btn" type="submit"
+                    value='<% if (editing) { %>Update Product<% } else { %>Add Product<% } %> '>
             </form>
         </article>
     </div>

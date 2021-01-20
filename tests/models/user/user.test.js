@@ -28,20 +28,17 @@ let products = [];
 
 describe.skip("----User Database", () => {
   includeSetUpAndTearDown();
-  baseTest(User);
+  //baseTest(User);
   describe("Purchase Tests", () => {
+    const generateNTestProducts = async N => {
+      return await createTestProducts(generateRandomMongooseIds(N), N);
+    };
     beforeAll(async () => {
       user = await createNewUser();
-      products = await createTestProducts(
-        generateRandomMongooseIds(TRIALS),
-        TRIALS
-      );
     }, MAX_TEST_TIME);
-    afterAll(async () => {
-      await clearTheDb();
-    });
     afterEach(async () => {
       await userUtils.resetCart(user);
+      await clearTheDb();
     }, MAX_TEST_TIME);
     describe(" Cart Operations", () => {
       it(

@@ -252,7 +252,7 @@ async function loginTester(type, url, redirectTitle) {
       //the browser takes some time to open ,as such
       //the first test in the block(this test) needs more time.
       //The others don't need the time as the browser is already set in this test.
-      MAX_SETUP_TIME
+      MAX_TESTING_TIME
     );
     it("should throw for invalid credentials ", async () => {
       const data = {

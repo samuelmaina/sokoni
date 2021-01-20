@@ -1,503 +1,418 @@
-const bcrypt = require("bcrypt");
+const {equal} = require("assert");
 
-const {clearTheDb} = require("../utils/generalUtils");
-const {verifyEqual, verifyTruthy} = require("../utils/testsUtils");
+const {
+  clearTheDb,
+  returnObjectWithoutProp,
+  generateStringSizeN,
+} = require("../utils/generalUtils");
+const {
+  verifyFalsy,
+  verifyEqual,
+  verifyTruthy,
+  verifyNull,
+  verifyRejectsWithError,
+} = require("../utils/testsUtils");
 
-const {BaseServices} = require("../../database/services");
-const {ranges, errorMessages} = BaseServices;
-//general data that will be used
-//for testing.
-let undefined;
-const nullValue = null;
-const number = 1.1;
-const emptyString = "";
-const object = {
-  name: "Object",
-};
-const array = [1, 2];
+const {
+  ValidationError,
+  hashPassword,
+  confirmPassword,
+  mergeBintoA,
+} = require("./utils");
 
-//we will use boundary analysis to
-//provide errorneous data.
-//for each range,we provide
-// a string whose length is less than the
-//lowerlimit by 1 and another that
-//is greater than the upperlimit
-//by 1.
-const invalidData = {
-  name: ["John", "John Doe Too LongName"],
-  email: ["jon@doe", "johndoe123456789@gmail.com"],
-  password: ["JohnDoe", "JohnDoe.!?123456"],
-  tel: ["+254756789112", "+25475678911234"],
-};
+const ranges = require("../../config/constraints").base;
 
-const MAX_WAITING_TIME_IN_MS = 100000;
+const MAX_SETUP_TIME_IN_MS = 10000;
 
-const data = {
-  name: "John Doe",
-  email: "johndoe77@gmail.com",
-  password: "johndoe@48.?",
-};
-const baseAuthTest = Model => {
-  it("createNew creates a new document", async () => {
-    const document = await Model.createOne(data);
-    verifyEqual(document.name, data.name);
-    verifyEqual(document.email, data.email);
-    //ensure that the document gets the
-    //default tel number.
-    expect(document.tel).toEqual("+254700000000");
-    //confirmPassword uses bycrypt.If passed plain passwords
-    // to it, it will return false even if the password are the same.
-    //for it to return truth the second password must be a hash of the first one.
-    const isPasswordHashed = await confirmPassword(
-      data.password,
-      document.password
-    );
-    verifyTruthy(isPasswordHashed);
-    await throwsErrorsWhenProvidedInvalidInputValues();
-  });
+module.exports = Model => {
+  describe("CreateOne", () => {
+    const name = "John Doe";
+    const email = "some@email.com";
+    const password = "password12>>";
+    const credentials = {
+      name,
+      email,
+      password,
+    };
+    afterEach(async () => {
+      await clearTheDb();
+    });
+    describe(`Name`, () => {
+      const field = "name";
+      const {minlength, maxlength} = ranges[field];
+      validate(
+        field,
+        minlength,
+        maxlength,
+        returnObjectWithoutProp(credentials, field),
+        ValidationError
+      );
+    });
+    describe(`Email`, () => {
+      const field = "email";
 
-  describe("After creatiion", () => {
-    describe("Static Methods", () => {
-      afterAll(async () => {
-        await clearTheDb();
-      }, MAX_WAITING_TIME_IN_MS);
-      describe("findByEmail return doc with the given email.", () => {
-        const N = 1000;
-        //any string can be searched
-        //even if it does not have
-        //an email format, i.e "text@domain.domainTypeWithNoNumbers"
+      const {minlength, maxlength} = ranges[field];
+      validate(
+        field,
+        minlength,
+        maxlength,
+        returnObjectWithoutProp(credentials, field),
+        ValidationError
+      );
+    });
+    describe(`Password`, () => {
+      const field = "password";
 
-        it("Throws on non-string data or invalid email", async () => {
-          await throwsOnRejectionData();
+      const {minlength, maxlength, error} = ranges[field];
+      //password is not validated by
+      //the schema(does not generate
+      //ValidationError incase of violation) hence it validator
+      //throws custom error.
+      validate(
+        field,
+        minlength,
+        maxlength,
+        returnObjectWithoutProp(credentials, field),
+        error
+      );
+    });
+
+    function validate(field, minlength, maxlength, otherFields, err) {
+      it(`reject ${field} non-string`, async () => {
+        await ensureThrows([1, 2]);
+      });
+      describe(`reject ${field} < ${minlength} and  > ${maxlength} long.`, () => {
+        it(`< ${minlength}`, async () => {
+          await ensureThrows(generateStringSizeN(minlength - 1));
         });
+        it(`> ${maxlength}`, async () => {
+          await ensureThrows(generateStringSizeN(maxlength + 1));
+        });
+      });
+      it(`does not throw on valid ${field}`, async () => {
+        await ensureDoesNotThrowAndDocIsCreatedSuccessfully(
+          generateStringSizeN(minlength)
+        );
+        await ensureDoesNotThrowAndDocIsCreatedSuccessfully(
+          generateStringSizeN(maxlength)
+        );
+      });
+      async function ensureThrows(data) {
+        await verifyRejectsWithError(async () => {
+          await Model.createOne(createdTestBody(data));
+        }, err);
+      }
+      async function ensureDoesNotThrowAndDocIsCreatedSuccessfully(data) {
+        const doc = await Model.createOne(createdTestBody(data));
+        //doc having field with data
+        ///and ensuring that the password
+        //was hashed is enough to confirm
+        //that doc was created.
 
-        it("when db is empty ", async () => {
+        //for password ,if the doc password
+        //is the same as the password passed
+        //,then the doc was created successfully.
+        if (field === "password") {
+          return verifyTruthy(await confirmPassword(data, doc[field]));
+        }
+
+        verifyEqual(doc[field], data);
+        verifyTruthy(await confirmPassword(otherFields.password, doc.password));
+      }
+
+      const createdTestBody = data => {
+        const body = {};
+        body[field] = data;
+        return mergeBintoA(body, otherFields);
+      };
+    }
+  });
+  describe("After creation", () => {
+    describe("Statics", () => {
+      describe("findByEmail", () => {
+        const N = 2000;
+        it("returns null on empty db", async () => {
           await clearTheDb();
+          await ensureReturnsNullOnUndefinedNullNonStringOrEmptyString();
           await ensureReturnsNullOnNonExistentEmail();
         });
-
-        describe("NonEmpty Database.", () => {
-          //the password are not compared
-          //as the ones in the database are
-          //hashed.
-          const fieldsToMatch = ["name", "email"];
-
-          let credentials = [];
+        describe(`when db has ${N} docs`, () => {
+          let emails;
           beforeAll(async () => {
-            doc = await createOneDoc(data);
-            credentials = createTestCredentialsWithNoPasswords(N);
-            //hashing password is computing
-            //intensive, hence we hash one
-            //password and use it to create many docs.
-            docs = await createDocsHavingCommonPassword(credentials, password);
-          }, MAX_WAITING_TIME_IN_MS);
-
-          it("when db has only one email ", async () => {
-            const retrievedDoc = await Model.findByEmail(data.email);
-            ensureDocAndDataHasSameFields(retrievedDoc, data, fieldsToMatch);
+            emails = createNEmails(N);
+            await createDocsWithEmails(emails);
+          }, MAX_SETUP_TIME_IN_MS);
+          afterAll(async () => {
+            await clearTheDb();
+          });
+          it("return null for value other than strings or empty string.", async () => {
+            await ensureReturnsNullOnUndefinedNullNonStringOrEmptyString();
+          });
+          it("first email", async () => {
+            const firstEmail = emails[0];
+            const firstDoc = await Model.findByEmail(firstEmail);
+            verifyEqual(firstDoc.email, firstEmail);
+          });
+          it("last email", async () => {
+            const lastEmail = emails[N - 1];
+            const lastDoc = await Model.findByEmail(lastEmail);
+            verifyEqual(lastDoc.email, lastEmail);
+          });
+          it("returns null on non-existing", async () => {
             await ensureReturnsNullOnNonExistentEmail();
           });
-          it(
-            `when Db has ${N} emails`,
-            async () => {
-              const firstDoc = credentials[0];
-              const lastDoc = credentials[N - 1];
-              const returnedFirst = await Model.findByEmail(firstDoc.email);
-              const returnedLast = await Model.findByEmail(lastDoc.email);
-              ensureDocAndDataHasSameFields(
-                firstDoc,
-                returnedFirst,
-                fieldsToMatch
-              );
-              ensureDocAndDataHasSameFields(
-                lastDoc,
-                returnedLast,
-                fieldsToMatch
-              );
-
-              await ensureReturnsNullOnNonExistentEmail();
-            },
-            MAX_WAITING_TIME_IN_MS
-          );
         });
-        afterAll(async () => {
-          await clearTheDb();
-        });
-
-        const ensureReturnsNullOnNonExistentEmail = async () => {
-          const nonExistentEmail = "joe@gmail.com";
+        async function ensureReturnsNullOnNonExistentEmail() {
+          const nonExistentEmail = "random@email.com";
           await expect(Model.findByEmail(nonExistentEmail)).resolves.toBeNull();
-        };
-        async function throwsOnRejectionData() {
-          const rejectionData = [undefined, nullValue, number, object, array];
-          for (const data of rejectionData) {
-            await expect(Model.findByEmail(data)).rejects.toThrowError(
-              errorMessages.nonString
-            );
+        }
+        async function ensureReturnsNullOnUndefinedNullNonStringOrEmptyString() {
+          let undefined,
+            nullValue = null,
+            nonSting = 1234,
+            empty = "";
+          for (const invalid of [undefined, nullValue, nonSting, empty]) {
+            await expect(Model.findByEmail(invalid)).resolves.toBeNull();
           }
-          const rejectEmails = [invalidData.email[0], invalidData.email[1]];
-          for (const data of rejectEmails) {
-            await expect(Model.findByEmail(data)).rejects.toThrowError(
-              errorMessages.email
-            );
+        }
+        async function createDocsWithEmails(emails) {
+          const hashedCommonPassword = await hashPassword("Password45");
+          for (const email of emails) {
+            await docCreator("John Doe", hashedCommonPassword, email);
           }
         }
       });
-
-      describe("findOneWithCredentials finds a document matching the email and password", () => {
-        const N = 100;
-
-        it("empty db", async () => {
+      describe("findOneWithCredentials", () => {
+        //create 20 test docs since password
+        //hashing takes time.
+        const N = 20;
+        it("returns null on empty db", async () => {
           await clearTheDb();
-          await ensureReturnsNullOnNonExistentEmailAndPassword();
-        });
-        describe("Non-empty database", () => {
-          const {email, password} = data;
-          const fieldsToMatch = ["name", "email"];
+          const email = "example@email.com",
+            password = "password13";
 
-          let credentials = [];
+          await Model.findOneWithCredentials(email, password);
+          await ensureReturnsNullWhenEitherFieldsIsUndefinedNullNonStringOrEmptyString();
+        });
+        it("return null for value other than strings or empty string.", async () => {
+          await ensureReturnsNullWhenEitherFieldsIsUndefinedNullNonStringOrEmptyString();
+        });
+        describe(`when db has ${N} docs`, () => {
+          let emails, passwords;
           beforeAll(async () => {
-            doc = await createOneDoc(data);
-            credentials = createTestCredentials(N);
-            docs = await createDocsFromCredentials(credentials);
-          }, MAX_WAITING_TIME_IN_MS);
-          it("one doc Db", async () => {
-            const retrievedDoc = await Model.findOneWithCredentials(
-              email,
-              password
-            );
-            ensureDocAndDataHasSameFields(retrievedDoc, data, fieldsToMatch);
-            await ensureReturnsNullOnNonExistentEmailAndPassword();
+            emails = createNEmails(N);
+            passwords = createNPasswords(N);
+            await createDocsWithCredentials(emails, passwords);
+          }, MAX_SETUP_TIME_IN_MS);
+          afterAll(async () => {
+            await clearTheDb();
           });
 
-          it(`when Db has ${N} docs`, async () => {
-            const firstDoc = credentials[0];
-            const lastDoc = credentials[N - 1];
-            let {email, password} = firstDoc;
-            const returnedFirst = await Model.findOneWithCredentials(
-              email,
-              password
-            );
-            verifyTruthy(
-              await confirmPassword(password, returnedFirst.password)
-            );
+          it("first email and first password", async () => {
+            const firstEmail = emails[0];
+            const firstPassword = passwords[0];
 
-            const returnedLast = await Model.findOneWithCredentials(
-              lastDoc.email,
-              lastDoc.password
+            const firstDoc = await Model.findOneWithCredentials(
+              firstEmail,
+              firstPassword
             );
-            ensureDocAndDataHasSameFields(lastDoc, returnedLast, fieldsToMatch);
+            verifyEqual(firstDoc.email, firstEmail);
+            //confirmPassword will ONLY return
+            //true if the second arguement is the
+            //the hash of the first,so
+            //it can be used to confirm
+            //the two passwords are the
+            //same.
             verifyTruthy(
-              await confirmPassword(lastDoc.password, returnedLast.password)
+              await confirmPassword(firstPassword, firstDoc.password)
             );
           });
+          it("last email and last password", async () => {
+            const lastEmail = emails[N - 1];
+            const lastPassword = passwords[N - 1];
+            const lastDoc = await Model.findOneWithCredentials(
+              lastEmail,
+              lastPassword
+            );
+            verifyEqual(lastDoc.email, lastEmail);
+            verifyTruthy(await confirmPassword(lastPassword, lastDoc.password));
+          });
+          it("returns null if both email and password don't match", async () => {
+            const firstEmail = emails[0];
+            const secondPassword = passwords[1];
+            const doc = await Model.findOneWithCredentials(
+              firstEmail,
+              secondPassword
+            );
+            expect(doc).toBeNull();
+          });
         });
-        it.skip("throws on when arguements are corrupt", async () => {
-          await throwsOnRejectionData();
-        });
-
-        const ensureReturnsNullOnNonExistentEmailAndPassword = async () => {
-          const nonExistentEmail = "joe@gmail.com";
-          const nonExistentPassword = "password??55";
-          await expect(
-            Model.findOneWithCredentials(nonExistentEmail, nonExistentPassword)
-          ).resolves.toBeNull();
-        };
-
-        async function throwsOnRejectionData() {
-          const rejectionData = [undefined, nullValue, number, object, array];
-          for (const data of rejectionData) {
-            const validEmail = "johndoe@gmail.com";
-            const password = "password123";
+        async function ensureReturnsNullWhenEitherFieldsIsUndefinedNullNonStringOrEmptyString() {
+          const email = "example@email.com";
+          const password = "pa55word??";
+          let undefined,
+            nullValue = null,
+            nonSting = 1234,
+            empty = "";
+          for (const invalid of [undefined, nullValue, nonSting, empty]) {
+            //when email is invalid.
             await expect(
-              Model.findOneWithCredentials(data, password)
-            ).rejects.toThrowError(errorMessages.nonString);
+              Model.findOneWithCredentials(invalid, password)
+            ).resolves.toBeNull();
+            //when password is invalid.
             await expect(
-              Model.findOneWithCredentials(validEmail, data)
-            ).rejects.toThrowError(errorMessages.nonString);
+              Model.findOneWithCredentials(email, invalid)
+            ).resolves.toBeNull();
+            //when both are invalid
+            await expect(
+              Model.findOneWithCredentials(invalid, invalid)
+            ).resolves.toBeNull();
           }
         }
       });
     });
+    describe("Methods", () => {
+      let doc;
 
-    describe("Instance methods", () => {
-      let document;
-      let hashedPassword;
-      const password = "johndoe8??((e8r";
-      beforeAll(async () => {
-        //hashing is computation intensive.So we will use one hashedPassword for all the test..
-        hashedPassword = await hashPassword(password);
-      });
+      const name = "John Doe";
+      const email = "some@email.com";
+      const password = "password12>>";
       beforeEach(async () => {
-        data.hashedPassword = hashedPassword;
-        document = await createOneDocWIthHashedPassword(data);
+        const hash = await hashPassword(password);
+        doc = await docCreator(name, hash, email);
       });
       afterEach(async () => {
         await clearTheDb();
       });
-      describe("update updates the given field with the given data.", () => {
-        it("name", async () => {
-          const newName = "John Doe 3";
-          await document.update("name", newName);
-          verifyEqual(newName, document.name);
+      describe("update", () => {
+        describe("name ", () => {
+          const {minlength, maxlength} = ranges.name;
+          validate("name", minlength, maxlength, ValidationError);
         });
-        it("email", async () => {
-          const newEmail = "somerandom@gmail.com";
-          await document.update("email", newEmail);
-          verifyEqual(newEmail, document.email);
+        describe("email ", () => {
+          const {minlength, maxlength} = ranges.email;
+          validate("email", minlength, maxlength, ValidationError);
         });
-        it("password", async () => {
-          const newPassword = "johndoes@!2345?";
-          await document.update("password", newPassword);
-          const passwordChanged = await confirmPassword(
-            newPassword,
-            document.password
-          );
-          verifyTruthy(passwordChanged);
+        describe("password ", () => {
+          const {minlength, maxlength, error} = ranges.password;
+          validate("password", minlength, maxlength, error);
         });
-        it("tel", async () => {
-          const newTel = "+254723475788";
-          await document.update("tel", newTel);
-          verifyEqual(newTel, document.tel);
+
+        describe("tel ", () => {
+          const exact = ranges.tel;
+          validate("tel", exact, exact, ValidationError);
+        });
+
+        function validate(field, minlength, maxlength, err) {
+          it(`reject ${field} non-string`, async () => {
+            await ensureThrows([1, 2]);
+          });
+          describe(`reject ${field} < ${minlength} and  > ${maxlength} long.`, () => {
+            it(`< ${minlength}`, async () => {
+              await ensureThrows(generateStringSizeN(minlength - 1));
+            });
+            it(`> ${maxlength}`, async () => {
+              await ensureThrows(generateStringSizeN(maxlength + 1));
+            });
+          });
+          it(`does not throw on valid ${field}`, async () => {
+            await ensureDoesNotThrowAndDocUpdatedSuccessfully(
+              generateStringSizeN(minlength)
+            );
+            await ensureDoesNotThrowAndDocUpdatedSuccessfully(
+              generateStringSizeN(maxlength)
+            );
+          });
+          async function ensureThrows(data) {
+            await verifyRejectsWithError(async () => {
+              await doc.update(field, data);
+            }, err);
+          }
+          async function ensureDoesNotThrowAndDocUpdatedSuccessfully(data) {
+            await doc.update(field, data);
+            if (field === "password") {
+              return verifyTruthy(await confirmPassword(data, doc[field]));
+            }
+            verifyEqual(data, doc[field]);
+          }
+        }
+      });
+      describe("updateMany", () => {
+        it("one field", async () => {
+          const newName = "newName";
+          await doc.updateMany({
+            name: newName,
+          });
+          verifyEqual(doc.name, newName);
+        });
+        it("all fields", async () => {
+          const newName = "newName";
+          const newEmail = "new@email.com";
+          const newTel = "+254712345678";
+          const newPassword = "Password5";
+          await doc.updateMany({
+            name: newName,
+            email: newEmail,
+            password: newPassword,
+            tel: newTel,
+          });
+          verifyEqual(doc.name, newName);
+          verifyEqual(doc.email, newEmail);
+          verifyEqual(doc.tel, newTel);
+          verifyTruthy(await confirmPassword(newPassword, doc.password));
         });
       });
-      describe("updateManyFields updates many fields", () => {
-        it("updates on one field data", async () => {
-          const fieldsToMatch = ["name"];
-          const oneField = {
-            name: "Some Random Data",
-          };
-          await document.updateManyFields(oneField);
-
-          ensureDocAndDataHasSameFields(document, oneField, fieldsToMatch);
-        });
-
-        it("Updates on all field data", async () => {
-          const fieldToMatch = ["name", "email", "tel"];
-
-          const allFieldsData = {
-            name: "SomeDummyName",
-            email: "random12@gmail.com",
-            password: "Random2344?",
-            tel: "+234788434448",
-          };
-          await document.updateManyFields(allFieldsData);
-
-          ensureDocAndDataHasSameFields(document, allFieldsData, fieldToMatch);
-          expect(
-            await confirmPassword(allFieldsData.password, document.password)
-          ).toBeTruthy();
-        });
+      it("isCorrect", async () => {
+        verifyTruthy(await doc.isCorrect(password));
+        verifyFalsy(await doc.isCorrect("somerandomPas"));
       });
-      it("isPasswordCorrect checks password correctness", async () => {
-        const passwordCorrect = await document.isPasswordCorrect(password);
-        verifyTruthy(passwordCorrect);
-      });
-      it("deleteAccount() deletes the current account", async () => {
-        const documentId = document.id;
-        await document.deleteAccount();
-        const currentDoc = await Model.findById(documentId);
-        expect(currentDoc).toBeNull();
+      it("delete", async () => {
+        const docId = doc.id;
+        await doc.delete();
+        verifyNull(await Model.findById(docId));
       });
     });
+
+    async function createDocsWithCredentials(emails, passwords) {
+      const noOfEmails = emails.length;
+      equal(
+        noOfEmails,
+        passwords.length,
+        "some documents will either lack an email or a passwrod."
+      );
+
+      for (let i = 0; i < noOfEmails; i++) {
+        const hash = await hashPassword(passwords[i]);
+        await docCreator("John Doe", hash, emails[i]);
+      }
+    }
   });
 
-  const createTestCredentialsWithNoPasswords = howMany => {
-    let credentials = [],
-      name,
-      lengthOfUniqueToken = 2,
-      //inserted to the generated number to
-      //make ensure that the string generated
-      //is truly unique.
-      uniqueToken,
-      email;
-
-    for (let i = 0; i < howMany; i++) {
-      uniqueToken = generateUniqueToken(lengthOfUniqueToken);
-      name = `John Doe ${i} ${uniqueToken}`;
-      email = `johndoe${i}${uniqueToken}@gmail.com`;
-      credentials.push({
-        name,
-        email,
-      });
-    }
-    return credentials;
-  };
-  const createTestCredentials = howMany => {
-    let credentials = [],
-      lengthOfUniqueToken = 4,
-      //inserted to the generated number to
-      //make ensure that the string generated
-      //is truly unique.
-      uniqueToken,
-      name,
-      email,
-      password;
-
-    for (let i = 0; i < howMany; i++) {
-      uniqueToken = generateUniqueToken(lengthOfUniqueToken);
-      name = `John Doe ${i} ${uniqueToken}`;
-      email = `johndoe${i}${uniqueToken}@gmail.com`;
-      password = `johnDoe?${uniqueToken}kh`;
-      credentials.push({
-        name,
-        email,
-        password,
-      });
-    }
-    return credentials;
-  };
-  const generateUniqueToken = length => {
-    return Math.floor(Math.random() * Math.pow(10, length));
-  };
-
-  async function createDocsFromCredentials(credentials) {
-    const howMany = credentials.length;
-    for (let i = 0; i < howMany; i++) {
-      await createOneDoc(credentials[i]);
-    }
-  }
-
-  const createDocsHavingCommonPassword = async (data = [], password) => {
-    const hashedPassword = await hashPassword(password);
-    for (const datum of data) {
-      datum.hashedPassword = hashedPassword;
-      await createOneDocWIthHashedPassword(datum);
-    }
-  };
-
-  const createOneDoc = async data => {
-    const hashedPassword = await hashPassword(data.password);
-    return await docCreator(data.name, data.email, hashedPassword);
-  };
-
-  const createOneDocWIthHashedPassword = async data => {
-    return await docCreator(data.name, data.email, data.hashedPassword);
-  };
-
-  const docCreator = async (name, email, password) => {
+  async function docCreator(name, password, email) {
     let doc = new Model({
       name,
-      email,
       password,
+      email,
     });
     return await doc.save();
-  };
-
-  async function throwsErrorsWhenProvidedInvalidInputValues() {
-    await rejectsOutOfRangeName();
-    await rejectsOutOfRangeEmail();
-    await rejectsOutOfRangePasswords();
-  }
-  const {name, email, password} = data;
-
-  const rejectsOutOfRangeName = async () => {
-    const {name} = invalidData;
-    await expect(
-      Model.createOne({
-        name: name[0],
-        email,
-        password,
-      })
-    ).rejects.toThrow(errorMessages.name);
-    await expect(
-      Model.createOne({
-        name: name[1],
-        email,
-        password,
-      })
-    ).rejects.toThrow(errorMessages.name);
-    let nonStringData = [undefined, nullValue, number, object, array];
-    for (const data of nonStringData) {
-      await expect(
-        Model.createOne({
-          name: data,
-          email,
-          password,
-        })
-      ).rejects.toThrow(errorMessages.nonString);
-    }
-  };
-  const rejectsOutOfRangeEmail = async () => {
-    const {email} = invalidData;
-    await expect(
-      Model.createOne({
-        name,
-        email: email[0],
-        password,
-      })
-    ).rejects.toThrow(errorMessages.email);
-    await expect(
-      Model.createOne({
-        name,
-        email: email[1],
-        password,
-      })
-    ).rejects.toThrow(errorMessages.email);
-    //TODO:include an email that
-    //that does not have the standard
-    //email format.
-    let nonEmailData = [undefined, nullValue, number, object, array];
-    for (const data of nonEmailData) {
-      await expect(
-        Model.createOne({
-          name,
-          email: data,
-          password,
-        })
-      ).rejects.toThrow(errorMessages.nonString);
-    }
-  };
-  const rejectsOutOfRangePasswords = async () => {
-    const {password} = invalidData;
-    await expect(
-      Model.createOne({
-        name,
-        email,
-        password: password[0],
-      })
-    ).rejects.toThrow(errorMessages.password);
-    await expect(
-      Model.createOne({
-        name,
-        email,
-        password: password[1],
-      })
-    ).rejects.toThrow(errorMessages.password);
-    //TODO:
-    //provide a string Password
-    //that does not
-    //conform to the application
-    //specification.
-    let nonPasswordData = [undefined, nullValue, number, object, array];
-    for (const data of nonPasswordData) {
-      await expect(
-        Model.createOne({
-          name,
-          email,
-          password: data,
-        })
-      ).rejects.toThrow(errorMessages.nonString);
-    }
-  };
-};
-
-const ensureDocAndDataHasSameFields = (doc, data, fields) => {
-  if (fields.length < 1) throw new Error("No fields to compare.");
-  for (const field of fields) {
-    expect(doc[field]).toBe(data[field]);
   }
 };
 
-const confirmPassword = async (plain, hash) => {
-  return await bcrypt.compare(plain, hash);
-};
-const hashPassword = async plain => {
-  return await bcrypt.hash(plain, 12);
-};
-
-const randomIndex = range => {
-  return Math.floor(range - 1);
-};
-
-module.exports = baseAuthTest;
+function createNEmails(N) {
+  const emails = [];
+  let email;
+  for (let i = 0; i < N; i++) {
+    email = `jdoe${i}@email${i}.com`;
+    emails.push(email);
+  }
+  return emails;
+}
+function createNPasswords(N) {
+  const passwords = [];
+  let password;
+  for (let i = 0; i < N; i++) {
+    password = `${i}2password${i}@??`;
+    passwords.push(password);
+  }
+  return passwords;
+}

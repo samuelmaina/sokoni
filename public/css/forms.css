@@ -28,3 +28,9 @@
 .form-control textarea:focus {
   outline-color: rgba(34, 34, 33, 0.911);
 }
+.image {
+  border-radius: 20px;
+  margin-left: 33%;
+  height: 20rem;
+  width: 18rem;
+}

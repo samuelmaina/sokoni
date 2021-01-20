@@ -3,7 +3,7 @@ const {startApp, getNewDriverInstance, closeApp} = require("./config");
 const {
   createTestProducts,
   clearTheDb,
-  clearDataFromAModel,
+  clearDataFromModel,
   generateMongooseId,
 } = require("../utils/generalUtils");
 
@@ -51,7 +51,7 @@ describe.skip("logged in user can be able to shop", () => {
   }, MAX_TEST_PERIOD);
 
   afterEach(async () => {
-    await clearDataFromAModel(Product);
+    await clearDataFromModel(Product);
   });
 
   test(
@@ -77,7 +77,7 @@ describe.skip("logged in user can be able to shop", () => {
 
   describe("cart operations", () => {
     afterEach(async () => {
-      await clearDataFromAModel(Product);
+      await clearDataFromModel(Product);
       await resetCart(user);
     });
 

@@ -2,7 +2,7 @@ const {Admin} = require("../../database/models");
 const {includeSetUpAndTearDown} = require("./utils");
 
 const baseTest = require("./baseAdminAndUser");
-describe.skip("---Admin", () => {
+describe("---Admin", () => {
   includeSetUpAndTearDown();
   baseTest(Admin);
 });

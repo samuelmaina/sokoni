@@ -2,14 +2,13 @@ const express = require("express");
 
 const {admin} = require("../../controllers");
 
-let {validators} = require("../../utils");
-const {product} = validators;
+const {product} = require("../../validators");
 const {
   titleValidator,
   buyingPriceValidator,
   percentageProfitValidator,
   expirationPeriodValidator,
-  quntityValidator,
+  quantityValidator,
   descriptionValidator,
   brandValidator,
   categoryValidator,
@@ -19,7 +18,7 @@ const productValidators = [
   buyingPriceValidator,
   percentageProfitValidator,
   expirationPeriodValidator,
-  quntityValidator,
+  quantityValidator,
   descriptionValidator,
   brandValidator,
   categoryValidator,

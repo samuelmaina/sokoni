@@ -1,15 +1,24 @@
 <section class="pagination">
-    <% if (paginationData.currentPage !== 1 && paginationData.previousPage !== 1) { %>
-    <a href="?page=1">1</a>
-    <% } %>
-    <% if (paginationData.hasPreviousPage) { %>
-    <a href="?page=<%= paginationData.previousPage %>"><%=paginationData.previousPage %></a>
-    <% } %>
-    <a href="?page=<%= paginationData.currentPage %>" class="active"><%= paginationData.currentPage %></a>
-    <% if (paginationData.hasNextPage) { %>
-    <a href="?page=<%= paginationData.nextPage %>"><%= paginationData.nextPage %></a>
-    <% } %>
-    <% if (paginationData.lastPage !== paginationData.currentPage && paginationData.nextPage !== paginationData.lastPage) { %>
-    <a href="?page=<%= paginationData.lastPage %>"><%= paginationData.lastPage %></a>
-    <% } %>
+    <% if (paginationData.currentPage !==1 && paginationData.previousPage !==1) { %>
+        <a href="?page=1">1</a>
+        <% } %>
+            <% if (paginationData.hasPreviousPage) { %>
+                <a href="?page=<%= paginationData.previousPage %>">
+                    <%=paginationData.previousPage %>
+                </a>
+                <% } %>
+                    <a href="?page=<%= paginationData.currentPage %>" class="active">
+                        <%= paginationData.currentPage %>
+                    </a>
+                    <% if (paginationData.hasNextPage) { %>
+                        <a href="?page=<%= paginationData.nextPage %>">
+                            <%= paginationData.nextPage %>
+                        </a>
+                        <% } %>
+                            <% if (paginationData.lastPage !==paginationData.currentPage && paginationData.nextPage
+                                !==paginationData.lastPage) { %>
+                                <a href="?page=<%= paginationData.lastPage %>">
+                                    <%= paginationData.lastPage %>
+                                </a>
+                                <% } %>
 </section>

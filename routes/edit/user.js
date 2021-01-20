@@ -1,22 +1,16 @@
 const express = require("express");
 const router = express.Router();
-let {validators} = require("../../utils");
+let {auth, accounting} = require("../../validators");
 const {edit} = require("../../controllers");
 
-const {
-  nameValidator,
-  emailValidator,
-  passwordValidator,
-  confirmPasswordValidator,
-} = validators.auth;
+const {newPasswordValidator} = auth;
+const {paymentValidator} = accounting;
 const userEditController = edit.user;
 
-const changeDetailsValidator = [nameValidator, emailValidator];
-const newPasswordValidator = [passwordValidator, confirmPasswordValidator];
 router
   .route("/change-details")
   .get(userEditController.getEditDetails)
-  .post(changeDetailsValidator, userEditController.postEditDetails);
+  .post(paymentValidator, userEditController.postEditDetails);
 router
   .route("/change-password")
   .get(userEditController.getChangePassword)

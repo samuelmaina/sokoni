@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Base = require("./baseForAdminAndUser");
 
+const {user, mongooseId} = require("../../config/constraints");
 const {UserServices} = require("../services/index");
 
 const {
@@ -17,13 +18,22 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Product",
         required: true,
+        maxlength: mongooseId,
+        minlength: mongooseId,
       },
-      quantity: {type: Number, required: true},
+      quantity: {
+        type: Number,
+        required: true,
+        min: user.quantity.min,
+        max: user.quantity.max,
+      },
     },
   ],
   balance: {
     type: Number,
     default: 10000,
+    min: user.balance.min,
+    max: user.balance.max,
   },
 });
 

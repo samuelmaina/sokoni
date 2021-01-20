@@ -1,2 +1,2 @@
-exports.userRoutesProtect = require("./userRoutesProtect");
-exports.adminRoutesProtect = require("./adminRoutesProtect");
+exports.ensureUserIsAuth = require("./ensureUserIsAuth");
+exports.ensureAdminIsAuth = require("./ensureAdminIsAuth");

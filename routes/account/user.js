@@ -4,10 +4,8 @@ const router = express.Router();
 const {account} = require("../../controllers");
 const controller = account.user;
 
-const {validators} = require("../../utils");
-const {accounting} = validators;
-const {validateAmount, validatePaymentMethod} = accounting;
-const paymentValidator = [validateAmount, validatePaymentMethod];
+const {accounting} = require("../../validators");
+const {paymentValidator} = accounting;
 
 router
   .route("/deposit")

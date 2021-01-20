@@ -6,10 +6,10 @@ const BaseRouting = require("./base");
 const {auth} = require("../../controllers");
 const user = auth.user;
 
-const {userRoutesProtect} = require("../../authmiddleware");
+const {ensureUserIsAuth} = require("../../authMiddleware");
 
 const userAuth = new BaseRouting(router, user)
-  .addGet("/dashboard", [userRoutesProtect], user.getDashboard)
+  .addGet("/dashboard", [ensureUserIsAuth], user.getDashboard)
   .getRouter();
 
 module.exports = userAuth;

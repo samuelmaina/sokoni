@@ -1,7 +1,7 @@
 const assert = require("assert");
 
 const {MongoClient} = require("mongodb");
-const {SESSION_STORE} = require("../../../config");
+const {SESSION_STORE} = require("../../../config/env");
 let db;
 
 exports.clearSessions = async () => {
@@ -20,7 +20,11 @@ exports.clearSessions = async () => {
       await collection.findOneAndDelete({_id: doc._id});
     });
     const docAfterCreatin = await findSessions();
-    assert.equal(docAfterCreatin.length, 0, "Not Able to delete the sessions");
+    assert.strictEqual(
+      docAfterCreatin.length,
+      0,
+      "Not Able to delete the sessions"
+    );
     await client.close();
   } catch (error) {
     throw new Error(error);

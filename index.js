@@ -1,7 +1,12 @@
-const {MONGO_URI, PORT} = require("./config");
+const {MONGO_URI, PORT} = require("./config/env");
 
-const {connectToDb} = require("./utils");
+const {connector} = require("./database/models/utils");
 
 const app = require("./app");
-connectToDb(MONGO_URI);
-app.listen(PORT);
+connector(MONGO_URI)
+  .then(() => {
+    app.listen(PORT);
+  })
+  .catch(e => {
+    throw new Error(e);
+  });

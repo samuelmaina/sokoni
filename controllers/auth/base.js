@@ -1,5 +1,3 @@
-require("dotenv").config();
-
 const {TokenGenerator} = require("../../database/models");
 
 const {validationResults, Renderer, Flash} = require("../../utils");
@@ -41,7 +39,8 @@ class Auth {
       }
       const existingEmail = await this.Model.findByEmail(req.body.email);
       if (existingEmail) {
-        return flash.appendError(existingEmail);
+        const errorMessage = "Email already exists.Please try another one.";
+        return flash.appendError(errorMessage).redirect(this.routes.signUp);
       }
       await this.Model.createOne(req.body);
       const successSignUpMessage = `Dear ${req.body.name}, You have successfully signed up`;

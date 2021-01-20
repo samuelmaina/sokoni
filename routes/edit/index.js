@@ -1,14 +1,12 @@
 const express = require("express");
-const router = express.Router({
-  mergeParams: true,
-});
+const router = express.Router();
 
-const {userRoutesProtect, adminRoutesProtect} = require("../../authmiddleware");
+const {ensureUserIsAuth, ensureAdminIsAuth} = require("../../authmiddleware");
 
 const userEditRoutes = require("./user");
 const adminEditRoutes = require("./admin");
 
-router.use("/user", userRoutesProtect, userEditRoutes);
-router.use("/admin", adminRoutesProtect, adminEditRoutes);
+router.use("/user", ensureUserIsAuth, userEditRoutes);
+router.use("/admin", ensureAdminIsAuth, adminEditRoutes);
 
 module.exports = router;

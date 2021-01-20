@@ -1,22 +1,26 @@
 const mongoose = require("mongoose");
 const crypto = require("crypto");
+
+const {TOKEN_VALIDITY_IN_HOURS} = require("../../config/env");
+
+const {tokenGen, mongooseId} = require("../../config/constraints");
 const {ensureIsMongooseId, ensureStringIsLength} = require("./utils");
 const Schema = mongoose.Schema;
 
-const tokenValidityPeriodInMs = 1000 * 60 * 60;
+const tokenValidityPeriodInMs = 1000 * 60 * 60 * TOKEN_VALIDITY_IN_HOURS;
 
 const tokenGenerator = new Schema({
   requesterId: {
     type: Schema.Types.ObjectId,
     required: true,
-    maxlength: 20,
-    minlength: 10,
+    maxlength: mongooseId,
+    minlength: mongooseId,
   },
 
   token: {
     type: String,
-    maxlength: 64,
-    minlength: 64,
+    maxlength: tokenGen.token,
+    minlength: tokenGen.token,
   },
   expiryTime: {
     type: Date,
@@ -25,7 +29,7 @@ const tokenGenerator = new Schema({
 const {statics, methods} = tokenGenerator;
 
 statics.createOneForId = async function (requesterId) {
-  ensureIsMongooseId(id);
+  ensureIsMongooseId(requesterId);
   const tokenDetails = new this({
     requesterId,
     token: crypto.randomBytes(32).toString("hex"),
@@ -35,7 +39,7 @@ statics.createOneForId = async function (requesterId) {
   return tokenDetails;
 };
 
-statics.findTokenDetails = async function (token) {
+statics.findTokenDetailsByToken = async function (token) {
   ensureStringIsLength(token, 64);
   const tokenDetails = await this.findOne({
     token,
@@ -43,7 +47,6 @@ statics.findTokenDetails = async function (token) {
   });
   return tokenDetails;
 };
-
 methods.delete = async function () {
   await this.deleteOne();
 };

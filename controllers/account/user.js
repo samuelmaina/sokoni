@@ -13,7 +13,7 @@ exports.getDeposit = (req, res, next) => {
 exports.postDeposit = async (req, res, next) => {
   try {
     const flash = new Flash(req, res).appendPreviousData(req.body);
-    const {amount, paymentMode} = req.body;
+    const {amount} = req.body;
     const validationErrors = validationResults(req);
     if (validationErrors) {
       return flash.appendError(validationErrors).redirect("deposit");

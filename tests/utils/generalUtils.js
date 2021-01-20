@@ -3,20 +3,45 @@ const assert = require("assert");
 const ObjectId = require("mongoose").Types.ObjectId;
 
 const Models = require("../../database/models");
+const {User, Admin, Product} = require("../../database/models");
+
+exports.generateStringSizeN = function (N) {
+  let string = "";
+  const character = "s";
+  for (let i = 1; i <= N; i++) {
+    if (i % 2 === 0) {
+      string += `${Math.floor(Math.random() * 10)}`;
+    } else {
+      string += character;
+    }
+  }
+  return string;
+};
+exports.returnObjectWithoutProp = function (obj, key) {
+  const result = {};
+  for (const prop in obj) {
+    if (prop === key) {
+      continue;
+    }
+    result[prop] = obj[prop];
+  }
+  return result;
+};
+
+exports.ensureArrayHasLength = (arr, length) => {
+  if (arr.length !== length)
+    throw new Error("Array does not have the required length.");
+};
+
+exports.generateRandomIntInRange = (min, max) => {
+  return Math.floor(this.generateRandomFloatInRange(min, max));
+};
+exports.generateRandomFloatInRange = function (min, max) {
+  return min + Math.random() * max;
+};
 
 exports.generateMongooseId = () => {
   return ObjectId();
-};
-exports.ensureIsMongooseId = id => {
-  const isId = ObjectId.isValid(id);
-  if (!isId) {
-    throw new Error("The Id is not valid.");
-  }
-  //const castedId = new ObjectId(id);
-  // // const isInValid = castedId !== id;
-  // // if (isInValid) {
-  // //   throw new Error("Invalid Mongosse id.");
-  // // }
 };
 
 exports.hashPassword = async password => {
@@ -39,7 +64,7 @@ exports.clearTheDb = async () => {
         await this.clearDataFromModel(Model);
       }
       count = await getNoOfDocs();
-      assert.equal(count, 0, "deletion not complete");
+      assert.strictEqual(count, 0, "deletion not complete");
     }
   } catch (error) {
     throw new Error(error);
@@ -52,14 +77,12 @@ exports.clearDataFromModel = async Model => {
   };
   await Model.deleteMany();
   const countAfterDeletion = await noOfDocs();
-  assert.equal(
+  assert.strictEqual(
     countAfterDeletion,
     0,
     `the model (${Model.modelName} not cleared completely.`
   );
 };
-
-const {User, Admin, Product} = Models;
 
 exports.createNewAdmin = async () => {
   return await createNewDoc(Admin);
@@ -89,8 +112,6 @@ exports.generateRandomMongooseIds = quantity => {
 };
 
 exports.createTestProducts = async (adminIDs = [], quantity = 1) => {
-  ensureArrayIsNotEmptyNullOrUndefinded(adminIDs);
-  ensureValueIsPositiveInt(quantity);
   const products = [];
   let product;
   const numberOfAdmins = adminIDs.length;
@@ -110,7 +131,6 @@ exports.createTestProducts = async (adminIDs = [], quantity = 1) => {
 };
 
 exports.getRandomProductData = adminId => {
-  this.ensureIsMongooseId(adminId);
   const data = {};
   const PRODUCT_PROPERTIES = this.PRODUCT_PROPERTIES;
   for (const key in PRODUCT_PROPERTIES) {
@@ -203,19 +223,4 @@ exports.PRODUCT_PROPERTIES = {
   brand: {
     type: String,
   },
-};
-const ensureArrayIsNotEmptyNullOrUndefinded = array => {
-  const isArray = Array.isArray(array);
-  if (!isArray) {
-    throw new Error("The values passed is not an array");
-  }
-  if (array.length < 1) {
-    throw new Error("The array does not have any content");
-  }
-};
-
-const ensureValueIsPositiveInt = value => {
-  if (!(Number.isInteger(value) && value > 0)) {
-    throw new Error("Value not a positive integer.");
-  }
 };

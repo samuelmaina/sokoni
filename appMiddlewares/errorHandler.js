@@ -10,7 +10,7 @@ module.exports = app => {
       return res.redirect("/");
     }
     let statusCode = error.httpStatusCode || 500;
-    console.log(error);
+    console.error(error);
     res.status(statusCode).render("errorPage", {
       pageTitle: "Error!",
       path: "/500",

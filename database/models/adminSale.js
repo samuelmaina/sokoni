@@ -1,4 +1,7 @@
 const mongoose = require("mongoose");
+
+const ranges = require("../../config/constraints");
+
 const {adminSalesServices} = require("../services");
 
 const Schema = mongoose.Schema;
@@ -8,18 +11,26 @@ const AdminSales = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Admin",
     required: true,
-    maxlength: 20,
+    maxlength: ranges.mongooseId,
+    minlength: ranges.mongooseId,
   },
   products: [
     {
       productData: {
         type: Schema.Types.ObjectId,
         ref: "Product",
-        maxlength: 20,
+        required: true,
+        maxlength: ranges.mongooseId,
+        minlength: ranges.mongooseId,
       },
       sales: [
         {
-          quantity: {type: Number, max: 2000},
+          quantity: {
+            type: Number,
+            required: true,
+            max: ranges.adminSales.quantity.min,
+            min: ranges.adminSales.quantity.max,
+          },
           soldAt: {type: Date},
         },
       ],

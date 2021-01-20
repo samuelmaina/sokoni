@@ -6,12 +6,12 @@ class Renderer {
    */
   constructor(res) {
     this._res = res;
-    this._options = {};
+    this._additionalResBodyData = {};
   }
   /**
    *
    * @param {path} templatePath -a path to the temperate page that you want
-   * to send
+   * to render.
    */
   templatePath(templatePath) {
     this._templatePath = templatePath;
@@ -29,7 +29,7 @@ class Renderer {
   /**
    *
    * @param {String} currentPath - name of the current active path
-   * (or the route as displayed by the navigation bar).
+   * (or the route as displayed in the navigation bar).
    */
   activePath(currentPath) {
     this._path = currentPath;
@@ -44,18 +44,31 @@ class Renderer {
     this._postPath = postPath;
     return this;
   }
+  /**
+   *
+   * @param {*} error -error to be appended on the rendered page.
+   */
 
   appendError(error) {
     this._error = error;
     return this;
   }
+  /**
+   *
+   * @param {*} info -
+   * info that will be appended
+   * to the rendered page.
+   */
   appendInfo(info) {
     this._info = info;
     return this;
   }
   /**
    *
-   * @param {*} previousData -an object.
+   * @param {*} previousData -
+   * append data to fields
+   * as the previous data that
+   * the fields had.
    */
   appendPreviousData(previousData = {}) {
     this._previousData = previousData;
@@ -68,34 +81,54 @@ class Renderer {
    */
   appendDataToResBody(options = {}) {
     for (const key in options) {
-      this._options[key] = options[key];
+      this._additionalResBodyData[key] = options[key];
     }
     return this;
   }
 
   /**
-   * render the page finally.Note that you can not append another method after render is
+   * render the page finally.
+   * Note that you can not append another method after render is
    * called.
    */
   render() {
-    const {_res, _templatePath, _title, _path, _postPath, _options} = this;
+    const {
+      _res,
+      _templatePath,
+      _title,
+      _path,
+      _postPath,
+      _additionalResBodyData,
+    } = this;
+
+    //reject if title or the
+    //templating path are missing.
     if (!_templatePath || !_title) {
       throw new Error("Template path and PageTitle must be provided");
     }
+    //we should not override any data that
+    //is in res.locals.
     const resLocals = _res.locals;
     const data = {
       pageTitle: _title,
       path: _path,
       postPath: _postPath,
+      //resLocal previous data,error and
+      //info take precedence over the currently
+      //set previoud data.
       previousData: resLocals.previousData || this._previousData || {},
       error: resLocals.error || this._error,
       info: resLocals.info || this._info,
     };
-    for (const key in _options) {
-      if (_options.hasOwnProperty(key)) {
-        data[key] = _options[key];
+
+    //finally add  to data object any additional data that
+    //was supposed to be added to res.body.
+    for (const key in _additionalResBodyData) {
+      if (_additionalResBodyData.hasOwnProperty(key)) {
+        data[key] = _additionalResBodyData[key];
       }
     }
+
     return _res.render(_templatePath, data);
   }
 }
