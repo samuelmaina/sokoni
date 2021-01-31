@@ -1,6 +1,6 @@
-const {TokenGenerator} = require("../../database/models");
+const { TokenGenerator } = require("../../database/models");
 
-const {validationResults, Renderer, Flash} = require("../../utils");
+const { validationResults, Renderer, Flash } = require("../../utils");
 
 class Auth {
   constructor(Model, type) {
@@ -43,7 +43,7 @@ class Auth {
         return flash.appendError(errorMessage).redirect(this.routes.signUp);
       }
       await this.Model.createOne(req.body);
-      const successSignUpMessage = `Dear ${req.body.name}, You have successfully signed up`;
+      const successSignUpMessage = `Dear ${req.body.name}, You have successfully signed up.`;
       flash.appendInfo(successSignUpMessage).redirect(this.routes.logIn);
       // transporter.sendMail(emailBody);
     } catch (error) {
@@ -70,7 +70,7 @@ class Auth {
   async postLogin(req, res, next) {
     try {
       const flash = new Flash(req, res).appendPreviousData(req.body);
-      const {email, password} = req.body;
+      const { email, password } = req.body;
       const validationErrors = validationResults(req);
       if (validationErrors) {
         return flash.appendError(validationErrors).redirect(this.routes.logIn);
@@ -140,7 +140,7 @@ class Auth {
           .appendError(` No ${this.person} by that email exits`)
           .redirect(this.routes.reset);
       }
-      await TokenGenerator.createOneForID(document.id);
+      await TokenGenerator.createOneForId(document.id);
       // transporter.send({
       //   //http://localhost:3000/auth/user/new-password/57543e4605348c1d428f72eff767487bd255983f74119b2b221cab4f2c28bbf3
       //   from: "samuelsonlineshop@online.com",
@@ -167,10 +167,10 @@ class Auth {
     try {
       const flash = new Flash(req, res);
       const token = req.params.token;
-      const tokenDetails = await TokenGenerator.findTokenDetails(token);
+      const tokenDetails = await TokenGenerator.findTokenDetailsByToken(token);
       if (!tokenDetails) {
         return flash
-          .appendError("Too late for reset.Please try again")
+          .appendError("Too late for reset. Please try again.")
           .appendPreviousData()
           .redirect(this.routes.reset);
       }
@@ -189,7 +189,7 @@ class Auth {
   }
   async postNewPassword(req, res, next) {
     try {
-      const {password, token} = req.body;
+      const { password, token } = req.body;
 
       const renderer = new Renderer(res)
         .templatePath("auth/newPassword")
@@ -206,22 +206,18 @@ class Auth {
         return renderer.appendError(validationErrors).render();
       }
 
-      const tokenDetails = await TokenGenerator.findTokenDetails(token);
-      const document = await this.Model.findById(tokenDetails.requesterID);
+      const tokenDetails = await TokenGenerator.findTokenDetailsByToken(token);
+      const document = await this.Model.findById(tokenDetails.requesterId);
 
-      const resettingToSamePassword = await document.isPasswordCorrect(
-        password
-      );
+      const resettingToSamePassword = await document.isCorrect(password);
       if (resettingToSamePassword) {
         return renderer
-          .appendError(
-            "That is still your old Password.Please submit new password for security reasons"
-          )
+          .appendError("Can not reset to your old Password! Select another one")
           .render();
       }
-      await document.update({password});
+      await document.update("password", password);
       new Flash(req, res)
-        .appendInfo("Password reset successful")
+        .appendInfo("Password reset successful.")
         .redirect(this.routes.logIn);
       tokenDetails.delete();
     } catch (error) {

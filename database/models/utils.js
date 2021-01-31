@@ -33,7 +33,7 @@ exports.connector = async mongo_uri => {
 
 exports.ensureIsMongooseId = id => {
   const isId = ObjectId.isValid(id);
-  const errorMessage = "Id is not a valid mongoose id.";
+  const errorMessage = "Value not a valid mongoose Id.";
 
   if (!isId) {
     throw new Error(errorMessage);

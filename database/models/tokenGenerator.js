@@ -40,12 +40,11 @@ statics.createOneForId = async function (requesterId) {
 };
 
 statics.findTokenDetailsByToken = async function (token) {
-  ensureStringIsLength(token, 64);
-  const tokenDetails = await this.findOne({
+  // ensureStringIsLength(token, 64);
+  return await this.findOne({
     token,
     expiryTime: {$gt: Date.now()},
   });
-  return tokenDetails;
 };
 methods.delete = async function () {
   await this.deleteOne();

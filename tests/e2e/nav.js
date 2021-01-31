@@ -20,9 +20,9 @@ let page;
 const data = {
   name: "John Doe",
   email: "samuelmayna@gmail.com",
-  password: "Smain68219",
+  password: "Smain689??",
 };
-describe.skip("Nav Links", () => {
+describe("Nav Links", () => {
   beforeAll(async () => {
     await startApp(PORT);
     page = new Auth(getNewDriverInstance());

@@ -62,7 +62,9 @@ statics.findSalesForAdminIDWithinAnInterval = async function (
   fromTime,
   toTIme
 ) {
-  const adminSales = await this.findOneForAdminId(adminID);
+  const adminSales = await this.findOneForAdminIdAndPopulateProductsData(
+    adminID
+  );
   if (!adminSales) return [];
   const productsToDisplay = adminSales.findSalesWithinAnInterval(
     fromTime,
