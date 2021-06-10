@@ -1,7 +1,7 @@
 const assert = require("assert");
 
-const {MongoClient} = require("mongodb");
-const {SESSION_STORE} = require("../../../config/env");
+const { MongoClient } = require("mongodb");
+const { SESSION_STORE } = require("../../../config/env");
 let db;
 
 exports.clearSessions = async () => {
@@ -17,7 +17,7 @@ exports.clearSessions = async () => {
     };
     const allDocs = await findSessions();
     allDocs.forEach(async doc => {
-      await collection.findOneAndDelete({_id: doc._id});
+      await collection.findOneAndDelete({ _id: doc._id });
     });
     const docAfterCreatin = await findSessions();
     assert.strictEqual(

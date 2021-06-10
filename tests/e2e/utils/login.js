@@ -1,7 +1,7 @@
 const {
-  createNewAdminWithData,
-  createNewUserWithData,
-} = require("../../utils/generalUtils");
+  createAdminWithData,
+  createUserWithData,
+} = require("../../utils/generalUtils").database;
 
 /**
  * A utility function that is used to login user.
@@ -19,10 +19,10 @@ module.exports = login = async (page, loginUrl, data, type) => {
   try {
     switch (type) {
       case "user":
-        createdDoc = await createNewUserWithData(data);
+        createdDoc = await createUserWithData(data);
         break;
       case "admin":
-        createdDoc = await createNewAdminWithData(data);
+        createdDoc = await createAdminWithData(data);
         break;
       default:
         break;
