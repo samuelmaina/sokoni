@@ -27,7 +27,7 @@ exports.product = {
   //does not need error message.
   imageUrl: {
     minlength: 5,
-    maxlength: 20,
+    maxlength: 100,
   },
   buyingPrice: {
     min: 1,
