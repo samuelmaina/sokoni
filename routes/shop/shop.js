@@ -11,7 +11,7 @@ router.get("/", shop.getIndex);
 router.get("/products", shop.getProducts);
 
 router.get("/product/:productId", shop.getProduct);
-router.get("/category/:category", shop.getProductPerCategory);
+router.get("/category/:category", shop.getProductsPerCategory);
 router.post("/add-to-cart", ensureUserIsAuth, shop.getAddToCart);
 router
   .route("/cart")

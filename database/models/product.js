@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 
+
 const {product, mongooseId} = require("../../config/constraints");
 const ranges = product;
 const {ProductService} = require("../services");
@@ -14,6 +15,7 @@ const {
 } = require("./utils");
 
 const {PRODUCTS_PER_PAGE} = require("../../config/env");
+const { fileManipulators } = require("../../utils");
 
 const POSITIVE_QUNTITY_QUERY = {quantity: {$gt: 0}};
 
@@ -125,11 +127,9 @@ statics.findCategories = async function () {
   return findCategoriesPresent(products);
 };
 
-statics.findCategoryProductsForPage = async function (query) {
-  const {category, page} = query;
+statics.findCategoryProductsForPage = async function (category,page) {
   validatePage(page);
   const length = category.length;
-
   const lowerlimit = 5;
   const upperlimit = 200;
   const err = `Category should be ${lowerlimit} to ${upperlimit} characters long.`;

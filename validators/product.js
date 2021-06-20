@@ -1,13 +1,13 @@
 const ranges = require("../config/constraints").product;
 const body = require("express-validator").check;
 
-exports.titleValidator = body("title")
+const title = body("title")
   .isString()
   .withMessage("Title must be a string.")
   .isLength({min: ranges.title.minlength, max: ranges.title.maxlength})
   .withMessage(ranges.title.error);
 
-exports.buyingPriceValidator = body("buyingPrice")
+const buyingPrice = body("buyingPrice")
   .isNumeric()
   .withMessage("Buying price must be a number.")
   .custom(value => {
@@ -17,7 +17,7 @@ exports.buyingPriceValidator = body("buyingPrice")
     }
     return true;
   });
-exports.percentageProfitValidator = body("percentageProfit")
+const percentageProfit = body("percentageProfit")
   .isNumeric()
   .withMessage("Percentage profit must be a number.")
   .custom(value => {
@@ -27,16 +27,7 @@ exports.percentageProfitValidator = body("percentageProfit")
     }
     return true;
   });
-exports.expirationPeriodValidator = body("expirationPeriod")
-  .isNumeric()
-  .withMessage("expirationPeriod must be a number")
-  .custom(value => {
-    if (value < 0) {
-      throw new Error("expirationPeriod must be a positive real number");
-    }
-    return true;
-  });
-exports.quantityValidator = body("quantity")
+const quantity = body("quantity")
   .isNumeric()
   .withMessage("Quantity must be a number.")
   .isInt()
@@ -49,7 +40,7 @@ exports.quantityValidator = body("quantity")
     return true;
   });
 
-exports.descriptionValidator = body("description")
+const description = body("description")
   .isString()
   .withMessage("Description must be a string.")
   .isLength({
@@ -58,7 +49,7 @@ exports.descriptionValidator = body("description")
   })
   .withMessage(ranges.description.error);
 
-exports.brandValidator = body("brand")
+const brand = body("brand")
   .isString()
   .withMessage("Brand must be a string.")
   .isLength({
@@ -67,7 +58,7 @@ exports.brandValidator = body("brand")
   })
   .withMessage(ranges.brand.error);
 
-exports.categoryValidator = body("category")
+const category = body("category")
   .isString()
   .withMessage("Category must be a string.")
   .isLength({
@@ -75,3 +66,13 @@ exports.categoryValidator = body("category")
     max: ranges.category.maxlength,
   })
   .withMessage(ranges.category.error);
+
+module.exports=[
+  title,
+  buyingPrice,
+  percentageProfit,
+  quantity,
+  brand,
+  category,
+  description
+]

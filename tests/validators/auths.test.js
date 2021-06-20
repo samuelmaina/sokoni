@@ -32,17 +32,12 @@ describe.skip("Auth validators", () => {
       .withErrorMessage(error)
       .runTests();
   });
-  describe.skip("email", () => {
+  describe("email", () => {
     const lowerLimit = ranges.email[0];
     const upperLimit = ranges.email[1];
     it("ill formatted emails", async () => {
       const errorMessage = "Please enter a valid email.";
-      const lackingAt = "someexample.com";
-      const lackingDot = "some@example";
-      const havingNumberAfterDomainType = "some@example.com1";
-
-      const invalids = [lackingAt, lackingDot, havingNumberAfterDomainType];
-      for (const email of invalids) {
+      const inValid= "someexample.com";
         await ensureGeneratesErrorOnBody(
           {
             email,
@@ -50,7 +45,11 @@ describe.skip("Auth validators", () => {
           emailV,
           errorMessage
         );
-      }
+      
+
+
+
+        
     });
     validateStringField("email", email, lowerLimit, upperLimit, "Email");
   });

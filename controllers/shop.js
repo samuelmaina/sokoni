@@ -26,7 +26,7 @@ exports.getIndex = async (req, res, next) => {
     next(error);
   }
 };
-exports.getProductPerCategory = async (req, res, next) => {
+exports.getProductsPerCategory = async (req, res, next) => {
   try {
     const page = +req.query.page || 1;
     const category = req.params.category;
@@ -53,6 +53,8 @@ exports.getProducts = async (req, res, next) => {
     const page = +req.query.page || 1;
     const categories = await Product.findCategories();
     const {paginationData, products} = await Product.findProductsForPage(page);
+
+   console.log(products);
     new Renderer(res)
       .templatePath("shop/product-list")
       .pageTitle("Products")

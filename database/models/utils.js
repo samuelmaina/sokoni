@@ -59,6 +59,7 @@ exports.ensureStringIsNonEmpty = string => {
   }
 };
 exports.ensureIsInt = (value, err) => {
+  console.log(value);
   if (!Number.isInteger(value)) throw new Error(err);
 };
 exports.ensureIsPositiveInt = (value, err) => {

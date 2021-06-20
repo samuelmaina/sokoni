@@ -42,7 +42,7 @@ exports.postAddProduct = async (req, res, next) => {
     const productData = req.body;
     productData.imageUrl = image.path;
     productData.adminId = returnAdminIdIfAdminIsInSession(req);
-    await Product.createNew(productData);
+    await Product.createOne(productData);
     flash
       .appendInfo("Product created successfully created")
       .redirect("/admin/products");
@@ -162,7 +162,7 @@ exports.deleteProduct = async (req, res, next) => {
         .redirect("/admin/products");
     }
     fileManipulators.deleteFile(prod.imageUrl);
-    await Product.deleteById(prodId);
+    await Product.findByIdAndRemove(prodId);
     flash
       .appendInfo("Product deleted successfully")
       .redirect("/admin/products");

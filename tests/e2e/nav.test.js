@@ -182,10 +182,12 @@ describe('Nav Links', () => {
 			const title = 'Your Products';
 			await ensureHasTitleAfterClickingLink(page, link, title);
 		});
-		it('Add Product', async () => {
+		it.only('Add Product', async () => {
 			const link = 'Add Product';
 			const title = 'Add Product';
+			
 			await ensureHasTitleAfterClickingLink(page, link, title);
+			
 		});
 		it('See Your Sales', async () => {
 			const link = 'See Your Sales';
