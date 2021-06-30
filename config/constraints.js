@@ -1,5 +1,8 @@
 const assert = require('assert');
-exports.mongooseId = 24;
+exports.mongooseId = {
+	exact: 24,
+	error: 'Should be a mongoose Id',
+};
 exports.base = {
 	name: {
 		minlength: 5,
@@ -31,9 +34,9 @@ exports.product = {
 		maxlength: 100,
 	},
 	buyingPrice: {
-		min: 1,
-		max: 100000,
-		error: currencyErrorGenerator('Buying price', 1, 200000),
+		min: 100,
+		max: 200000,
+		error: currencyErrorGenerator('Buying price', 100, 200000),
 	},
 	percentageProfit: {
 		min: 0,
