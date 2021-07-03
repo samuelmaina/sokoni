@@ -36,8 +36,8 @@
                 <br>
             </div>
             <div class="card__actions">
-                <a href="/admin/edit-product/<%= product.id %>?edit=true&page=<%= paginationData.currentPage %>"
-                    class="btn">Edit</a>
+                <a   class = 'edit_product btn' href="/admin/edit-product/<%= product.id %>?edit=true&page=<%= paginationData.currentPage %>"
+                   >Edit</a>
                 <input type="hidden" value="<%= product.id %>" name="id">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button class="btn" type="submit" onclick="deleteProduct(this)">Delete</button>
@@ -45,7 +45,12 @@
         </article>
         <% } %>
     </div>
-    <%- include('../includes/pagination.ejs', {paginationData:paginationData}) %>
+    <ul> 
+    <% for (let category of categories) { %>
+        <li><a href="/admin/category/<%=category%>?page=<%=paginationData.currentPage%>"> <%=category%></a></li>
+    <% } %>
+</ul>
+     <%- include('../includes/pagination.ejs') %>
 
     <% } else { %>
     <h1>No Products Found!</h1>

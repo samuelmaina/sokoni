@@ -1,15 +1,7 @@
-const Admin = require("./admin");
-const AdminSales = require("./adminSale");
-const Order = require("./order");
-const Product = require("./product");
-const TokenGenerator = require("./tokenGenerator");
-const User = require("./user");
-
-module.exports = {
-  Admin,
-  AdminSales,
-  Order,
-  Product,
-  TokenGenerator,
-  User,
-};
+exports.Admin = require('./admin');
+exports.AdminSales = require('./adminSale');
+exports.Order = require('./order');
+exports.Product = require('./product');
+exports.TokenGenerator = require('./tokenGenerator');
+exports.User = require('./user');
+exports.Metadata = require('./metadata');

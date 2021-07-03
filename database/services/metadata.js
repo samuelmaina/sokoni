@@ -11,6 +11,7 @@ exports.addElementIfNonExisting = (field, arr, element) => {
 		arr.push(object);
 	} else {
 		const elem = arr[elementIndex];
-		elem.adminIds.push(adminId);
+		const adminIds = elem.adminIds;
+		if (!adminIds.includes(adminId)) adminIds.push(adminId);
 	}
 };

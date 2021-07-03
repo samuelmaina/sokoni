@@ -45,8 +45,6 @@ exports.confirmPassword = async (password, hashePassword) => {
 	return await bcrypt.compare(password, hashePassword);
 };
 
-
-
 exports.createDocForType = async (type, data) => {
 	switch (type) {
 		case 'Admin':
@@ -91,12 +89,8 @@ exports.createTestProducts = async (adminIDs = [], quantity = 1) => {
 		const adminIndex = index % numberOfAdmins;
 		const adminId = adminIDs[adminIndex];
 		product = generateRandomProductData(adminId);
-		product.sellingPrice = (
-			(1 + product.percentageProfit / 100) *
-			product.buyingPrice
-		).toFixed(2);
-		product = new Product(product);
-		product = await product.save();
+		product = await Product.createOne(product);
+		await product.save();
 		products[index] = product;
 	}
 	return products;
@@ -115,4 +109,43 @@ const createInModelWithData = async (Model, data) => {
 	let document = new Model(dataToSave);
 	document = await document.save();
 	return document;
+};
+
+exports.createAdminSalesTestDataForAdminId = async function (adminId, created) {
+	const sales = await Models.AdminSales.create({
+		adminId,
+	});
+
+	for (const product of created) {
+		let sale = {
+			productId: product.id,
+			quantity: 50,
+			solAt: Date.now(),
+		};
+		await sales.addSale(sale);
+		sale = {
+			productId: product.id,
+			quantity: 50,
+			solAt: Date.now(),
+		};
+		await sales.addSale(sale);
+	}
+	return sales;
+};
+
+exports.feedProductsWithTestCategories = async (products, categories) => {
+	let interator = 0;
+
+	const metadata = await Models.Metadata.getSingleton();
+
+	await metadata.clear();
+	for (const product of products) {
+		product.category = categories[interator % categories.length];
+		await metadata.addCategory({
+			category: product.category,
+			adminId: product.adminId,
+		});
+		await product.save();
+		interator++;
+	}
 };

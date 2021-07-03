@@ -103,6 +103,8 @@ module.exports = Model => {
 					await expect(Model.findByEmail(nonExistentEmail)).resolves.toBeNull();
 				}
 				async function createDocsWithEmails(emails) {
+					//use the same hashed password for every doc since password hashing is very
+					//computationally expensive
 					const hashedCommonPassword = await hashPassword('Password45');
 					for (const email of emails) {
 						await docCreator('John Doe', hashedCommonPassword, email);
@@ -110,9 +112,6 @@ module.exports = Model => {
 				}
 			});
 			describe('findOneWithCredentials', () => {
-				//create 20 test docs since password
-				//hashing takes time.
-				const N = 5;
 				it('returns null on empty db', async () => {
 					await clearDb();
 					const email = 'example@email.com',
@@ -122,6 +121,9 @@ module.exports = Model => {
 				});
 				describe(`Non empty db`, () => {
 					let emails, passwords;
+					//create small number of  test docs since password
+					//hashing takes time.
+					const N = 5;
 					beforeAll(async () => {
 						emails = createNEmails(N);
 						passwords = createNPasswords(N);
@@ -142,7 +144,7 @@ module.exports = Model => {
 						verifyEqual(firstDoc.email, firstEmail);
 						//confirmPassword will ONLY return
 						//true if the second arguement is the
-						//the hash of the first,as such
+						//the hash of the first.,as such
 						//it can be used to show that the fetched doc has the same
 						//password as the the given password.
 						verifyTruthy(

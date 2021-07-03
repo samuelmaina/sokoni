@@ -1,4 +1,5 @@
 const assert = require('assert');
+
 exports.mongooseId = {
 	exact: 24,
 	error: 'Should be a mongoose Id',
@@ -20,6 +21,19 @@ exports.base = {
 		error: stringErrorGenerator('Password', 8, 15),
 	},
 	tel: 13,
+};
+
+exports.shop = {
+	category: {
+		minlength: 5,
+		maxlength: 50,
+		error: stringErrorGenerator('Category', 5, 20),
+	},
+	page: {
+		min: 1,
+		max: 200,
+		error: intErrorGenerator('Page', 1, 200),
+	},
 };
 
 exports.product = {

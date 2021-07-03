@@ -1,19 +1,21 @@
-const { Product, Metadata } = require('../../../database/models');
-
-const { PRODUCTS_PER_PAGE } = require('../../../config/env');
+const { Product, Metadata } = require('../../database/models');
+const { PRODUCTS_PER_PAGE } = require('../../config/env');
 
 const {
 	verifyEqual,
 	verifyRejectsWithError,
 	verifyNull,
+	verifyTruthy,
+	ensureMongooseArraysAreEqual,
 	ensureArrayContains,
-	ensureArraysAr,
-} = require('../../utils/testsUtils');
+	verifyIDsAreEqual,
+	ensureObjectHasKeyValuePair,
+} = require('../utils/testsUtils');
 
 const {
 	createTestProducts,
 	clearDb,
-} = require('../../utils/generalUtils/database');
+} = require('../utils/generalUtils/database');
 const {
 	generateMongooseId,
 	generateStringSizeN,
@@ -21,8 +23,8 @@ const {
 	generateRandomIntInRange,
 	generateRandomFloatInRange,
 	generateRandomMongooseIds,
-} = require('../../utils/generalUtils/utils');
-const { product } = require('../../../config/constraints');
+} = require('../utils/generalUtils/utils');
+const { product } = require('../../config/constraints');
 const {
 	ranges,
 	includeSetUpAndTearDown,
@@ -32,7 +34,7 @@ const {
 	productProps,
 	validateStringField,
 	validateFloatField,
-} = require('../utils');
+} = require('./utils');
 
 const prodRanges = product;
 
@@ -45,11 +47,11 @@ describe('--Product', () => {
 	});
 	const { createOne } = Product;
 	describe('CreateOne', () => {
-		const props = generatePerfectProductData();
+		const valid = generatePerfectProductData();
 		const strings = ['title', 'imageUrl', 'description', 'category', 'brand'];
 		for (const field of strings) {
 			describe(field, () => {
-				const otherFields = returnObjectWithoutProp(props, field);
+				const otherFields = returnObjectWithoutProp(valid, field);
 				const { minlength, maxlength } = prodRanges[field];
 				const data = {
 					func: createOne,
@@ -65,7 +67,7 @@ describe('--Product', () => {
 		const numerics = ['buyingPrice', 'percentageProfit', 'quantity'];
 		for (const field of numerics) {
 			describe(field, () => {
-				const otherFields = returnObjectWithoutProp(props, field);
+				const otherFields = returnObjectWithoutProp(valid, field);
 				const { min, max } = prodRanges[field];
 				const data = {
 					func: createOne,
@@ -81,25 +83,25 @@ describe('--Product', () => {
 
 		describe('should add both category and brand to the metadata table ', () => {
 			let productData;
-			beforeEach(() => {
+			beforeEach(async () => {
 				productData = generatePerfectProductData();
-			});
-			it('should add  category', async () => {
 				await createOne(productData);
-				const metadata = await Metadata.getSingleton();
-				ensureArrayContains(metadata.categories, productData.category);
 			});
-			it('should add brand', async () => {
-				await createOne(productData);
-				const metadata = await Metadata.getSingleton();
-				ensureArrayContains(metadata.brands, productData.brand);
+			it('ensure that both categories and brand are added to metadata', async () => {
+				await ensureMetadataIsAdded(productData);
 			});
 		});
+
+		it('ensure selling price is calculated', async () => {
+			const created = await createOne(valid);
+			ensureHasValidSellingPrice(created, valid);
+		});
+
 		describe('AdminId', () => {
 			it('invalid', async () => {
 				const field = 'adminId';
 				const invalid = generateStringSizeN(ranges.mongooseId);
-				const body = returnObjectWithoutProp(props, field);
+				const body = returnObjectWithoutProp(valid, field);
 				body[field] = invalid;
 				await verifyRejectsWithError(async () => {
 					await Product.createOne(body);
@@ -110,7 +112,7 @@ describe('--Product', () => {
 				//including the adminId, if function
 				//does not throw then it accepts valid
 				//adminIds.
-				await expect(Product.createOne(props)).resolves.not.toThrow();
+				await expect(Product.createOne(valid)).resolves.not.toThrow();
 			});
 		});
 	});
@@ -208,30 +210,117 @@ describe('--Product', () => {
 					verifyEqual(categories.length, 0);
 				});
 				describe('non Empty db', () => {
-					const categories = [
-						'category1',
-						'category2',
-						'category3',
-						'category4',
-					];
+					const category = 'category1';
 					beforeAll(async () => {
-						const trials = 200;
-						for (let i = 0; i < trials; i++) {
-							const productData = generatePerfectProductData();
-							productData.category = categories[i % categories.length];
-							await createOne(productData);
-						}
+						const productData = generatePerfectProductData();
+						productData.category = category;
+						await createOne(productData);
 					}, MAX_SETUP_TIME);
 					afterAll(async () => {
 						await clearDb();
 					});
 					it('return all categories', async () => {
 						const actual = await Product.findCategories();
-						ensureArraysAr(categories, actual);
+						ensureArrayContains(actual, category);
+					});
+				});
+			});
+			describe.only('findCategoriesforAdminId', () => {
+				let adminId = generateMongooseId();
+				it('return null on empty db', async () => {
+					const categories = await Product.findCategoriesForAdminId(adminId);
+					verifyEqual(categories.length, 0);
+				});
+				describe('non Empty db', () => {
+					const example = {
+						category: 'category 1',
+						adminId,
+					};
+					beforeAll(async () => {
+						const productData = generatePerfectProductData();
+						productData.category = example.category;
+						productData.adminId = adminId;
+						await createOne(productData);
+					}, MAX_SETUP_TIME);
+					afterAll(async () => {
+						await clearDb();
+					});
+					it('return all for adminId', async () => {
+						const actual = await Product.findCategoriesForAdminId(adminId);
+						ensureArrayContains(actual, example.category);
 					});
 				});
 			});
 
+			describe('findCategoryProductsForAdminIdAndPage', () => {
+				let adminId = generateMongooseId();
+				it('returns empty array on empty db', async () => {
+					const page = 1;
+					const retrieved = await Product.findCategoryProductsForAdminIdAndPage(
+						adminId,
+						page
+					);
+					verifyEqual(retrieved.products.length, 0);
+				});
+				describe('non empty db', () => {
+					afterEach(async () => {
+						await clearDb();
+					});
+					it('should filter out products for admin Id', async () => {
+						const testCategory = 'category 1';
+						const product1 = generatePerfectProductData();
+						product1.adminId = adminId;
+						product1.category = testCategory;
+						const product2 = generatePerfectProductData();
+						product2.adminId = adminId;
+						product2.category = testCategory;
+
+						const product3 = generatePerfectProductData();
+						product3.adminId = adminId;
+						product3.category = 'some category';
+						const product4 = generatePerfectProductData();
+						product4.adminId = generateMongooseId();
+						const products = [product1, product2, product3, product4];
+						for (const product of products) {
+							await Product.createOne(product);
+						}
+
+						const page = 1;
+						const retrieved =
+							await Product.findCategoryProductsForAdminIdAndPage(
+								adminId,
+								testCategory,
+								page
+							);
+						const retrievedProducts = retrieved.products;
+						verifyEqual(retrievedProducts.length, 2);
+						ensureProductsHaveAdminId(retrievedProducts, adminId);
+						const paginationData = retrieved.paginationData;
+						ensureObjectHasKeyValuePair(paginationData, 'currentPage', page);
+					});
+
+					it('should lender upto to the PRODUCTS_PER_PAGE limit', async () => {
+						const num = 50;
+						const category = 'category 1';
+						await createProductsWithAdminIdAndCategory(num, adminId, category);
+						const page = 2;
+						const retrieved =
+							await Product.findCategoryProductsForAdminIdAndPage(
+								adminId,
+								category,
+								page
+							);
+						const retrievedProducts = retrieved.products;
+						ensureProductsHaveAdminId(retrievedProducts, adminId);
+						verifyEqual(retrievedProducts.length, PRODUCTS_PER_PAGE);
+						ensureObjectHasKeyValuePair(
+							retrieved.paginationData,
+							'hasNextPage',
+							true
+						);
+					});
+				});
+			});
 			describe('findCategoryProductsForPage', () => {
 				describe('throws when either of the input are invalid', () => {
 					describe('category', () => {
@@ -422,7 +511,7 @@ describe('--Product', () => {
 					const update = {
 						title: 'test 1',
 						imageUrl: 'image/to/some/path.jpg',
-						buyingPrice: 69.99,
+						buyingPrice: 1000,
 						percentageProfit: 20,
 						quantity: 200,
 						brand: 'The good Brand',
@@ -431,27 +520,41 @@ describe('--Product', () => {
 					};
 					const updated = await product.updateDetails(update);
 					ensureObjectsHaveSameFields(updated, update, productProps);
-					const { percentageProfit, buyingPrice } = update;
-					expect(updated.sellingPrice).toBe(
-						Number((buyingPrice * (1 + percentageProfit / 100)).toFixed(2))
-					);
+					ensureHasValidSellingPrice(updated, update);
+					await ensureMetadataIsAdded(update);
 				});
 			});
 		});
 	});
 });
 
-async function validatePaginationData(page, paginationData, query) {
-	const total = await Product.find(query).countDocuments();
-	const expected = {
-		hasNextPage: page * PRODUCTS_PER_PAGE < total,
-		hasPreviousPage: page > 1,
-		nextPage: page + 1,
-		previousPage: page - 1,
-		lastPage: Math.ceil(total / PRODUCTS_PER_PAGE),
-		currentPage: page,
-	};
-	verifyEqual(paginationData, expected);
+function ensureProductsHaveAdminId(products, adminId) {
+	for (const product of products) {
+		verifyIDsAreEqual(adminId, product.adminId);
+	}
+}
+
+async function ensureMetadataIsAdded(dataUsedDuringCreation) {
+	const metadata = await getMetadata();
+	const { brands, categories } = metadata;
+	let brandExists = false;
+	for (const brand of brands) {
+		if (brand.brand === dataUsedDuringCreation.brand) brandExists = true;
+	}
+	verifyTruthy(brandExists);
+	let categoryExists = false;
+	for (const category of categories) {
+		if (category.category === dataUsedDuringCreation.category)
+			categoryExists = true;
+	}
+	verifyTruthy(categoryExists);
+}
+
+function ensureHasValidSellingPrice(created, dataUsedDuringCreation) {
+	const { percentageProfit, buyingPrice } = dataUsedDuringCreation;
+	expect(created.sellingPrice).toBe(
+		Number((buyingPrice * (1 + percentageProfit / 100)).toFixed(2))
+	);
 }
 
 function ensureEachProductHasPositiveQuantity(prods) {
@@ -476,6 +579,19 @@ async function modifyProductsCategories(products, categories) {
 		product.category = categories[i % noOfCategories];
 		await product.save();
 	}
+}
+
+async function createProductsWithAdminIdAndCategory(num, adminId, category) {
+	let product;
+	const products = [];
+	for (let i = 0; i < num; i++) {
+		product = generatePerfectProductData();
+		product.adminId = adminId;
+		product.category = category;
+		product = await Product.createOne(product);
+		products.push(product);
+	}
+	return products;
 }
 function generatePerfectProductData() {
 	const title = generateStringSizeN(prodRanges.title.minlength);
@@ -508,4 +624,8 @@ function generatePerfectProductData() {
 		category,
 		brand,
 	};
+}
+
+async function getMetadata(params) {
+	return await Metadata.getSingleton();
 }

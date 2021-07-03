@@ -2,13 +2,9 @@ const { strictEqual } = require('assert');
 
 const { validationResults } = require('../../utils');
 
-const {
-	verifyEqual,
-	verifyUndefined,
-	verifyTruthy,
-} = require('../utils/testsUtils');
+const { verifyEqual, verifyTruthy } = require('../utils/testsUtils');
 
-const { generateStringSizeN } = require('../utils/generalUtils');
+const { generateStringSizeN } = require('../utils/generalUtils/utils');
 
 exports.validateStringField = function (field) {
 	this.field = field;
@@ -62,7 +58,7 @@ exports.validateStringField = function (field) {
 					await generatesErrorWith(validator, field, long, error);
 				});
 			});
-			it('does not generate errors on valid data', async () => {
+			it(`does not generate errors on valid ${field}`, async () => {
 				const ll = generateStringSizeN(lLimitLength);
 				strictEqual(ll.length, lLimitLength);
 
@@ -126,7 +122,7 @@ exports.validateFloatField = function (field) {
 exports.validateIntegerField = function (field) {
 	//integers differ at least by
 	//1.
-	this.delta = 1;
+	const delta = 1;
 	this.field = field;
 	return {
 		onField: function (field) {
@@ -158,7 +154,6 @@ exports.validateIntegerField = function (field) {
 				validator = this.validator,
 				upperLimit = this.upperLimit,
 				lowerLimit = this.lowerLimit,
-				delta = this.delta,
 				error = this.error,
 				fieldOnError = this.name;
 			// first reject floats.
@@ -230,7 +225,7 @@ async function ensureGeneratesErrorOnBody(body, validator, error) {
 }
 
 async function ensureDoesNotGenerateErrorOnBody(body, validator) {
-	verifyUndefined(await validate(body, validator));
+	expect(await validate(body, validator)).toBeUndefined();
 }
 
 exports.validateMiddlewares = async function (body, validators) {

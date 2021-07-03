@@ -1,31 +1,44 @@
-// const nodemailer = require("nodemailer");
-// const { google } = require("googleapis");
-// const OAuth2 = google.auth.OAuth2;
-// try {
-//   const oauth2Client = new OAuth2(
-//     "1062433344529-6qi9hg86u0bjfg5q8p8vvuapmos9ue4m.apps.googleusercontent.com",
-//     "XEqwAjy4HGcIv7iLRb1v-yx0",
-//     "http://localhost"
-//   );
-//   oauth2Client.setCredentials({
-//     refresh_token:
-//       "1//03myWUo74AX5FCgYIARAAGAMSNwF-L9Ir084NQ_ImQn7qnYn9SShWXFMKNr8y4hZwwcqRBGDCkif9HV84YsiKRzZbSiVQ44FRHpQ"
-//   });
-//   const accessToken = oauth2Client.getAccessToken();
-//   module.exports = nodemailer.createTransport({
-//     service: "gmail",
-//     auth: {
-//       type: "OAuth2",
-//       user: "samuelmainaonlineshop@gmail.com",
-//       clientId:
-//         "1062433344529-6qi9hg86u0bjfg5q8p8vvuapmos9ue4m.apps.googleusercontent.com",
-//       clientSecret: "XEqwAjy4HGcIv7iLRb1v-yx0",
-//       refreshToken:
-//         "1//03myWUo74AX5FCgYIARAAGAMSNwF-L9Ir084NQ_ImQn7qnYn9SShWXFMKNr8y4hZwwcqRBGDCkif9HV84YsiKRzZbSiVQ44FRHpQ",
-//       accessToken: accessToken
-//     }
-//   });
+// require('dotenv').config();
 
-// } catch (error) {
-//   console.log(error);
-// }
+// const nodemailer = require('nodemailer');
+// const { google } = require('googleapis');
+// const OAuth2 = google.auth.OAuth2;
+
+// const createTransporter = async () => {
+// 	const oauth2Client = new OAuth2(
+// 		process.env.CLIENT_ID,
+// 		process.env.CLIENT_SECRET,
+// 		'https://developers.google.com/oauthplayground'
+// 	);
+
+// 	oauth2Client.setCredentials({
+// 		refresh_token: process.env.REFRESH_TOKEN,
+// 	});
+
+// 	const accessToken = await new Promise((resolve, reject) => {
+// 		oauth2Client.getAccessToken((err, token) => {
+// 			if (err) {
+// 				reject();
+// 			}
+// 			resolve(token);
+// 		});
+// 	});
+
+// 	const transporter = nodemailer.createTransport({
+// 		service: 'gmail',
+// 		auth: {
+// 			type: 'OAuth2',
+// 			user: process.env.EMAIL,
+// 			accessToken,
+// 			clientId: process.env.CLIENT_ID,
+// 			clientSecret: process.env.CLIENT_SECRET,
+// 			refreshToken: process.env.REFRESH_TOKEN,
+// 		},
+// 	});
+
+// 	return transporter;
+// };
+// module.exports = async emailOptions => {
+// 	let transporter = await createTransporter();
+// 	await transporter.sendMail(emailOptions);
+// };

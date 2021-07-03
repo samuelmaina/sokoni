@@ -103,9 +103,16 @@ statics.createOne = async function (productData) {
 	calculateSellingPrice(productData);
 	const Product = mongoose.model('Product');
 	const metadata = await getMetadata();
+	const { category, brand, adminId } = productData;
 	const product = Product(productData);
-	await metadata.addCategory(productData.category);
-	await metadata.addBrand(productData.brand);
+	await metadata.addCategory({
+		category,
+		adminId,
+	});
+	await metadata.addBrand({
+		brand,
+		adminId,
+	});
 	return await product.save();
 };
 
@@ -120,8 +127,6 @@ statics.findPageProductsForAdminId = async function (adminId, page) {
 };
 
 statics.findProductsForPage = async function (page = 1) {
-	validatePage(page);
-
 	const products = await this.getProductsPerPage(page);
 	const paginationData = await this.calculatePaginationData(page);
 	return {
@@ -132,7 +137,25 @@ statics.findProductsForPage = async function (page = 1) {
 
 statics.findCategories = async function () {
 	const metadata = await getMetadata();
-	return metadata.categories;
+	return metadata.getAllCategories();
+};
+statics.findCategoriesForAdminId = async function (adminId) {
+	const metadata = await getMetadata();
+	return metadata.getAllCategoriesForAdminId(adminId.toString());
+};
+
+statics.findCategoryProductsForAdminIdAndPage = async function (
+	adminId,
+	category,
+	page
+) {
+	const query = { adminId, category };
+	const paginationData = await this.calculatePaginationData(page, query);
+	const products = await this.getProductsPerPageForQuery(page, query);
+	return {
+		paginationData,
+		products,
+	};
 };
 
 statics.findCategoryProductsForPage = async function (category, page) {
@@ -174,9 +197,15 @@ methods.updateDetails = async function (productData) {
 		this[property] = productData[property];
 	}
 	const metadata = await getMetadata();
-	const { brand, category } = productData;
-	await metadata.addCategory(category);
-	await metadata.addBrand(brand);
+	const { brand, category, adminId } = productData;
+	await metadata.addCategory({
+		category,
+		adminId,
+	});
+	await metadata.addBrand({
+		brand,
+		adminId,
+	});
 	return await this.save();
 };
 methods.delete = async function () {
@@ -207,14 +236,6 @@ statics.getProductsPerPageForQuery = async function (page, query) {
 		.skip((page - 1) * PRODUCTS_PER_PAGE)
 		.limit(PRODUCTS_PER_PAGE);
 };
-
-function validatePage(page) {
-	const lowerlimit = 1;
-	const upperlimit = 200;
-	const err = `Page should range from ${lowerlimit} to ${upperlimit}`;
-	ensureIsInt(page, err);
-	ensureValueIsWithinRange(page, lowerlimit, upperlimit, err);
-}
 
 async function getMetadata() {
 	const Metadata = mongoose.model('Metadata');

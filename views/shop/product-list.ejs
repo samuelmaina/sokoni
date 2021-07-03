@@ -2,7 +2,7 @@
     <link rel="stylesheet" href="/css/product.css">
     </head>
     <%- include('../includes/navigation.ejs') %>
-        <% if (prods.length> 0) { %>
+    <% if (prods.length> 0) { %>
             <div class="grid">
                 <% for (let product of prods) { %>
                     <article class="card product-item">
@@ -31,16 +31,10 @@
                     </article>
                     <% } %>
             </div>
-            <ul>
-                <% for (let category of categories) { %>
-                    <li><a href="/category/<%=category%>?page=<%=paginationData.currentPage%>">
-                            <%=category%>
-                        </a></li>
-                    <% } %>
-            </ul>
-            <%- include('../includes/pagination.ejs') %>
-                <% } else { %>
-                    <h1>No Products Found!</h1>
-                    <% } %>
-                        </main>
-                        <%- include('../includes/end.ejs') %>
+        <%- include('../includes/categories.ejs') %>
+        <%- include('../includes/pagination.ejs') %>
+    <% } else { %>
+        <h1>No Products Found!</h1>
+     <% } %>
+    </main>
+     <%- include('../includes/end.ejs') %>

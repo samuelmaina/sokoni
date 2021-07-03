@@ -13,9 +13,7 @@
                             <%- include('./includes/present-prod-image.ejs') %>
                         <% }%>
                         <%- include('./includes/string-field',{ label:'Title',fieldName:'title' }) %>                   
-                       <%if(!editing){%>
-                       <%- include('./includes/image-picker.ejs') %>
-                       <% }%>
+                        <%- include('./includes/image-picker.ejs') %>
                         <%- include('./includes/float-field',{ label:'Buying Price',fieldName:'buyingPrice' }) %>
                         <%- include('./includes/float-field',{ label:'Percentage Profit', fieldName:'percentageProfit' }) %>
                         <%- include('./includes/int-field',{ label:'Quantity',fieldName:'quantity' }) %>
@@ -29,7 +27,7 @@
                             <input type="hidden" value="<%=previousData.imageUrl %>"name="imageUrl">
                        <% } %>
                        <%- include('../includes/csurf') %>
-                       <input class="btn" type="submit" value='<% if (editing) { %>Update Product<% } else { %>Add Product<% } %> '>
+                       <input class="btn"  id="submit" type="submit" value='<% if (editing) { %>Update Product<% } else { %>Add Product<% } %> '>
                     </form>
                 </article>
         </div>

@@ -1,4 +1,5 @@
 const { addElementIfNonExisting } = require('../../database/services/metadata');
+const { generateMongooseId } = require('../utils/generalUtils/utils');
 const { ensureArrayContains, verifyEqual } = require('../utils/testsUtils');
 
 describe('should be able to add element to arr', () => {
@@ -6,7 +7,7 @@ describe('should be able to add element to arr', () => {
 	it('when there are no preexisting element', () => {
 		const firstElement = {
 			category: 'category 1',
-			adminId: 'qe98r9re0r9e9re',
+			adminId: generateMongooseId(),
 		};
 		const arr = [];
 		addElementIfNonExisting(field, arr, firstElement);
@@ -18,11 +19,11 @@ describe('should be able to add element to arr', () => {
 		const testCategory = 'category 1';
 		const category1 = {
 			category: testCategory,
-			adminId: 'qe98r9re0r9e9re',
+			adminId: generateMongooseId(),
 		};
 		const category1DifferentAdmin = {
 			category: testCategory,
-			adminId: 'qljfkldjlfjdl',
+			adminId: generateMongooseId(),
 		};
 		const arr = [];
 		addElementIfNonExisting(field, arr, category1);
@@ -31,6 +32,35 @@ describe('should be able to add element to arr', () => {
 		const stored = arr[0];
 		verifyEqual(stored.category, testCategory);
 		const adminIds = stored.adminIds;
+		verifyEqual(adminIds.length, 2);
+		ensureArrayContains(adminIds, category1.adminId);
+		ensureArrayContains(adminIds, category1DifferentAdmin.adminId);
+	});
+
+	it('should not add an adminId if the admin already exists. ', () => {
+		const testCategory = 'category 1';
+		const testAdminId = generateMongooseId();
+		const category1 = {
+			category: testCategory,
+			adminId: generateMongooseId(),
+		};
+		const category1DifferentAdmin = {
+			category: testCategory,
+			adminId: testAdminId,
+		};
+		const sameCategorySameAdmin = {
+			category: testCategory,
+			adminId: testAdminId,
+		};
+		const arr = [];
+		addElementIfNonExisting(field, arr, category1);
+		addElementIfNonExisting(field, arr, category1DifferentAdmin);
+		addElementIfNonExisting(field, arr, sameCategorySameAdmin);
+		verifyEqual(arr.length, 1);
+		const stored = arr[0];
+		verifyEqual(stored.category, testCategory);
+		const adminIds = stored.adminIds;
+		verifyEqual(adminIds.length, 2);
 		ensureArrayContains(adminIds, category1.adminId);
 		ensureArrayContains(adminIds, category1DifferentAdmin.adminId);
 	});

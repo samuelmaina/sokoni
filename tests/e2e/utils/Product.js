@@ -1,35 +1,36 @@
-const Page = require('./Page')
+const Page = require('./Page');
 
-class Products extends Page {
-  constructor(driver) {
-    this.driver = driver
-  }
-  async enterTitle(data) {
-    await super.enterDataByName("title", data);
-  }
-  async enterBuyingPrice(data) {
-    await super.enterDataByName('buyingPrice', data)
-  }
-  async pickImage(data) {
-    await super.enterTextById('pic', data)
-  }
-  async enterPercentageProfit(data) {
-    await this.enterDataByName('percentageProfit', data)
-  }
-  async enterDescription(data) {
-    await this.enterDataByName('description', data)
-  }
-  async enterQuantity(data) {
-    await this.enterDataByName('quantity', data)
-  }
-  async enterAdminId(data) {
-    await this.enterDataByName('adminId', data)
-  }
-  async enterCategory(data) {
-    await this.enterDataByName('category', data)
-  }
-  async enterBrand(data) {
-    await this.enterDataByName('brand', data)
-  }
+class Product {
+	constructor(page) {
+		this.page = page;
+	}
+	async enterTitle(data) {
+		await this.page.enterTextById('title', data);
+	}
+	async enterBuyingPrice(data) {
+		await this.page.enterDataByName('buyingPrice', data);
+	}
+
+	async enterPercentageProfit(data) {
+		await this.page.enterDataByName('percentageProfit', data);
+	}
+	async enterDescription(data) {
+		await this.page.enterDataByName('description', data);
+	}
+	async enterQuantity(data) {
+		await this.page.enterDataByName('quantity', data);
+	}
+	async enterCategory(data) {
+		await this.page.enterDataByName('category', data);
+	}
+	async enterBrand(data) {
+		await this.page.enterDataByName('brand', data);
+	}
+	async chooseFIle(fileUrl) {
+		await this.page.enterDataByName('image', fileUrl);
+	}
+	async submit() {
+		await this.page.clickById('submit');
+	}
 }
 module.exports = Product;

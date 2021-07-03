@@ -140,11 +140,7 @@ class Auth {
 					.appendError(` No ${this.person} by that email exists.`)
 					.redirect(this.routes.reset);
 			}
-			const token= await TokenGenerator.createOneForId(document.id);
-
-			console.log(`http://localhost:3000/auth/user/new-password/${token.token}`)
-		
-			
+			const token = await TokenGenerator.createOneForId(document.id);
 
 			// transporter.send({
 			//   //http://localhost:3000/auth/user/new-password/57543e4605348c1d428f72eff767487bd255983f74119b2b221cab4f2c28bbf3
