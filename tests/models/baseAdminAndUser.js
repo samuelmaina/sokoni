@@ -4,14 +4,13 @@ const { database, utils } = require('../utils/generalUtils');
 const { clearDb } = database;
 const { returnObjectWithoutProp, generateStringSizeN } = utils;
 
-const { validateStringField } = require('./utils');
-
 const {
 	verifyFalsy,
 	verifyEqual,
 	verifyTruthy,
 	verifyNull,
 	verifyRejectsWithError,
+	ensureObjectHasKeyValuePair,
 } = require('../utils/testsUtils');
 
 const {
@@ -46,7 +45,6 @@ module.exports = Model => {
 				const { minlength, maxlength } = ranges[field];
 				const otherFields = returnObjectWithoutProp(credentials, field);
 				const data = {
-					func: createOne,
 					field,
 					minlength,
 					maxlength,
@@ -62,7 +60,6 @@ module.exports = Model => {
 			const { minlength, maxlength, error } = ranges[field];
 			const otherFields = returnObjectWithoutProp(credentials, field);
 			const data = {
-				func: createOne,
 				field,
 				minlength,
 				maxlength,
@@ -71,6 +68,72 @@ module.exports = Model => {
 			};
 			validateStringField(data);
 		});
+
+		function validateStringField(testData) {
+			const { field, minlength, maxlength, otherFields, err } = testData;
+			it(`reject ${field} non-string`, async () => {
+				await runErrorTest([1, 2]);
+			});
+			describe(`reject ${field} < ${minlength} and  > ${maxlength} long.`, () => {
+				it(`< ${minlength}`, async () => {
+					await runErrorTest(generateStringSizeN(minlength - 1));
+				});
+				it(`> ${maxlength}`, async () => {
+					await runErrorTest(generateStringSizeN(maxlength + 1));
+				});
+			});
+			it(`does not throw on valid ${field}`, async () => {
+				await runSuccesstTest(generateStringSizeN(minlength));
+				await runSuccesstTest(generateStringSizeN(maxlength));
+			});
+			async function runErrorTest(data) {
+				await ensureThrows(field, data, otherFields, err);
+			}
+			async function runSuccesstTest(data) {
+				await ensureDoesNotThrow(field, data, otherFields);
+			}
+
+			const createArguementObject = (field, data, otherFields) => {
+				const arg = {};
+				arg[field] = data;
+
+				return mergeBintoA(arg, otherFields);
+			};
+			async function ensureThrows(field, data, otherFields, err) {
+				//if there are no  other otherfields, then the function
+				//does takes one argument.
+				if (!otherFields) {
+					return await expect(Model.createOne(data)).rejects.toThrow(err);
+				}
+				//else we need to append the other fields into the param object
+				let input = createArguementObject(field, data, otherFields);
+				await expect(Model.createOne(input)).rejects.toThrow(err);
+			}
+			async function ensureDoesNotThrow(field, data, otherFields) {
+				if (!otherFields) {
+					return await expect(Model.createOne(data)).resolves.not.toThrow();
+				}
+				let input = createArguementObject(field, data, otherFields);
+				const newDoc = await Model.createOne(input);
+
+				if (field === 'password') {
+					verifyTruthy(await confirmPassword(data, newDoc[field]));
+				} else {
+					ensureObjectHasKeyValuePair(newDoc, field, data);
+				}
+
+				for (const prop in otherFields) {
+					if (otherFields.hasOwnProperty.call(otherFields, prop)) {
+						const element = otherFields[prop];
+						if (prop === 'password') {
+							verifyTruthy(await confirmPassword(element, newDoc[prop]));
+							continue;
+						}
+						ensureObjectHasKeyValuePair(newDoc, prop, element);
+					}
+				}
+			}
+		}
 	});
 	describe('After creation', () => {
 		describe('Statics', () => {

@@ -225,7 +225,7 @@ describe('--Product', () => {
 					});
 				});
 			});
-			describe.only('findCategoriesforAdminId', () => {
+			describe('findCategoriesforAdminId', () => {
 				let adminId = generateMongooseId();
 				it('return null on empty db', async () => {
 					const categories = await Product.findCategoriesForAdminId(adminId);
@@ -252,7 +252,7 @@ describe('--Product', () => {
 				});
 			});
 
-			describe('findCategoryProductsForAdminIdAndPage', () => {
+			describe.only('findCategoryProductsForAdminIdAndPage', () => {
 				let adminId = generateMongooseId();
 				it('returns empty array on empty db', async () => {
 					const page = 1;

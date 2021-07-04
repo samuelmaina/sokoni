@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 const Base = require('./baseForAdminAndUser');
 
 const { user, mongooseId } = require('../../config/constraints');
-const { UserServices } = require('../services/index');
+const { userServices } = require('../services/index');
+const { addProductIdToCart } = userServices;
 
 const {
 	ensureIsMongooseId,
@@ -41,18 +42,16 @@ const userSchema = new Schema({
 const { methods } = userSchema;
 
 methods.addProductsToCart = async function (productId, quantity) {
-	ensureIsMongooseId(productId);
 	const howMany = Number(quantity);
-	ensureIsInt(howMany);
 	const cart = this.cart;
-	this.cart = UserServices.addProductIdToCart(cart, productId, howMany);
+	addProductIdToCart(cart, productId, howMany);
 	return await this.save();
 };
 
 methods.deleteProductsFromCart = async function (prodId) {
 	ensureIsMongooseId(prodId);
 	const cart = this.cart;
-	const { updatedCart, deletedQuantity } = UserServices.deleteProductIdfromCart(
+	const { updatedCart, deletedQuantity } = userServices.deleteProductIdfromCart(
 		cart,
 		prodId
 	);
@@ -64,7 +63,7 @@ methods.deleteProductsFromCart = async function (prodId) {
 methods.populateCartProductsDetails = async function () {
 	await this.populate('cart.productData', 'sellingPrice title').execPopulate();
 	const cart = this.cart;
-	const total = UserServices.calculateProductsTotals(cart);
+	const total = userServices.calculateProductsTotals(cart);
 	return {
 		cart,
 		total,

@@ -101,11 +101,6 @@ exports.validateIntField = async testData => {
 	this.validateFloatField(testData);
 };
 
-const createArguementObject = (field, data, otherFields) => {
-	const arg = {};
-	arg[field] = data;
-	return this.mergeBintoA(arg, otherFields);
-};
 exports.ensureObjectsHaveSameFields = function (A, B, fields = []) {
 	for (const field of fields) {
 		expect(A[field]).toBe(B[field]);
@@ -122,6 +117,11 @@ exports.productProps = [
 	'description',
 ];
 
+const createArguementObject = (field, data, otherFields) => {
+	const arg = {};
+	arg[field] = data;
+	return this.mergeBintoA(arg, otherFields);
+};
 async function ensureThrows(field, func, data, otherFields, err) {
 	//if there are no  other otherfields, then the function
 	//does takes one argument.
