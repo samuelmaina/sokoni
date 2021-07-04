@@ -66,7 +66,7 @@ statics.createOne = async function (data) {
 	// and then store the hashed password. The validation of name and email
 	//is done by the Schema. Hashing password  for invalid names and emails  will waste a lot
 	//of time and the document will not be save hence the logic.
-	const newMember = new mongoose.model('Base')({
+	const newMember = new this({
 		name,
 		email,
 		password,
