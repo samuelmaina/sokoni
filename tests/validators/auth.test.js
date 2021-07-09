@@ -1,7 +1,7 @@
 const {
 	validateStringField,
-	ensureGeneratesErrorOnBody,
-	ensureDoesNotGenerateErrorOnBody,
+	ensureGeneratesErrorOnPart,
+	ensureDoesNotGeneratesErrorOnPart,
 } = require('./utils');
 
 const ranges = require('../../config/constraints').base;
@@ -19,42 +19,50 @@ const {
 	newPasswordValidator,
 } = auth;
 
-describe.skip('Auth validators', () => {
-	describe('name', () => {
+describe('Auth validators', () => {
+	describe('Name', () => {
 		const { minlength, maxlength, error } = ranges.name;
-		validateStringField()
-			.onField('name')
-			.usingValidator(nameV)
-			.withLowerLimitLength(minlength)
-			.withUpperLimitLength(maxlength)
-			.withFielNameOnErrrorAs('Name')
-			.withErrorMessage(error)
-			.runTests();
+		validateStringField(nameV, 'name', minlength, maxlength, error);
 	});
 	describe('email', () => {
 		const { minlength, maxlength, error } = ranges.email;
+
 		it(' throws for small emails', async () => {
 			const body = {
 				email: generateStringSizeN(minlength - 1),
 			};
-			await ensureGeneratesErrorOnBody(body, emailV, error);
+			await ensureGeneratesErrorOnPart(body, emailV, error);
 		});
 		it('throws for large  emails', async () => {
 			const body = {
 				email: generateStringSizeN(maxlength + 1),
 			};
-			await ensureGeneratesErrorOnBody(body, emailV, error);
+			await ensureGeneratesErrorOnPart(body, emailV, error);
 		});
 
 		it('throws on ill formatted email', async () => {
 			const body = {
 				email: 'illformatted@email.com123',
 			};
-			await ensureGeneratesErrorOnBody(
+			await ensureGeneratesErrorOnPart(
 				body,
 				emailV,
 				'Please enter a valid email.'
 			);
+		});
+		describe('Does not generate on valid emails', () => {
+			it('email of min length', async () => {
+				const body = {
+					email: 'e@ma.com',
+				};
+				await ensureDoesNotGeneratesErrorOnPart(body, emailV);
+			});
+			it('email of max length', async () => {
+				const body = {
+					email: 'five1five2five3@five4.com',
+				};
+				await ensureDoesNotGeneratesErrorOnPart(body, emailV);
+			});
 		});
 	});
 	describe('password', () => {
@@ -63,13 +71,13 @@ describe.skip('Auth validators', () => {
 			const body = {
 				password: generateStringSizeN(minlength - 1),
 			};
-			await ensureGeneratesErrorOnBody(body, passwordV, error);
+			await ensureGeneratesErrorOnPart(body, passwordV, error);
 		});
 		it('should throw for long passwords', async () => {
 			const body = {
 				password: generateStringSizeN(maxlength + 1),
 			};
-			await ensureGeneratesErrorOnBody(body, passwordV, error);
+			await ensureGeneratesErrorOnPart(body, passwordV, error);
 		});
 		describe('constrains on right length passwords', () => {
 			it('Contains no number', async () => {
@@ -78,7 +86,7 @@ describe.skip('Auth validators', () => {
 				const body = {
 					password,
 				};
-				await ensureGeneratesErrorOnBody(body, passwordV, errorMessage);
+				await ensureGeneratesErrorOnPart(body, passwordV, errorMessage);
 			});
 			it('Contains no lowercase', async () => {
 				const errorMessage = 'Password must contain a lowercase character.';
@@ -87,7 +95,7 @@ describe.skip('Auth validators', () => {
 				const body = {
 					password,
 				};
-				await ensureGeneratesErrorOnBody(body, passwordV, errorMessage);
+				await ensureGeneratesErrorOnPart(body, passwordV, errorMessage);
 			});
 			it('Contains no Uppercase', async () => {
 				const errorMessage = 'Password must contain an uppercase character.';
@@ -96,7 +104,7 @@ describe.skip('Auth validators', () => {
 				const body = {
 					password,
 				};
-				await ensureGeneratesErrorOnBody(body, passwordV, errorMessage);
+				await ensureGeneratesErrorOnPart(body, passwordV, errorMessage);
 			});
 			it('Contains no special character', async () => {
 				const errorMessage = 'Password must contain a special character.';
@@ -105,7 +113,21 @@ describe.skip('Auth validators', () => {
 				const body = {
 					password,
 				};
-				await ensureGeneratesErrorOnBody(body, passwordV, errorMessage);
+				await ensureGeneratesErrorOnPart(body, passwordV, errorMessage);
+			});
+		});
+		describe('Does not generate on valid length password', () => {
+			it('min length', async () => {
+				const body = {
+					password: 'Pas55ov?',
+				};
+				await ensureDoesNotGeneratesErrorOnPart(body, passwordV);
+			});
+			it('max length', async () => {
+				const body = {
+					password: 'Five1Five2Five?',
+				};
+				await ensureDoesNotGeneratesErrorOnPart(body, passwordV);
 			});
 		});
 	});
@@ -118,7 +140,7 @@ describe.skip('Auth validators', () => {
 				password,
 				confirmPassword,
 			};
-			await ensureGeneratesErrorOnBody(body, confirmPasswordV, errorMessage);
+			await ensureGeneratesErrorOnPart(body, confirmPasswordV, errorMessage);
 		});
 		it('does not throw when they are the same', async () => {
 			const password = 'Password1234?';
@@ -127,7 +149,7 @@ describe.skip('Auth validators', () => {
 				password,
 				confirmPassword,
 			};
-			await ensureDoesNotGenerateErrorOnBody(body, confirmPasswordV);
+			await ensureDoesNotGeneratesErrorOnPart(body, confirmPasswordV);
 		});
 	});
 	describe('All the combined validators have have all the required validators', () => {

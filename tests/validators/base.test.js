@@ -1,3 +1,4 @@
+const { mongooseId } = require('../../config/constraints');
 const { validationResults } = require('../../utils');
 const {
 	intValidator,
@@ -10,17 +11,22 @@ const {
 	generateStringSizeN,
 	generateMongooseId,
 } = require('../utils/generalUtils/utils');
-const { verifyEqual, verifyUndefined } = require('../utils/testsUtils');
+const {
+	verifyEqual,
+	verifyUndefined,
+	verifyThrowsError,
+} = require('../utils/testsUtils');
 
 describe('Test for base validator', () => {
 	describe('Int Validator', () => {
+		carryMissingFieldsTests('IntValidator', intValidator);
 		const field = 'example',
 			min = 1,
 			max = 10,
 			err = `The value is supposed to range from  ${min} to ${max} `;
 		runRejectionTest('reject for smaller value', min - 1);
 		runRejectionTest('reject for larger value', max + 1);
-		it('when value value is not an int', async () => {
+		it('when value is not an int', async () => {
 			const body = {};
 			body[field] = 2.5;
 			const err = `${field} must be a whole number.`;
@@ -51,6 +57,20 @@ describe('Test for base validator', () => {
 					err
 				);
 			});
+			it('should work for other parts such as params and query', async () => {
+				//if params passes then the validators can validator for all the other parts such as query
+				const params = {};
+				params[field] = 2.5;
+				const err = `${field} must be a whole number.`;
+				await ensureGeneratesErrorForPart(
+					params,
+					field,
+					intValidator,
+					min,
+					max,
+					err
+				);
+			});
 		}
 		function runAcceptanceTest(testDescription, value) {
 			it(testDescription, async () => {
@@ -68,6 +88,7 @@ describe('Test for base validator', () => {
 		}
 	});
 	describe('string validator', () => {
+		carryMissingFieldsTests('strinValidator', stringValidator);
 		const field = 'example',
 			minlength = 1,
 			maxlength = 10,
@@ -90,6 +111,19 @@ describe('Test for base validator', () => {
 		describe('should not reject for valid values', () => {
 			runAcceptanceTest('minlength', minlength);
 			runAcceptanceTest('maxlength', maxlength);
+		});
+		it('should work for other parts', async () => {
+			const params = {};
+			params[field] = 1;
+			const err = `${field} must be a string.`;
+			await ensureGeneratesErrorForPart(
+				params,
+				field,
+				stringValidator,
+				minlength,
+				maxlength,
+				err
+			);
 		});
 
 		function runRejectionTest(testDescription, value) {
@@ -123,29 +157,31 @@ describe('Test for base validator', () => {
 	});
 
 	describe('float validator', () => {
+		carryMissingFieldsTests('floatValidator', floatValidator);
 		const field = 'example',
 			min = 1.25,
 			max = 9.25,
 			err = `The value is supposed to range from  ${min} to ${max} `;
 		runRejectionTest('reject for smaller value', min - 1);
 		runRejectionTest('reject for larger value', max + 1);
-		it('when value value is not a float', async () => {
-			const body = {};
-			body[field] = 'string';
+		describe('should not reject for valid values', () => {
+			runAcceptanceTest('min', min);
+			runAcceptanceTest('max', max);
+		});
+
+		it('should validate for other parts such as params', async () => {
+			const params = {};
+			params[field] = 'string';
 			const err = `${field} must be a number.`;
 
 			await ensureGeneratesErrorForPart(
-				body,
+				params,
 				field,
 				floatValidator,
 				min,
 				max,
 				err
 			);
-		});
-		describe('should not reject for valid values', () => {
-			runAcceptanceTest('min', min);
-			runAcceptanceTest('max', max);
 		});
 
 		function runRejectionTest(testDescription, value) {
@@ -186,6 +222,16 @@ describe('Test for base validator', () => {
 		);
 		runAcceptanceTest('accepts valid id', generateMongooseId());
 
+		it('should validator for other parts', async () => {
+			const params = {};
+			params[field] = generateStringSizeN(mongooseId.exact);
+			const req = mockReq(params);
+			const res = mockRes();
+			const validatorImp = mongoIdValidator(field, err);
+			await validatorImp(req, res, () => undefined);
+			verifyEqual(await validationResults(req), err);
+		});
+
 		function runRejectionTest(testDescription, value) {
 			it(testDescription, async () => {
 				const req = await implementValidation(value);
@@ -210,6 +256,60 @@ describe('Test for base validator', () => {
 		}
 	});
 });
+
+function carryMissingFieldsTests(validatorName, validator) {
+	const field = 'example',
+		min = 1.25,
+		max = 9.25,
+		err = `The value is supposed to range from  ${min} to ${max} `;
+	describe(`${validatorName} throws when any of the arguements are missing`, () => {
+		let missingError;
+		it('field', () => {
+			const data = {
+				min,
+				max,
+				err,
+			};
+			missingError = 'field is required.';
+			verifyThrowsError(() => {
+				validator(data);
+			}, missingError);
+		});
+		it('min', () => {
+			const data = {
+				field,
+				max,
+				err,
+			};
+			missingError = 'min is required.';
+			verifyThrowsError(() => {
+				validator(data);
+			}, missingError);
+		});
+		it('max', () => {
+			const data = {
+				field,
+				min,
+				err,
+			};
+			missingError = 'max is required.';
+			verifyThrowsError(() => {
+				validator(data);
+			}, missingError);
+		});
+		it('err', () => {
+			const data = {
+				field,
+				min,
+				max,
+			};
+			missingError = 'err is required.';
+			verifyThrowsError(() => {
+				validator(data);
+			}, missingError);
+		});
+	});
+}
 
 async function ensureGeneratesErrorForPart(
 	part,
@@ -252,6 +352,12 @@ const mockRes = () => {
 };
 
 const applyValidation = async (req, res, field, min, max, validator, err) => {
-	const validatorImp = validator(field, min, max, err);
+	const data = {
+		field,
+		min,
+		max,
+		err,
+	};
+	const validatorImp = validator(data);
 	await validatorImp(req, res, () => undefined);
 };

@@ -3,6 +3,7 @@ const {
 	validateStringField,
 	validateFloatField,
 	validateIntegerField,
+	ensureGeneratesErrorOnPart,
 } = require('./utils');
 
 const { product } = require('../../validators');
@@ -18,89 +19,43 @@ const {
 	productValidator,
 } = product;
 
-describe.skip('Product validator', () => {
+describe('Product validator', () => {
 	describe('Title', () => {
 		const { minlength, maxlength, error } = ranges.title;
-		validateStringField()
-			.onField('title')
-			.usingValidator(title)
-			.withLowerLimitLength(minlength)
-			.withUpperLimitLength(maxlength)
-			.withFielNameOnErrrorAs('Title')
-			.withErrorMessage(error)
-			.runTests();
+		validateStringField(title, 'title', minlength, maxlength, error);
 	});
 	describe('Buying price', () => {
-		const delta = 0.01;
 		const { min, max, error } = ranges.buyingPrice;
-		validateFloatField()
-			.onField('buyingPrice')
-			.usingValidator(buyingPrice)
-			.withLowerLimit(min)
-			.withUpperLimit(max)
-			.withDelta(delta)
-			.withFielNameOnErrrorAs('Buying price')
-			.withErrorMessageAs(error)
-			.runTests();
+		validateFloatField(buyingPrice, 'buyingPrice', min, max, error);
 	});
 	describe('Percentage Profit', () => {
-		const delta = 0.01;
 		const { min, max, error } = ranges.percentageProfit;
-
-		validateFloatField()
-			.onField('percentageProfit')
-			.usingValidator(percentageProfit)
-			.withLowerLimit(min)
-			.withUpperLimit(max)
-			.withDelta(delta)
-			.withErrorMessageAs(error)
-			.withFielNameOnErrrorAs('Percentage profit')
-			.runTests();
+		validateFloatField(percentageProfit, 'percentageProfit', min, max, error);
 	});
 	describe('Quantity', () => {
 		const { min, max, error } = ranges.quantity;
-		validateIntegerField()
-			.onField('quantity')
-			.usingValidator(quantity)
-			.withLowerLimit(min)
-			.withUpperLimit(max)
-			.withErrorMessage(error)
-			.withFielNameOnErrrorAs('Quantity')
-			.runTests();
+		validateIntegerField(quantity, 'quantity', min, max, error);
 	});
+
 	describe('Description', () => {
 		const { minlength, maxlength, error } = ranges.description;
-		validateStringField()
-			.onField('description')
-			.usingValidator(description)
-			.withLowerLimitLength(minlength)
-			.withUpperLimitLength(maxlength)
-			.withErrorMessage(error)
-			.withFielNameOnErrrorAs('Description')
-			.runTests();
+		validateStringField(
+			description,
+			'description',
+			minlength,
+			maxlength,
+			error
+		);
 	});
 	describe('Brand', () => {
 		const { minlength, maxlength, error } = ranges.brand;
-		validateStringField()
-			.onField('brand')
-			.usingValidator(brand)
-			.withLowerLimitLength(minlength)
-			.withUpperLimitLength(maxlength)
-			.withFielNameOnErrrorAs('Brand')
-			.withErrorMessage(error)
-			.runTests();
+		validateStringField(brand, 'brand', minlength, maxlength, error);
 	});
 	describe('Category', () => {
 		const { minlength, maxlength, error } = ranges.category;
-		validateStringField()
-			.onField('category')
-			.usingValidator(category)
-			.withLowerLimitLength(minlength)
-			.withUpperLimitLength(maxlength)
-			.withErrorMessage(error)
-			.withFielNameOnErrrorAs('Category')
-			.runTests();
+		validateStringField(category, 'category', minlength, maxlength, error);
 	});
+
 	it('ensure productvalidator has all the field validators.', () => {
 		const validators = [
 			title,
