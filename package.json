@@ -4,7 +4,7 @@
 	"description": "Online shop",
 	"main": "app.js",
 	"scripts": {
-		"start": "nodemon node --imageFolder=images",
+		"start": "node index.js --imageFolder=images",
 		"test": " jest --runInBand --forceExit --imageFolder=testFolder ",
 		"mocha-test": "mocha test.js"
 	},
