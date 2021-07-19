@@ -1,12 +1,12 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 
-const {ensureUserIsAuth, ensureAdminIsAuth} = require("../../authMiddleware");
+const { ensureUserIsAuth, ensureAdminIsAuth } = require('../../authMiddleware');
 
-const userRoutes = require("./user");
-const adminRoutes = require("./admin");
+const userRoutes = require('./user');
+const adminRoutes = require('./admin');
 
-router.use("/user", ensureUserIsAuth, userRoutes);
-router.use("/admin", ensureAdminIsAuth, adminRoutes);
+router.use('/user', ensureUserIsAuth, userRoutes);
+router.use('/admin', ensureAdminIsAuth, adminRoutes);
 
 module.exports = router;
