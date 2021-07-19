@@ -1,27 +1,43 @@
 const mongoose = require('mongoose');
 const { metadata } = require('../services');
+const ranges = require('../../config/constraints');
+const {
+	ensureStringIsLength,
+	throwErrorIfStringLengthNotInRange,
+	ensureIsMongooseId,
+} = require('./utils');
+
 const { addElementIfNonExisting } = metadata;
 
 const { Schema, model } = mongoose;
 const ObjectId = Schema.Types.ObjectId;
+
+const { category, brand } = ranges.product;
 
 const Metadata = new Schema({
 	categories: [
 		{
 			category: {
 				type: String,
-				required: true,
+				required: category.error,
+				minlength: category.minlength,
+				maxlength: category.maxlength,
 			},
-			adminIds: [ObjectId],
+			adminIds: [Array],
 		},
 	],
 	brands: [
 		{
 			brand: {
 				type: String,
-				required: true,
+				required: brand.error,
+				minlength: brand.minlength,
+				maxlength: brand.maxlength,
 			},
-			adminIds: [ObjectId],
+			adminIds: {
+				type: [ObjectId],
+				required: ranges.mongooseId.error,
+			},
 		},
 	],
 });
@@ -36,6 +52,7 @@ statics.getSingleton = async function () {
 methods.addCategory = async function (category) {
 	const field = 'category';
 	const categories = this.categories;
+	ensureCategoryHasValidCategoryAndAdminId(category);
 	addElementIfNonExisting(field, categories, category);
 	return await this.save();
 };
@@ -68,4 +85,15 @@ methods.clear = async function () {
 	this.categories = [];
 	return await this.save();
 };
+
+function ensureCategoryHasValidCategoryAndAdminId(categoryData) {
+	const { minlength, maxlength, error } = category;
+	ensureIsMongooseId(categoryData.adminId);
+	throwErrorIfStringLengthNotInRange(
+		categoryData.category,
+		minlength,
+		maxlength,
+		error
+	);
+}
 module.exports = model('Metadata', Metadata);

@@ -26,7 +26,7 @@ const userCredentials = {
 const { mongooseId, order } = ranges;
 const { quantity, total } = order;
 
-describe('Order', () => {
+describe.skip('Order', () => {
 	let adminId, products, user;
 	includeSetUpAndTearDown();
 	beforeEach(async () => {

@@ -13,52 +13,52 @@ const {
 	category,
 } = ranges;
 
-exports.title = stringValidator(
-	'title',
-	title.minlength,
-	title.maxlength,
-	title.error
-);
-exports.buyingPrice = floatValidator(
-	'buyingPrice',
-	buyingPrice.min,
-	buyingPrice.max,
-	buyingPrice.error
-);
+exports.title = stringValidator({
+	field: 'title',
+	min: title.minlength,
+	max: title.maxlength,
+	err: title.error,
+});
+exports.buyingPrice = floatValidator({
+	field: 'buyingPrice',
+	min: buyingPrice.min,
+	max: buyingPrice.max,
+	err: buyingPrice.error,
+});
 
-exports.percentageProfit = floatValidator(
-	'percentageProfit',
-	percentageProfit.min,
-	percentageProfit.max,
-	percentageProfit.error
-);
+exports.percentageProfit = floatValidator({
+	field: 'percentageProfit',
+	min: percentageProfit.min,
+	max: percentageProfit.max,
+	err: percentageProfit.error,
+});
 
-exports.quantity = intValidator(
-	'quantity',
-	quantity.min,
-	quantity.max,
-	quantity.error
-);
+exports.quantity = intValidator({
+	field: 'quantity',
+	min: quantity.min,
+	max: quantity.max,
+	err: quantity.error,
+});
 
-exports.description = stringValidator(
-	'description',
-	description.minlength,
-	description.maxlength,
-	description.error
-);
+exports.description = stringValidator({
+	field: 'description',
+	min: description.minlength,
+	max: description.maxlength,
+	err: description.error,
+});
 
-exports.brand = stringValidator(
-	'brand',
-	brand.minlength,
-	brand.maxlength,
-	brand.error
-);
-exports.category = stringValidator(
-	'category',
-	category.minlength,
-	category.maxlength,
-	category.error
-);
+exports.brand = stringValidator({
+	field: 'brand',
+	min: brand.minlength,
+	max: brand.maxlength,
+	err: brand.error,
+});
+exports.category = stringValidator({
+	field: 'category',
+	min: category.minlength,
+	max: category.maxlength,
+	err: category.error,
+});
 exports.productValidator = [
 	this.title,
 	this.buyingPrice,

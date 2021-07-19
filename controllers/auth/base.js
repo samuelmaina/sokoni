@@ -14,8 +14,8 @@ class Auth {
 			logIn: `${baseRoute}/log-in`,
 			reset: `${baseRoute}/reset`,
 			newPassword: `${baseRoute}/new-password`,
-			adminSuccessfulLoginRedirect: '/admin/products',
-			userSuccessfulLoginRedirect: '/products',
+			adminSuccessfulLoginRedirect: '/admin/products?page=1',
+			userSuccessfulLoginRedirect: '/products?page=1',
 		};
 	}
 

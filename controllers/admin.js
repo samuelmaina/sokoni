@@ -30,13 +30,14 @@ exports.postAddProduct = async (req, res, next) => {
 		let image = req.file;
 		const validationErrors = validationResults(req);
 
-		if (!image) {
-			return flash
-				.appendError('Please select an image for your product')
-				.redirect('add-product');
-		}
 		if (validationErrors) {
 			return flash.appendError(validationErrors).redirect('add-product');
+		}
+
+		if (!image) {
+			return flash
+				.appendError('Please enter an image for your product.')
+				.redirect('add-product');
 		}
 
 		const productData = req.body;
@@ -126,22 +127,22 @@ exports.postEditProduct = async (req, res, next) => {
 
 exports.getProducts = async (req, res, next) => {
 	try {
-		const { findCategoriesForAdminId } = Product;
 		const renderer = new Renderer(res);
 		const adminId = returnAdminIdIfAdminIsInSession(req);
 		const page = +req.query.page || 1;
 		const categories = await Product.findCategoriesForAdminId(adminId);
-		const { paginationData, products } =
-			await Product.findPageProductsForAdminId(adminId, page);
+		const productsData = await Product.findPageProductsForAdminId(
+			adminId,
+			page
+		);
 		renderer
 			.templatePath('admin/products')
 			.pageTitle('Your Products')
 			.activePath('/admin/products')
 			.activePath('/products')
 			.appendDataToResBody({
-				prods: products,
+				productsData,
 				categories,
-				paginationData,
 			})
 			.render();
 	} catch (error) {
@@ -151,29 +152,33 @@ exports.getProducts = async (req, res, next) => {
 
 exports.getCategoryProducts = async (req, res, next) => {
 	try {
-		const { findCategoryProductsForAdminIdAndPage, findCategoriesForAdminId } =
-			Product;
+		const { findCategoriesForAdminId } = Product;
 		const renderer = new Renderer(res);
 		const adminId = returnAdminIdIfAdminIsInSession(req);
+
+		const validationErrors = validationResults(req);
+		if (validationErrors) {
+			return new Flash(req, res)
+				.appendError(validationErrors)
+				.redirect(`/admin/products?page=1`);
+		}
 		let { page } = req.query;
 		const category = req.params.category;
 		page = +page || 1;
-		const { paginationData, products } =
-			await Product.findCategoryProductsForAdminIdAndPage(
-				adminId,
-				category,
-				page
-			);
+		const productsData = await Product.findCategoryProductsForAdminIdAndPage(
+			adminId,
+			category,
+			page
+		);
 		const categories = await findCategoriesForAdminId(adminId);
 		renderer
 			.templatePath('admin/products')
 			.pageTitle(`${category}`)
 			.activePath('/admin/products')
-			.activePath('/products')
+			.pathToPost('/products')
 			.appendDataToResBody({
-				prods: products,
+				productsData,
 				categories,
-				paginationData,
 			})
 			.render();
 	} catch (error) {
@@ -192,10 +197,9 @@ exports.deleteProduct = async (req, res, next) => {
 				.appendError("You can't delete this product")
 				.redirect('/admin/products');
 		}
-		fileManipulators.deleteFile(prod.imageUrl);
-		await Product.findByIdAndRemove(prodId);
+		await prod.customDelete();
 		flash
-			.appendInfo('Product deleted successfully')
+			.appendInfo('Product deleted successfully.')
 			.redirect('/admin/products');
 	} catch (error) {
 		next(error);

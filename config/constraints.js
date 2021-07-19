@@ -63,9 +63,9 @@ exports.product = {
 		error: stringErrorGenerator('Description', 10, 40),
 	},
 	quantity: {
-		min: 1,
+		min: 0,
 		max: 20000,
-		error: intErrorGenerator('Quantity', 1, 20000),
+		error: intErrorGenerator('Quantity', 0, 20000),
 	},
 	category: {
 		minlength: 5,
@@ -96,14 +96,33 @@ exports.tokenGen = {
 };
 exports.order = {
 	quantity: {
-		min: 0,
+		min: 1,
 		max: 2000,
+		error: intErrorGenerator('Quantity', 1, 2000),
+	},
+	total: {
+		min: this.product.buyingPrice.min,
+		max: 2000000,
+		error: intErrorGenerator('Total', this.product.buyingPrice.min, 2000000),
 	},
 };
 exports.adminSales = {
 	quantity: {
 		min: 0,
 		max: 20000,
+	},
+};
+
+exports.metadata = {
+	category: {
+		minlength: 4,
+		maxlength: 20,
+		error: stringErrorGenerator('Category', 4, 20),
+	},
+	brand: {
+		minlength: 4,
+		maxlength: 20,
+		error: stringErrorGenerator('Brand', 4, 20),
 	},
 };
 

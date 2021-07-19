@@ -9,34 +9,45 @@ const {
 
 const Schema = mongoose.Schema;
 
+const ObjectId = Schema.Types.ObjectId;
+const { exact, error } = ranges.mongooseId;
+const { quantity, total } = ranges.order;
+const { min, max } = quantity;
+
 const Order = new Schema({
 	products: [
 		{
 			productData: {
-				required: true,
-				type: Schema.Types.ObjectId,
+				required: [true, error],
+				type: ObjectId,
 				ref: 'Product',
-				maxlenght: ranges.mongooseId,
-				minlenght: ranges.mongooseId,
+				maxlength: [exact, error],
+				minlength: [exact, error],
 			},
 			quantity: {
-				required: true,
+				required: quantity.error,
 				type: Number,
-				min: ranges.order.quantity.min,
-				max: ranges.order.quantity.max,
+				min: [min, quantity.error],
+				max: [max, quantity.error],
 			},
 		},
 	],
 	userId: {
-		type: Schema.Types.ObjectId,
+		type: ObjectId,
 		ref: 'User',
-		required: true,
-		maxlength: ranges.mongooseId,
-		minlength: ranges.mongooseId,
+		required: [true, error],
+		maxlength: [exact, error],
+		minlength: [exact, error],
 	},
 	time: {
 		type: Date,
 		default: Date.now(),
+	},
+	total: {
+		type: Number,
+		required: total.error,
+		min: [total.min, total.error],
+		max: [total.max, total.error],
 	},
 });
 
@@ -47,11 +58,7 @@ const pathToPopulate = 'products.productData';
 const { statics, methods } = Order;
 
 statics.createOne = function (orderData) {
-	ensureIsNonEmptyObject(orderData);
-	const order = new this({
-		userId: orderData.userId,
-		products: orderData.products,
-	});
+	const order = new this(orderData);
 	return order.save();
 };
 
@@ -67,7 +74,6 @@ statics.findByIdAndPopulateProductsDetails = async function (id) {
 	return orders[0];
 };
 statics.findAllforUserId = function (userId) {
-	ensureIsMongooseId(userId);
 	const byUserIdQuery = { userId };
 	return this.findWithPopulated(
 		byUserIdQuery,
@@ -77,7 +83,6 @@ statics.findAllforUserId = function (userId) {
 };
 
 methods.isOrderedById = function (Id) {
-	ensureIsMongooseId(id);
 	return Id.toString() === this.userId.toString();
 };
 methods.populateDetails = function () {

@@ -1,29 +1,36 @@
-const {ensureUserIsAuth} = require("../../authmiddleware");
+const { ensureUserIsAuth } = require('../../authmiddleware');
 
-const express = require("express");
+const express = require('express');
 
-const {shop} = require("../../controllers");
+const { shop } = require('../../controllers');
+const { productQuery } = require('../../validators');
 
 const router = express.Router();
 
-router.get("/", shop.getIndex);
+const { pageV, productQueryValidator } = productQuery;
 
-router.get("/products", shop.getProducts);
+router.get('/', shop.getIndex);
 
-router.get("/product/:productId", shop.getProduct);
-router.get("/category/:category", shop.getProductsPerCategory);
-router.post("/add-to-cart", ensureUserIsAuth, shop.getAddToCart);
+router.get('/products', pageV, shop.getProducts);
+
+router.get('/product/:productId', shop.getProduct);
+router.get(
+	'/category/:category',
+	productQueryValidator,
+	shop.getProductsPerCategory
+);
+router.post('/add-to-cart', ensureUserIsAuth, shop.getAddToCart);
 router
-  .route("/cart")
-  .get(ensureUserIsAuth, shop.getCart)
-  .post(ensureUserIsAuth, shop.postToCart);
+	.route('/cart')
+	.get(ensureUserIsAuth, shop.getCart)
+	.post(ensureUserIsAuth, shop.postToCart);
 
-router.post("/cart-delete-item", ensureUserIsAuth, shop.postCartDeleteProduct);
+router.post('/cart-delete-item', ensureUserIsAuth, shop.postCartDeleteProduct);
 
-router.get("/orders", ensureUserIsAuth, shop.getOrders);
+router.get('/orders', ensureUserIsAuth, shop.getOrders);
 
-router.post("/create-order", ensureUserIsAuth, shop.createOrder);
+router.post('/create-order', ensureUserIsAuth, shop.createOrder);
 
-router.get("/orders/:orderId", ensureUserIsAuth, shop.createInvoicePdf);
+router.get('/orders/:orderId', ensureUserIsAuth, shop.createInvoicePdf);
 
 module.exports = router;

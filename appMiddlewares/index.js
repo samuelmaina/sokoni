@@ -1,21 +1,11 @@
-const appendUser = require("./appendUserInReq");
-const csurf = require("./csurfMware");
-const errorHandler = require("./errorHandler");
-const fileUploader = require("./fileUploader");
-const flash = require("./loadFlash");
-const session = require("./sessionConnection");
-const setResLocals = require("./setLocals");
-const bodyParser = require("./bodyParser");
-const notFound = require("./notFound");
+exports.bodyParser = require('./bodyParser');
+exports.fileUploader = require('./fileUploader');
 
-module.exports = {
-  bodyParser,
-  fileUploader,
-  session,
-  flash,
-  csurf,
-  appendUser,
-  setResLocals,
-  errorHandler,
-  notFound,
-};
+exports.session = require('./sessionConnection');
+exports.csurf = require('./csurfMware');
+
+exports.flash = require('./loadFlash');
+exports.setResLocals = require('./setLocals');
+exports.appendUser = require('./appendUserInReq');
+exports.errorHandler = require('./errorHandler');
+exports.notFound = require('./notFound');

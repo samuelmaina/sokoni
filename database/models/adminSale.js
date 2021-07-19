@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const ranges = require('../../config/constraints');
 
 const { adminSalesServices } = require('../services');
+const { addSale } = adminSalesServices;
 
 const Schema = mongoose.Schema;
 
@@ -45,7 +46,21 @@ statics.createOne = async function (adminId) {
 	});
 	return await adminSale.save();
 };
+statics.addSalesToAdmins = async function (orderedProducts) {
+	for (const product of orderedProducts) {
+		const productDetails = product.productData;
+		let adminSales = await this.findOneByAdminId(productDetails.adminId);
 
+		if (!adminSales) {
+			adminSales = await this.createOne(productDetails.adminId);
+		}
+		const saleDetails = {
+			quantity: product.quantity,
+			productId: productDetails._id,
+		};
+		await adminSales.addSale(saleDetails);
+	}
+};
 statics.findOneForAdminIdAndPopulateProductsData = async function (adminId) {
 	const sales = await this.findOne({ adminId }).populate(
 		'products.productData',
@@ -64,26 +79,14 @@ statics.findByAdminIdAndDelete = async function (adminID) {
 	await this.findOneAndDelete({ adminID });
 };
 
-statics.findSalesForAdminIDWithinAnInterval = async function (
-	adminID,
-	fromTime,
-	toTIme
-) {
-	const adminSales = await this.findOneForAdminIdAndPopulateProductsData(
-		adminID
-	);
-	if (!adminSales) return [];
-	const productsToDisplay = adminSales.findSalesWithinAnInterval(
-		fromTime,
-		toTIme
-	);
-	return adminSalesServices.calculatProductsSalesData(productsToDisplay);
+statics.findOneByAdminId = async function (adminId) {
+	return await this.findOne({ adminId });
 };
 
 methods.addSale = async function (saleDetails) {
 	const soldProducts = this.products;
-	this.products = adminSalesServices.addSale(soldProducts, saleDetails);
-	return this.save();
+	addSale(soldProducts, saleDetails);
+	return await this.save();
 };
 
 methods.clearProducts = async function () {

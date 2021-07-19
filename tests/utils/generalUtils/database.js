@@ -3,7 +3,10 @@ const assert = require('assert');
 
 const Models = require('../../../database/models');
 const { User, Admin, Product } = require('../../../database/models');
-const { generateRandomProductData } = require('./utils');
+const {
+	generateRandomProductData,
+	generatePerfectProductData,
+} = require('./utils');
 
 exports.clearDb = async () => {
 	try {
@@ -88,7 +91,8 @@ exports.createTestProducts = async (adminIDs = [], quantity = 1) => {
 	for (let index = 0; index < quantity; index++) {
 		const adminIndex = index % numberOfAdmins;
 		const adminId = adminIDs[adminIndex];
-		product = generateRandomProductData(adminId);
+		product = generatePerfectProductData();
+		product.adminId = adminId;
 		product = await Product.createOne(product);
 		await product.save();
 		products[index] = product;
@@ -147,5 +151,13 @@ exports.feedProductsWithTestCategories = async (products, categories) => {
 		});
 		await product.save();
 		interator++;
+	}
+};
+
+exports.ensureProductsHaveProperties = (products, props) => {
+	for (const product of products) {
+		for (const prop of props) {
+			expect(product.productData).toHaveProperty(prop);
+		}
 	}
 };

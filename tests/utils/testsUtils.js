@@ -7,6 +7,17 @@ exports.ensureCloselyEqual = (actual, expected, delta) => {
 exports.ensureArrayContains = (arr, element) => {
 	expect(arr).toContain(element);
 };
+exports.ensureArrayConstainsKeyValuePair = (arr, key, value) => {
+	expect(arr).toHaveProperty(key, value);
+};
+
+exports.ensureValueGreateThan = (greater, less) => {
+	expect(greater).toBeGreaterThan(less);
+};
+
+exports.ensureValueLessThan = (less, greater) => {
+	expect(less).toBeLessThan(greater);
+};
 
 //had to do this because mongoose arrays can not be vefied by the .toEqual matcher.
 exports.ensureMongooseArraysAreEqual = (expected, actual) => {
@@ -40,19 +51,21 @@ exports.verifyUndefined = value => {
 };
 
 exports.verifyThrowsError = (func, err) => {
-	expect(func).toThrowError();
+	expect(func).toThrowError(err);
 };
 
 exports.verifyDoesNotThrowError = func => {
 	expect(func).not.toThrowError();
 };
 
+exports.ensureResolvesToNull = async func => {
+	await expect(func).resolves.toBeNull();
+};
+
 exports.verifyRejectsWithError = async (func, err) => {
 	await expect(func).rejects.toThrowError(err);
 };
-exports.verifyResolvesWithNull = func => {
-	expect(func).resolves.toBeNull();
-};
+
 exports.verifyResolvesWithData = async (func, data) => {
 	await expect(func).resolves.toBe(data);
 };

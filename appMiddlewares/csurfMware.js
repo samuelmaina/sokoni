@@ -1,4 +1,4 @@
-const csurf = require("csurf");
-module.exports = (app) => {
-  app.use(csurf());
+const csurf = require('csurf');
+module.exports = app => {
+	app.use(csurf());
 };

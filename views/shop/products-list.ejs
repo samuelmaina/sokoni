@@ -2,9 +2,9 @@
     <link rel="stylesheet" href="/css/product.css">
     </head>
     <%- include('../includes/navigation.ejs') %>
-    <% if (prods.length> 0) { %>
+    <% if (productsData) { %>
             <div class="grid">
-                <% for (let product of prods) { %>
+                <% for (let product of productsData.products) { %>
                     <article class="card product-item">
                         <header class="card__header">
                             <h1 class="product__title">

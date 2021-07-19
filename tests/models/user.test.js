@@ -17,7 +17,7 @@ const credentials = {
 	password: 'PassWord55?',
 };
 
-describe('User test', () => {
+describe.skip('User test', () => {
 	includeSetUpAndTearDown();
 	describe.skip('Auth tests', () => {
 		baseTest(User);
@@ -40,6 +40,26 @@ describe('User test', () => {
 				const first = cart[0];
 				ensureObjectHasKeyValuePair(first, 'productData', productId);
 				ensureObjectHasKeyValuePair(first, 'quantity', quantity);
+			});
+			it.skip('should remove product from cart', async () => {
+				const productId = generateMongooseId();
+				const productId2 = generateMongooseId();
+				const quantity = 50;
+				await user.addProductsToCart(productId, quantity);
+				await user.addProductsToCart(productId2, quantity);
+				const cart = user.cart;
+				verifyEqual(cart.length, 1);
+				const first = cart[0];
+				ensureObjectHasKeyValuePair(first, 'productData', productId);
+				ensureObjectHasKeyValuePair(first, 'quantity', quantity);
+			});
+			it('decrement balance', async () => {
+				let initial = 10000,
+					decrement = 2000;
+				user.balance = initial;
+				await user.save();
+				await user.decrementBalance(decrement);
+				verifyEqual(user.balance, initial - decrement);
 			});
 		});
 	});

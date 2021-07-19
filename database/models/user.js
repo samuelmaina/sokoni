@@ -48,14 +48,9 @@ methods.addProductsToCart = async function (productId, quantity) {
 	return await this.save();
 };
 
-methods.deleteProductsFromCart = async function (prodId) {
-	ensureIsMongooseId(prodId);
+methods.deleteProductIdFromCart = async function (prodId) {
 	const cart = this.cart;
-	const { updatedCart, deletedQuantity } = userServices.deleteProductIdfromCart(
-		cart,
-		prodId
-	);
-	this.cart = updatedCart;
+	const deletedQuantity = userServices.deleteProductIdfromCart(cart, prodId);
 	await this.save();
 	return deletedQuantity;
 };
@@ -92,5 +87,6 @@ methods.decrementBalance = function (amount) {
 	this.balance = Number(balance.toFixed(2));
 	return this.save();
 };
+const userModel = Base.discriminator('User', userSchema);
 
-module.exports = Base.discriminator('User', userSchema);
+module.exports = userModel;

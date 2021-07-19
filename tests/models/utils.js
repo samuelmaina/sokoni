@@ -5,7 +5,6 @@ const { connectToDb, closeConnectionToBd } = require('../config');
 const { generateStringSizeN } = require('../utils/generalUtils/utils');
 
 const ranges = require('../../config/constraints');
-
 const SALT_ROUNDS = 12;
 
 exports.ranges = ranges;

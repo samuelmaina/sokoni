@@ -1,4 +1,5 @@
 const ObjectId = require('mongoose').Types.ObjectId;
+const { product } = require('../../../config/constraints');
 
 const { unlink, readdir } = require('fs');
 const path = require('path');
@@ -46,6 +47,42 @@ exports.generateRandomMongooseIds = quantity => {
 	return Ids;
 };
 
+exports.generatePerfectProductData = () => {
+	const prodRanges = product;
+	const title = this.generateStringSizeN(prodRanges.title.minlength);
+	const imageUrl = this.generateStringSizeN(prodRanges.imageUrl.minlength);
+
+	const buyingPrice = this.generateRandomFloatInRange(
+		prodRanges.buyingPrice.min,
+		prodRanges.buyingPrice.max
+	);
+	const percentageProfit = this.generateRandomFloatInRange(
+		prodRanges.percentageProfit.min,
+		prodRanges.percentageProfit.max
+	);
+	const description = this.generateStringSizeN(
+		prodRanges.description.minlength
+	);
+	const quantity = this.generateRandomIntInRange(
+		prodRanges.quantity.min,
+		prodRanges.quantity.max
+	);
+	const adminId = this.generateMongooseId();
+	const category = this.generateStringSizeN(prodRanges.category.minlength);
+	const brand = this.generateStringSizeN(prodRanges.brand.minlength);
+	return {
+		title,
+		imageUrl,
+		buyingPrice,
+		percentageProfit,
+		description,
+		quantity,
+		adminId,
+		category,
+		brand,
+	};
+};
+
 exports.generateRandomProductData = adminId => {
 	const data = {};
 	const PRODUCT_PROPERTIES = this.PRODUCT_PROPERTIES;
@@ -71,8 +108,7 @@ exports.generateRandomProductData = adminId => {
 
 exports.deleteAllCreatedImages = async () => {
 	return new Promise((resolve, reject) => {
-		const pathString = path.resolve('Data', 'Images');
-
+		const pathString = path.resolve('data', 'testFolder');
 		readdir(pathString, (err, files) => {
 			if (err) return reject(err);
 			for (const file of files) {

@@ -1,24 +1,21 @@
-const ranges = require('../config/constraints').shop;
-const body = require('express-validator').check;
+const ranges = require('../config/constraints');
 
-const { page, category } = ranges;
+const { intValidator, stringValidator } = require('./utils');
 
-exports.pageV = body('page')
-	.isNumeric()
-	.withMessage('Page must be a number.')
-	.isInt()
-	.withMessage('Page must be a whole number.')
-	.custom(value => {
-		const { min, max, error } = page;
-		if (!(value >= min && value <= max)) {
-			throw new Error(error);
-		}
-		return true;
-	});
-exports.categoryV = body('category')
-	.isString()
-	.withMessage('Category must be a string.')
-	.isLength({ min: category.minlength, max: category.maxlength })
-	.withMessage(category.error);
+const { page } = ranges.shop;
+const { category } = ranges.product;
 
+exports.pageV = intValidator({
+	field: 'page',
+	min: page.min,
+	max: page.max,
+	err: page.error,
+});
+
+exports.categoryV = stringValidator({
+	field: 'category',
+	min: category.minlength,
+	max: category.maxlength,
+	err: category.error,
+});
 exports.productQueryValidator = [this.pageV, this.categoryV];

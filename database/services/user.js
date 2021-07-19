@@ -20,10 +20,10 @@ exports.addProductIdToCart = (cart, prodId, quantity) => {
 exports.deleteProductIdfromCart = (cart, prodId) => {
 	const deletedProductIndex = findProductIdIndexInArray(cart, prodId);
 	const deletedQuantity = cart[deletedProductIndex].quantity;
-	const updatedCart = cart.filter(cp => {
+	const updated = cart.filter(cp => {
 		return cp.productData.toString() !== prodId.toString();
 	});
-	return { updatedCart, deletedQuantity };
+	return { updated, deletedQuantity };
 };
 
 const findProductIdIndexInArray = (arr, prodId) => {

@@ -4,9 +4,9 @@
 
 <body>
     <%- include('../includes/navigation.ejs') %>
-    <% if (prods.length > 0) { %>
+    <% if (productsData) { %>
     <div class="grid">
-        <% for (let product of prods) { %>
+        <% for (let product of productsData.products) { %>
         <article class="card product-item">
             <header class="card__header">
                 <h1 class="product__title">
@@ -16,7 +16,7 @@
                 </h1>
             </header>
             <div class="card__image">
-                <img src="/<%= product.imageUrl %>" alt="<%= product.title %>">
+                <img src="\<%= product.imageUrl %>" alt="<%= product.title %>">
             </div>
 
             <div class="card__content">
@@ -36,18 +36,18 @@
                 <br>
             </div>
             <div class="card__actions">
-                <a   class = 'edit_product btn' href="/admin/edit-product/<%= product.id %>?edit=true&page=<%= paginationData.currentPage %>"
+                <a   class = 'edit_product btn' href="/admin/edit-product/<%= product.id %>?edit=true&page=<%= productsData.paginationData.currentPage %>"
                    >Edit</a>
                 <input type="hidden" value="<%= product.id %>" name="id">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <button class="btn" type="submit" onclick="deleteProduct(this)">Delete</button>
+                <button class="btn delete"  type="submit" onclick="deleteProduct(this)">Delete</button>
             </div>
         </article>
         <% } %>
     </div>
     <ul> 
     <% for (let category of categories) { %>
-        <li><a href="/admin/category/<%=category%>?page=<%=paginationData.currentPage%>"> <%=category%></a></li>
+        <li><a href="/admin/category/<%=category%>?page=<%=productsData.paginationData.currentPage%>"> <%=category%></a></li>
     <% } %>
 </ul>
      <%- include('../includes/pagination.ejs') %>

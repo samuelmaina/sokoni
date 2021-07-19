@@ -101,10 +101,11 @@ const { statics, methods } = Product;
 
 statics.createOne = async function (productData) {
 	calculateSellingPrice(productData);
-	const Product = mongoose.model('Product');
 	const metadata = await getMetadata();
 	const { category, brand, adminId } = productData;
+	const Product = mongoose.model('Product');
 	const product = Product(productData);
+	await product.save();
 	await metadata.addCategory({
 		category,
 		adminId,
@@ -113,13 +114,14 @@ statics.createOne = async function (productData) {
 		brand,
 		adminId,
 	});
-	return await product.save();
+	return product;
 };
 
 statics.findPageProductsForAdminId = async function (adminId, page) {
 	const query = { adminId };
-	const paginationData = await this.calculatePaginationData(page, query);
 	const products = await this.getProductsPerPageForQuery(page, query);
+	const paginationData = await this.calculatePaginationData(page, query);
+	if (products.length < 1) return null;
 	return {
 		paginationData,
 		products,
@@ -129,6 +131,7 @@ statics.findPageProductsForAdminId = async function (adminId, page) {
 statics.findProductsForPage = async function (page = 1) {
 	const products = await this.getProductsPerPage(page);
 	const paginationData = await this.calculatePaginationData(page);
+	if (products.length === 0) return null;
 	return {
 		paginationData,
 		products,
@@ -160,11 +163,12 @@ statics.findCategoryProductsForAdminIdAndPage = async function (
 
 statics.findCategoryProductsForPage = async function (category, page) {
 	const categoryQuery = { category };
+	const products = await this.getProductsPerPageForQuery(page, categoryQuery);
 	const paginationData = await this.calculatePaginationData(
 		page,
 		categoryQuery
 	);
-	const products = await this.getProductsPerPageForQuery(page, categoryQuery);
+	if (products.length === 0) return null;
 	return {
 		products,
 		paginationData,
@@ -182,7 +186,7 @@ methods.decrementQuantity = async function (quantity) {
 	const howMany = Number(quantity);
 	let currentQuantity = this.quantity;
 	if (currentQuantity < howMany)
-		throw new Error('No Enough Money to decrement.');
+		throw new Error('Can decrement such decrement.');
 	currentQuantity -= howMany;
 	this.quantity = currentQuantity;
 	return await this.save();
@@ -197,7 +201,8 @@ methods.updateDetails = async function (productData) {
 		this[property] = productData[property];
 	}
 	const metadata = await getMetadata();
-	const { brand, category, adminId } = productData;
+	const { brand, category } = productData;
+	const adminId = this.adminId;
 	await metadata.addCategory({
 		category,
 		adminId,
@@ -208,7 +213,8 @@ methods.updateDetails = async function (productData) {
 	});
 	return await this.save();
 };
-methods.delete = async function () {
+methods.customDelete = async function () {
+	await fileManipulators.deleteFile(this.imageUrl);
 	await this.deleteOne();
 };
 

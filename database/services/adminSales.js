@@ -1,27 +1,26 @@
 const { convertTo2Dps } = require('../utils');
 
-exports.addSale = (productArray, saleDetails) => {
-	const productIndex = productArray.findIndex(product => {
-		return product.productData.toString() === saleDetails.productId.toString();
+exports.addSale = (arr, saleDetails) => {
+	const { productId, quantity } = saleDetails;
+	const productIndex = arr.findIndex(product => {
+		return product.productData.toString() === productId.toString();
 	});
-	const updatedProducts = [...productArray];
-	if (productIndex >= 0) {
-		updatedProducts[productIndex].sales.push({
-			quantity: saleDetails.quantity,
-			soldAt: Date.now(),
-		});
-	} else {
-		updatedProducts.push({
-			productData: saleDetails.productId,
+	if (productIndex < 0) {
+		arr.push({
+			productData: productId,
 			sales: [
 				{
-					quantity: saleDetails.quantity,
+					quantity,
 					soldAt: Date.now(),
 				},
 			],
 		});
+	} else {
+		arr[productIndex].sales.push({
+			quantity,
+			soldAt: Date.now(),
+		});
 	}
-	return updatedProducts;
 };
 
 exports.getProductsSalesSoldWithinInterval = (products, fromTime, toTIme) => {

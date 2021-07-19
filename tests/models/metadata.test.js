@@ -1,15 +1,20 @@
+const { mongooseId } = require('../../config/constraints');
 const { Metadata } = require('../../database/models');
 const { clearDb } = require('../utils/generalUtils/database');
-const { generateMongooseId } = require('../utils/generalUtils/utils');
+const {
+	generateMongooseId,
+	generateStringSizeN,
+} = require('../utils/generalUtils/utils');
 const {
 	ensureArrayContains,
 	verifyEqual,
 	verifyIDsAreEqual,
 	ensureMongooseArraysAreEqual,
+	verifyRejectsWithError,
 } = require('../utils/testsUtils');
-const { includeSetUpAndTearDown } = require('./utils');
+const { includeSetUpAndTearDown, ValidationError, ranges } = require('./utils');
 
-describe('Metadata', () => {
+describe.skip('Metadata', () => {
 	let doc;
 	includeSetUpAndTearDown();
 	beforeEach(async () => {
@@ -28,14 +33,41 @@ describe('Metadata', () => {
 		adminId: generateMongooseId(),
 	};
 
-	it('should add a category ', async () => {
-		await doc.addCategory(categoryExample);
-		const retrieved = await fetchSingleton();
-		const categories = retrieved.categories;
-		const firstCategory = categories[0];
-		verifyEqual(firstCategory.category, categoryExample.category);
-		verifyIDsAreEqual(firstCategory.adminIds[0], categoryExample.adminId);
+	describe('addCategory', () => {
+		const { minlength, maxlength, error } = ranges.product.category;
+		it('should for correct data', async () => {
+			await doc.addCategory(categoryExample);
+			const retrieved = await fetchSingleton();
+			const categories = retrieved.categories;
+			const firstCategory = categories[0];
+			verifyEqual(firstCategory.category, categoryExample.category);
+			verifyIDsAreEqual(firstCategory.adminIds[0], categoryExample.adminId);
+		});
+		it('should refuse if category missing', async () => {
+			verifyRejectsWithError(async () => {
+				await doc.addCategory({
+					adminId: generateMongooseId(),
+				});
+			}, error);
+		});
+
+		it('should refuse if category invalid', async () => {
+			verifyRejectsWithError(async () => {
+				await doc.addCategory({
+					adminId: generateMongooseId(),
+					category: generateStringSizeN(minlength - 1),
+				});
+			}, error);
+		});
+		it('should reject if adminId missing or invalid', async () => {
+			verifyRejectsWithError(async () => {
+				await doc.addCategory({
+					category: 'category 1',
+				});
+			}, mongooseId.error);
+		});
 	});
+
 	it('should add a brand ', async () => {
 		await doc.addBrand(brandExample);
 		const retrieved = await fetchSingleton();

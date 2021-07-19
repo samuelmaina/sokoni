@@ -2,8 +2,9 @@ const express = require('express');
 
 const { admin } = require('../../controllers');
 
-const { product } = require('../../validators');
+const { product, productQuery } = require('../../validators');
 const productValidtor = product.productValidator;
+const productQueryValidator = productQuery.productQueryValidator;
 
 const controller = admin;
 
@@ -14,12 +15,25 @@ router
 	.get(controller.getAddProduct)
 	.post(productValidtor, controller.postAddProduct);
 
-router.get('/edit-product/:id', controller.getEditProduct);
-router.post('/edit-product', productValidtor, controller.postEditProduct);
+router.get(
+	'/edit-product/:id',
+	productQueryValidator,
+	controller.getEditProduct
+);
+router.post(
+	'/edit-product',
+	productValidtor,
+	productQueryValidator,
+	controller.postEditProduct
+);
 
-router.get('/products', controller.getProducts);
-router.get('/category/:category', controller.getCategoryProducts);
-router.delete('/product/:id', controller.deleteProduct);
-router.get('/get-admin-sales', controller.getAdminSales);
+router.get('/products', productQueryValidator, controller.getProducts);
+router.get(
+	'/category/:category',
+	productQueryValidator,
+	controller.getCategoryProducts
+);
+router.delete('/product/:id', productQueryValidator, controller.deleteProduct);
+router.get('/get-admin-sales', productQueryValidator, controller.getAdminSales);
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const assert = require('assert');
 const mongoose = require('mongoose');
+const { mongooseId } = require('../../config/constraints');
 
 const ObjectId = mongoose.Types.ObjectId;
 
@@ -33,7 +34,7 @@ exports.connector = async mongo_uri => {
 
 exports.ensureIsMongooseId = id => {
 	const isId = ObjectId.isValid(id);
-	const errorMessage = 'Value not a valid mongoose Id.';
+	const errorMessage = mongooseId.error;
 
 	if (!isId) {
 		throw new Error(errorMessage);

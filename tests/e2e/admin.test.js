@@ -1,11 +1,18 @@
 const path = require('path');
 
-const { startApp, closeApp, getNewDriverInstance } = require('./config');
+const {
+	startApp,
+	closeApp,
+	getNewDriverInstance,
+	TEST_PORT,
+} = require('./config');
 
 const {
 	deleteAllCreatedImages,
 	generateRandomProductData,
 	generatePerfectProductData,
+	returnObjectWithoutProp,
+	generateStringSizeN,
 } = require('../utils/generalUtils/utils');
 const {
 	verifyEqual,
@@ -42,7 +49,7 @@ const { ensureHasTitle } = generalUtils;
 const MAX_SETUP_TIME = 25000;
 const MAX_TESTING_TIME = 20000;
 
-const PORT = 8080;
+const PORT = TEST_PORT;
 const base = `http://localhost:${PORT}`;
 
 const data = {
@@ -52,7 +59,6 @@ const data = {
 };
 const logInUrl = `${base}/auth/admin/log-in`;
 let page;
-
 const validProduct = {
 	title: 'test 1',
 	file: path.resolve('tests/data/images/199707738.jpg'),
@@ -75,6 +81,8 @@ const invalidProduct = {
 	description: 'The product was very good I  loved it.',
 };
 let admin;
+
+const productsUrl = `${base}/admin/products`;
 describe('Admin logged in routes', () => {
 	beforeAll(async () => {
 		await startApp(PORT);
@@ -92,9 +100,8 @@ describe('Admin logged in routes', () => {
 
 	describe('Add Product', () => {
 		beforeEach(async () => {
-			const url = `${base}/admin/add-product`;
-			await page.openUrl(url);
-		});
+			await page.openUrl(`${base}/admin/add-product`);
+		}, MAX_SETUP_TIME);
 		afterEach(clearModelsInProductTests);
 		it(
 			'should upload a product ',
@@ -105,38 +112,72 @@ describe('Admin logged in routes', () => {
 					'Your Products',
 					'Product added successfully.'
 				);
+				//ensure that produc is added to the database.
 				await ensureProductExistUsingItsTitle(validProduct.title);
 			},
 			MAX_TESTING_TIME
 		);
-		it(
+		let productData;
+		let errorMessage;
+		productData = { ...validProduct };
+		productData.buyingPrice = '';
+		errorMessage = 'buyingPrice must be a number.';
+		runInvalidProductTest(
+			'reject if  data is missing',
+			productData,
+			errorMessage
+		);
+
+		runInvalidProductTest(
 			'should refuse if the product data is incorrect ',
+			invalidProduct,
+			product.title.error
+		);
+
+		it(
+			'should prompt an admin to enter a product if they had not selected one',
 			async () => {
-				await enterProductData(invalidProduct);
+				const prodPage = new ProductPage(page);
+				await prodPage.enterTitle(validProduct.title);
+				await prodPage.enterBuyingPrice(validProduct.buyingPrice);
+				await prodPage.enterPercentageProfit(validProduct.percentageProfit);
+				await prodPage.enterQuantity(validProduct.quantity);
+				await prodPage.enterBrand(validProduct.brand);
+				await prodPage.enterCategory(validProduct.category);
+				await prodPage.enterDescription(validProduct.description);
+				await prodPage.submit();
 				await ensureHasTitleAndError(
 					page,
 					'Add Product',
-					`${product.title.error}`
+					`Please enter an image for your product.`
 				);
-				//errernous products should not be added to the database.
-				await ensureProductDoesNotExistUsingItsTitle(invalidProduct.title);
+				await ensureProductDoesNotExistUsingItsTitle(validProduct.title);
 			},
 			MAX_TESTING_TIME
 		);
+
+		function runInvalidProductTest(testMessage, product, errorMessage) {
+			it(
+				testMessage,
+				async () => {
+					await enterProductData(product);
+					await ensureHasTitleAndError(page, 'Add Product', errorMessage);
+					//errernous products should not be added to the database.
+					await ensureProductDoesNotExistUsingItsTitle(productData.title);
+				},
+				MAX_TESTING_TIME
+			);
+		}
 	});
 	describe('Edit Product', () => {
 		//TODO add to test to ensure that that editing comes with the previous data
 		let created;
 		beforeEach(async () => {
 			created = (await createTestProducts([admin.id], 3))[0];
-			const url = `${base}/admin/products`;
-			await page.openUrl(url);
+			await page.openUrl(productsUrl);
 			await clickOneEdit();
 		});
-		afterEach(async () => {
-			await clearModel(Product);
-			await clearModel(Metadata);
-		});
+		afterEach(clearModelsInProductTests);
 		it(
 			'should update for correct data',
 			async () => {
@@ -173,6 +214,23 @@ describe('Admin logged in routes', () => {
 			MAX_TESTING_TIME
 		);
 	});
+	it(
+		'should be able to delete  a product',
+		async () => {
+			await createTestProducts([admin.id], 2);
+			await page.openUrl(productsUrl);
+			await clickOneDelete();
+			await page.hold(100);
+			const articles = await page.getELements('article');
+			//ensure that the product is removed without reloading.
+			verifyEqual(articles.length, 1);
+			await page.hold(300);
+			await ensureHasTitle(page, 'Your Products');
+			const noOfDocs = await Product.find().countDocuments();
+			verifyEqual(noOfDocs, 1);
+		},
+		MAX_TESTING_TIME
+	);
 
 	describe('Should be able to click links', () => {
 		let products;
@@ -199,6 +257,24 @@ describe('Admin logged in routes', () => {
 					const title = await page.getTitle();
 					expect(title).toEqual(category);
 				}
+			},
+			MAX_TESTING_TIME
+		);
+
+		it(
+			'should refuse when category is out of range',
+			async () => {
+				const categoryRange = ranges.product.category;
+				await page.openUrl(
+					`${base}/admin/category/${generateStringSizeN(
+						categoryRange.maxlength + 1
+					)}/?page=1`
+				);
+				await ensureHasTitleAndError(
+					page,
+					'Your Products',
+					categoryRange.error
+				);
 			},
 			MAX_TESTING_TIME
 		);
@@ -266,6 +342,10 @@ describe('Admin logged in routes', () => {
 	async function clickOneEdit() {
 		const articles = await page.getELements('article');
 		await articles[0].findElement(By.className(`edit_product`)).click();
+	}
+	async function clickOneDelete() {
+		const articles = await page.getELements('article');
+		await articles[0].findElement(By.className('delete')).click();
 	}
 });
 

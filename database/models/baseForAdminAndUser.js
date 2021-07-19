@@ -12,8 +12,8 @@ const { hashPassword, confirmPassword } = baseServices;
 const Schema = mongoose.Schema;
 
 const baseOptions = {
-	discrimatorKeys: 'memberToAuth',
-	collection: '',
+	discrimatorKeys: '_member',
+	collection: 'data',
 };
 
 const Base = new Schema(
