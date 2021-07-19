@@ -4,9 +4,9 @@ const router = express.Router();
 const userRoutes = require('./user');
 const adminRoutes = require('./admin');
 
-const authenticators = require('../../authMiddleware');
+const { ensureUserIsAuth, ensureAdminIsAuth } = require('../../authMiddleware');
 
-router.use('/user', authenticators.ensureUserIsAuth, userRoutes);
-router.use('/admin', authenticators.ensureAdminIsAuth, adminRoutes);
+router.use('/user', ensureUserIsAuth, userRoutes);
+router.use('/admin', ensureAdminIsAuth, adminRoutes);
 
 module.exports = router;
