@@ -14,7 +14,7 @@ const {
 } = require('../utils/testsUtils');
 const { includeSetUpAndTearDown, ValidationError, ranges } = require('./utils');
 
-describe.skip('Metadata', () => {
+describe('Metadata', () => {
 	let doc;
 	includeSetUpAndTearDown();
 	beforeEach(async () => {

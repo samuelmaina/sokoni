@@ -8,7 +8,7 @@ const {
 const { PRODUCTS_PER_PAGE } = require('../../config/env');
 const { calculateSellingPrice, calculatePaginationData } = productServices;
 
-describe.skip('Product services', () => {
+describe('Product services', () => {
 	it('should calculate selling Price', () => {
 		const product = {
 			buyingPrice: 100.0,

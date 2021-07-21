@@ -5,7 +5,7 @@ const { hashPassword, confirmPassword } = baseServices;
 const password = 'password';
 const saltRounds = 12;
 
-describe.skip('base services', () => {
+describe('base services', () => {
 	it('hashPassword should hash password', async () => {
 		const hash = await hashPassword(password);
 		expect(hash).not.toBe(password);

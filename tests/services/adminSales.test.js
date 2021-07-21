@@ -9,7 +9,7 @@ const {
 	ensureValueLessThan,
 } = require('../utils/testsUtils');
 
-describe.skip('Admin Sales Services', () => {
+describe('Admin Sales Services', () => {
 	describe('addSale', () => {
 		it('should add product to the arr, together with the product sales Details.  ', () => {
 			const arr = [];

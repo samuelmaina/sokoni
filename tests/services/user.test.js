@@ -8,7 +8,7 @@ const {
 } = require('../utils/testsUtils');
 const { addProductIdToCart, deleteProductIdfromCart } = userServices;
 
-describe.skip('User services', () => {
+describe('User services', () => {
 	describe('addProductIdToCart', () => {
 		it('should add productId and quantity to the cart', () => {
 			const cart = [];

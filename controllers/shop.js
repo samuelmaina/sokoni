@@ -199,7 +199,7 @@ exports.postCartDeleteProduct = async (req, res, next) => {
 		res.redirect('/cart');
 		const product = await Product.findById(prodId);
 		//increase the quantity earlier deleted since the product(s) were rejected
-		await product.increaseQuantityBy(deletedQuantity);
+		await product.incrementQuantity(deletedQuantity);
 		// refund the customer
 		await req.user.incrementAccountBalance(
 			deletedQuantity * product.sellingPrice
