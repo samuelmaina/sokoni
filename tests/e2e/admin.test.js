@@ -217,17 +217,18 @@ describe('Admin logged in routes', () => {
 	it(
 		'should be able to delete  a product',
 		async () => {
-			await createTestProducts([admin.id], 2);
+			const noOfProducts = 2;
+			await createTestProducts([admin.id], noOfProducts);
 			await page.openUrl(productsUrl);
 			await clickOneDelete();
-			await page.hold(100);
+			await page.hold(5000);
 			const articles = await page.getELements('article');
 			//ensure that the product is removed without reloading.
 			verifyEqual(articles.length, 1);
 			await page.hold(300);
 			await ensureHasTitle(page, 'Your Products');
 			const noOfDocs = await Product.find().countDocuments();
-			verifyEqual(noOfDocs, 1);
+			verifyEqual(noOfDocs, noOfProducts - 1);
 		},
 		MAX_TESTING_TIME
 	);

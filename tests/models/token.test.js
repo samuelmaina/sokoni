@@ -17,7 +17,7 @@ const { includeSetUpAndTearDown, ValidationError } = require('./utils');
 
 const validityTime = TOKEN_VALIDITY_IN_HOURS * 60 * 60 * 1000;
 
-describe('--Token generator', () => {
+describe.skip('--Token generator', () => {
 	includeSetUpAndTearDown();
 	afterEach(async () => {
 		await clearDb();

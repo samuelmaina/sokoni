@@ -1,10 +1,18 @@
 <%- include('../includes/head.ejs') %>
 <link rel="stylesheet" href="/css/product.css">
 </head>
-
 <body>
     <%- include('../includes/navigation.ejs') %>
     <% if (productsData) { %>
+         <div class="btn " style="background-color:rgba(9, 218, 165, 0.733);">
+        Categories
+    </div>
+    <ul class="cat-section"> 
+    <% for (let category of categories) { %>
+        <li><a href="/admin/category/<%=category%>?page=<%=productsData.paginationData.currentPage%>"> <%=category%></a></li>
+    <% } %>
+    </ul>
+   
     <div class="grid">
         <% for (let product of productsData.products) { %>
         <article class="card product-item">
@@ -40,15 +48,13 @@
                    >Edit</a>
                 <input type="hidden" value="<%= product.id %>" name="id">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <button class="btn delete"  type="submit" onclick="deleteProduct(this)">Delete</button>
+                <button class="btn delete"  type="submit">Delete</button>
             </div>
         </article>
         <% } %>
     </div>
     <ul> 
-    <% for (let category of categories) { %>
-        <li><a href="/admin/category/<%=category%>?page=<%=productsData.paginationData.currentPage%>"> <%=category%></a></li>
-    <% } %>
+  
 </ul>
      <%- include('../includes/pagination.ejs') %>
 

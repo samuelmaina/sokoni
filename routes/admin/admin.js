@@ -33,7 +33,7 @@ router.get(
 	productQueryValidator,
 	controller.getCategoryProducts
 );
-router.delete('/product/:id', productQueryValidator, controller.deleteProduct);
-router.get('/get-admin-sales', productQueryValidator, controller.getAdminSales);
+router.delete('/product/:id', controller.deleteProduct);
+router.get('/get-admin-sales', controller.getAdminSales);
 
 module.exports = router;

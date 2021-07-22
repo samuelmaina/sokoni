@@ -1,136 +1,136 @@
-@import url("https://fonts.googleapis.com/css?family=Open+Sans:400,700");
+@import url('https://fonts.googleapis.com/css?family=Open+Sans:400,700');
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;300;400&display=swap');
 
 * {
-  margin: 0;
-  padding: 0;
-  font-family: "Noto Sans JP", sans-serif;
-  box-sizing: border-box;
-  color: rgb(30, 27, 44);
+	margin: 0;
+	padding: 0;
+	font-family: 'Noto Sans JP', sans-serif;
+	box-sizing: border-box;
+	color: rgb(30, 27, 44);
 }
 
 body {
-  font-family: "Noto Sans JP", sans-serif;
+	font-family: 'Noto Sans JP', sans-serif;
 }
 
 body > header > h1 {
-  font-family: "Noto Sans JP", Calibri, "Trebuchet MS", sans-serif;
-  font-weight: 300;
-  padding: 4px 10px;
-  color: rgb(161, 161, 161);
-  order: 2;
-  border: 1px dotted;
-  font-size: 18px;
+	font-family: 'Noto Sans JP', Calibri, 'Trebuchet MS', sans-serif;
+	font-weight: 300;
+	padding: 4px 10px;
+	color: rgb(161, 161, 161);
+	order: 2;
+	border: 1px dotted;
+	font-size: 18px;
 }
 .main-header {
-  border-bottom: 3px solid black;
-  position: fixed;
-  width: 100%;
-  background: rgba(8, 8, 8, 0.911);
-  box-shadow: 2px 5px 20px rgb(102, 101, 101);
-  padding: 1em 3em;
-  top: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+	border-bottom: 3px solid black;
+	position: fixed;
+	width: 100%;
+	background: rgba(8, 8, 8, 0.911);
+	box-shadow: 2px 5px 20px rgb(102, 101, 101);
+	padding: 1em 3em;
+	top: 0;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 .main-header::before {
-  content: "";
-  height: 40px;
-  width: 10px;
-  position: absolute;
-  background-color: black;
+	content: '';
+	height: 40px;
+	width: 10px;
+	position: absolute;
+	background-color: black;
 }
 .main-header::after {
-  content: "";
-  height: 40px;
-  width: 10px;
-  position: absolute;
-  background-color: black;
+	content: '';
+	height: 40px;
+	width: 10px;
+	position: absolute;
+	background-color: black;
 }
 
 .error-message {
-  font-family: "Noto Sans JP", "Noto Sans JP ", Calibri, "Trebuchet MS", sans-serif;
-  font-size: 20px;
-  margin-top: 20px;
-  padding: 2px;
-  text-align: center;
-  width: 40vw;
-  height: 3rem;
-  margin-left: 30%;
-  background-color: rgb(240, 203, 203);
-  color: rgb(252, 23, 23);
-  border: 3px solid rgb(250, 21, 21);
-  box-shadow: 2px 5px 20px rgba(248, 7, 7, 0.5);
-  border-radius: 12px;
-  margin-bottom: 20px;
+	font-family: 'Noto Sans JP', 'Noto Sans JP ', Calibri, 'Trebuchet MS',
+		sans-serif;
+	font-size: small;
+	margin-top: 20px;
+	padding: 2px;
+	text-align: center;
+	width: 40vw;
+	height: 3rem;
+	margin-left: 30%;
+	background-color: rgb(240, 203, 203);
+	color: rgb(252, 23, 23);
+	border: 3px solid rgb(250, 21, 21);
+	box-shadow: 2px 5px 20px rgba(248, 7, 7, 0.5);
+	border-radius: 12px;
+	margin-bottom: 20px;
 }
 
 .info {
-  font-family: "Noto Sans JP", "Noto Sans JP ", Calibri, "Trebuchet MS", sans-serif;
-  font-size: 1.2rem;
-  margin-top: 20px;
-  padding: 2px;
-  text-align: center;
-  width: 40vw;
-  min-height: 2rem;
-  margin-left: 30%;
-  background-color: rgb(238, 252, 244);
-  color: #0c860c;
-  border: 3px solid rgb(6, 221, 42);
-  box-shadow: 2px 5px 20px rgba(21, 228, 39, 0.5);
-  border-radius: 12px;
-  margin-bottom: 20px;
+	font-family: 'Noto Sans JP', 'Noto Sans JP ', Calibri, 'Trebuchet MS',
+		sans-serif;
+	font-size: 1.2rem;
+	margin-top: 20px;
+	padding: 2px;
+	text-align: center;
+	width: 40vw;
+	min-height: 2rem;
+	margin-left: 30%;
+	background-color: rgb(238, 252, 244);
+	color: #0c860c;
+	border: 3px solid rgb(6, 221, 42);
+	box-shadow: 2px 5px 20px rgba(21, 228, 39, 0.5);
+	border-radius: 12px;
+	margin-bottom: 20px;
 }
 
 main {
-  padding-top: 18vh;
-  margin: auto;
+	padding-top: 18vh;
+	margin: auto;
 }
 
 form {
-  display: inline;
+	display: inline;
 }
 
 .centered {
-  text-align: center;
+	text-align: center;
 }
 
 .image {
-  height: 20rem;
+	height: 20rem;
 }
 
 .image img {
-  height: 100%;
+	height: 100%;
 }
 
 .main-header__nav {
-  height: 60%;
-  width: 80%;
-  display: none;
-  align-items: center;
-  justify-content: space-between;
+	height: 60%;
+	width: 80%;
+	display: none;
+	align-items: center;
+	justify-content: space-between;
 }
 
 .main-header__item-list {
-  list-style: none;
-  display: flex;
+	list-style: none;
+	display: flex;
 }
 
-
-
 .main-header__item {
-  margin: 0 1rem;
+	margin: 0 1rem;
 }
 
 .main-header__item a,
 .main-header__item button {
-  font-size: 15px;
-  padding: 4px 5px;
-  background: transparent;
-  text-decoration: none;
-  color: #eee;
-  cursor: pointer;
+	font-size: 15px;
+	padding: 4px 5px;
+	background: transparent;
+	text-decoration: none;
+	color: #eee;
+	cursor: pointer;
 }
 
 .main-header__item a:hover,
@@ -138,80 +138,78 @@ form {
 .main-header__item a.active,
 .main-header__item button:hover,
 .main-header__item button:active {
-  color: #19e6a1;
-  border-bottom: 1px dotted #e64919;
+	color: #19e6a1;
+	border-bottom: 1px dotted #e64919;
 }
 
 .mobile-nav {
-  width: 30rem;
-  height: 100vh;
-  max-width: 90%;
-  position: fixed;
-  left: 0;
-  top: 0;
-  background: rgb(251, 251, 252);
-  z-index: 10;
-  padding: 2rem 1rem 1rem 2rem;
-  transform: translateX(-100%);
-  transition: transform 0.3s ease-out;
+	width: 30rem;
+	height: 100vh;
+	max-width: 90%;
+	position: fixed;
+	left: 0;
+	top: 0;
+	background: rgb(251, 251, 252);
+	z-index: 10;
+	padding: 2rem 1rem 1rem 2rem;
+	transform: translateX(-100%);
+	transition: transform 0.3s ease-out;
 }
 
 .mobile-nav.open {
-  transform: translateX(0);
+	transform: translateX(0);
 }
 
-
-.cat-section{
-  display: flex;
-  list-style: none;
-  padding: 1em 3em;
+.cat-section {
+	display: flex;
+	list-style: none;
+	padding: 1em 3em;
 }
 
-.cat-section li{
-  margin-right: 1em;
+.cat-section li {
+	margin-right: 1em;
 }
-.cat-section li a{
-  text-decoration: none;
-  border: 1px solid transparent;
-  color: rgb(0,0,0,.8);
-  padding: 5px 10px;
-  border-radius: 20px;
-  transition: all .3s ease;
-}
-
-.cat-section li a.active{
-   background: #19e6a1;
+.cat-section li a {
+	text-decoration: none;
+	border: 1px solid transparent;
+	color: rgb(0, 0, 0, 0.8);
+	padding: 5px 10px;
+	border-radius: 20px;
+	transition: all 0.3s ease;
 }
 
-.cat-section li a:hover
-{
-  border-color: #19e6a1;
-  color: #19e6a1;
+.cat-section li a.active {
+	background: #19e6a1;
+}
+
+.cat-section li a:hover {
+	border-color: #19e6a1;
+	color: #19e6a1;
 }
 
 .mobile-nav__item-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  margin: 0;
-  padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	margin: 0;
+	padding: 0;
 }
 
 .mobile-nav__item {
-  margin: 0.5rem;
-  padding: 0;
+	margin: 0.5rem;
+	padding: 0;
 }
 
 .mobile-nav__item a,
 .mobile-nav__item button {
-  font: inherit;
-  text-decoration: none;
-  color: black;
-  font-size: 0.7rem;
-  padding: 0.3rem 0.5rem;
-  background: transparent;
-  border: none;
-  cursor: pointer;
+	font: inherit;
+	text-decoration: none;
+	color: black;
+	font-size: 0.7rem;
+	padding: 0.3rem 0.5rem;
+	background: transparent;
+	border: none;
+	cursor: pointer;
 }
 
 .mobile-nav__item a:active,
@@ -219,157 +217,154 @@ form {
 .mobile-nav__item a.active,
 .mobile-nav__item button:hover,
 .mobile-nav__item button:active {
-  background: rgba(34, 34, 33, 0.911);
-  color: rgb(239, 239, 245);
-  border-radius: 3px;
+	background: rgba(34, 34, 33, 0.911);
+	color: rgb(239, 239, 245);
+	border-radius: 3px;
 }
 
 #side-menu-toggle {
-  border: 1px solid white;
-  font: inherit;
-  padding: 0.5rem;
-  display: block;
-  background: transparent;
-  color: white;
-  cursor: pointer;
+	border: 1px solid white;
+	font: inherit;
+	padding: 0.5rem;
+	display: block;
+	background: transparent;
+	color: white;
+	cursor: pointer;
 }
 
 #side-menu-toggle:focus {
-  outline: none;
+	outline: none;
 }
 
 #side-menu-toggle:active,
 #side-menu-toggle:hover {
-  color: white;
-  border-color: white;
+	color: white;
+	border-color: white;
 }
 
 .backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 5;
-  display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100vh;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 5;
+	display: none;
 }
 
-
 .grid {
-  display: flex;
-  flex-wrap: wrap;
-  padding: 1em 2em;
+	display: flex;
+	flex-wrap: wrap;
+	padding: 1em 2em;
 }
 
 .card {
-  box-shadow: 0 2px 8px #0000003f;
-  display: flex;
-  flex-direction: column;
-  max-width: 350px !important;;
+	box-shadow: 0 2px 8px #0000003f;
+	display: flex;
+	flex-direction: column;
+	max-width: 350px !important;
 }
-
-
 
 .card__header,
 .card__content {
-  padding: .5rem;
+	padding: 0.5rem;
 }
 
 .card__header h1,
-.card__content h1{
-  color: rgb(0,0,0,.6);
+.card__content h1 {
+	color: rgb(0, 0, 0, 0.6);
 }
-.card__content h2{
-  font-size: 17px;
-  color: #e96e09;
+.card__content h2 {
+	font-size: 17px;
+	color: #e96e09;
 }
 .card__content p {
-  font-size: 14px;
-  color: rgb(0,0,0,.8);
+	font-size: 14px;
+	color: rgb(0, 0, 0, 0.8);
 }
 
 .card__image {
-  width: 100%;
-  height: 150px;
-  background: linear-gradient(45deg, rgb(0,0,0,.1), transparent)
+	width: 100%;
+	height: 150px;
+	background: linear-gradient(45deg, rgb(0, 0, 0, 0.1), transparent);
 }
 
-.form{
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.form {
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .card__image img {
-  width: 100%;
-  object-fit: cover;
-  transition: all .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	width: 100%;
+	object-fit: cover;
+	transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .card__actions {
-  padding: .5rem;
-  text-align: center;
+	padding: 0.5rem;
+	text-align: center;
 }
 
 .card__actions button,
 .card__actions a {
-  margin: 0 0.25rem;
+	margin: 0 0.25rem;
 }
 
 .btn {
-  font-family: "Noto Sans JP", "Noto Sans JP ", Calibri, "Trebuchet MS", sans-serif;
-  display: inline-block;
-  padding: 0.25rem 1rem;
-  border: 1px solid transparent;
-  font-size: 20px;
-  background: #e96e09;
-  color: #fff;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: all .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	font-family: 'Noto Sans JP', 'Noto Sans JP ', Calibri, 'Trebuchet MS',
+		sans-serif;
+	display: inline-block;
+	padding: 0.25rem 1rem;
+	border: 1px solid transparent;
+	font-size: 20px;
+	background: #e96e09;
+	color: #fff;
+	border-radius: 3px;
+	cursor: pointer;
+	transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .pagination {
-  text-align: center;
-  margin-bottom: 5rem; 
-  margin-top: 5rem; 
-  
+	text-align: center;
+	margin-bottom: 5rem;
+	margin-top: 5rem;
 }
 .pagination a {
-  text-decoration: none;
-  color: rgba(34, 34, 33, 0.911);
-  padding: 0.5rem;
-  border: 1px solid rgba(34, 34, 33, 0.911);
-  margin: 0 1rem;
+	text-decoration: none;
+	color: rgba(34, 34, 33, 0.911);
+	padding: 0.5rem;
+	border: 1px solid rgba(34, 34, 33, 0.911);
+	margin: 0 1rem;
 }
 .pagination a:hover,
 .pagination a:active,
 .pagination a.active {
-  background: rgba(34, 34, 33, 0.911);
-  color: rgb(202, 197, 197);
+	background: rgba(34, 34, 33, 0.911);
+	color: rgb(202, 197, 197);
 }
 .btn:hover,
 .btn:active {
-  background-color: rgba(34, 34, 33, 0.911);
-  color: rgb(196, 191, 191);
+	background-color: rgba(34, 34, 33, 0.911);
+	color: rgb(196, 191, 191);
 }
 
 .btn.danger {
-  color: red;
-  border-color: red;
+	color: red;
+	border-color: red;
 }
 
 .btn.danger:hover,
 .btn.danger:active {
-  background: red;
-  color: white;
+	background: red;
+	color: white;
 }
 
 @media (min-width: 768px) {
-  .main-header__nav {
-    display: flex;
-  }
-  #side-menu-toggle {
-    display: none;
-  }
+	.main-header__nav {
+		display: flex;
+	}
+	#side-menu-toggle {
+		display: none;
+	}
 }

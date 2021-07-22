@@ -49,10 +49,12 @@ module.exports = () => {
 				});
 			});
 
-			describe('custom delete', () => {
+			describe.only('custom delete', () => {
 				it('should delete a product ', async () => {
+					let noOfDocs = await Product.find().countDocuments();
+					verifyEqual(noOfDocs, 1);
 					await product.customDelete();
-					const noOfDocs = await Product.find().countDocuments();
+					noOfDocs = await Product.find().countDocuments();
 					verifyEqual(noOfDocs, 0);
 				});
 			});

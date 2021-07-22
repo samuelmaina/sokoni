@@ -2,6 +2,7 @@
     <link rel="stylesheet" href="/css/product.css">
     </head>
     <%- include('../includes/navigation.ejs') %>
+    <%- include('../includes/categories.ejs') %>
     <% if (productsData) { %>
             <div class="grid">
                 <% for (let product of productsData.products) { %>
@@ -31,7 +32,6 @@
                     </article>
                     <% } %>
             </div>
-        <%- include('../includes/categories.ejs') %>
         <%- include('../includes/pagination.ejs') %>
     <% } else { %>
         <h1>No Products Found!</h1>
