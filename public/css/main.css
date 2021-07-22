@@ -117,6 +117,8 @@ form {
   display: flex;
 }
 
+
+
 .main-header__item {
   margin: 0 1rem;
 }
@@ -170,6 +172,21 @@ form {
 }
 .cat-section li a{
   text-decoration: none;
+  border: 1px solid transparent;
+  color: rgb(0,0,0,.8);
+  padding: 5px 10px;
+  border-radius: 20px;
+  transition: all .3s ease;
+}
+
+.cat-section li a.active{
+   background: #19e6a1;
+}
+
+.cat-section li a:hover
+{
+  border-color: #19e6a1;
+  color: #19e6a1;
 }
 
 .mobile-nav__item-list {
@@ -242,38 +259,56 @@ form {
 .grid {
   display: flex;
   flex-wrap: wrap;
+  padding: 1em 2em;
 }
 
 .card {
   box-shadow: 0 2px 8px #0000003f;
   display: flex;
   flex-direction: column;
+  max-width: 350px !important;;
 }
 
 
 
 .card__header,
 .card__content {
-  padding: 1rem;
+  padding: .5rem;
 }
 
 .card__header h1,
-.card__content h1,
-.card__content h2,
+.card__content h1{
+  color: rgb(0,0,0,.6);
+}
+.card__content h2{
+  font-size: 17px;
+  color: #e96e09;
+}
 .card__content p {
-  margin: 0;
+  font-size: 14px;
+  color: rgb(0,0,0,.8);
 }
 
 .card__image {
   width: 100%;
+  height: 150px;
+  background: linear-gradient(45deg, rgb(0,0,0,.1), transparent)
+}
+
+.form{
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .card__image img {
   width: 100%;
+  object-fit: cover;
+  transition: all .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .card__actions {
-  padding: 1rem;
+  padding: .5rem;
   text-align: center;
 }
 
@@ -286,16 +321,19 @@ form {
   font-family: "Noto Sans JP", "Noto Sans JP ", Calibri, "Trebuchet MS", sans-serif;
   display: inline-block;
   padding: 0.25rem 1rem;
-  border: 1px solid rgba(34, 34, 33, 0.911);
-  color: rgba(34, 34, 33, 0.911);
+  border: 1px solid transparent;
   font-size: 20px;
-  background: rgb(27, 99, 109);
+  background: #e96e09;
+  color: #fff;
   border-radius: 3px;
   cursor: pointer;
   transition: all .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .pagination {
   text-align: center;
+  margin-bottom: 5rem; 
+  margin-top: 5rem; 
+  
 }
 .pagination a {
   text-decoration: none;
