@@ -97,7 +97,7 @@ exports.getProduct = async (req, res, next) => {
 			return res.redirect('/');
 		}
 		new Renderer(res)
-			.templatePath('shop/products-detail')
+			.templatePath('shop/product-detail')
 			.pageTitle(product.title)
 			.activePath('/product')
 			.appendDataToResBody({
