@@ -1,6 +1,4 @@
-.form {
-  width: 60wh;
-}
+
 
 .form-control {
   margin: 1rem 0;
@@ -9,24 +7,27 @@
 .form-control label,
 .form-control input,
 .form-control textarea {
-  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
-  font-size: 1.5rem;
+  font-family: "Noto Sans JP", "Noto Sans JP ", Calibri, "Trebuchet MS", sans-serif;
+  font-size: 1.2rem;
   color: rgba(8, 1, 1, 0.911);
-  display: block;
   width: 100%;
   margin-bottom: 0.25rem;
 }
 
 .form-control input,
 .form-control textarea {
-  border: 1px solid #a1a1a1;
+  border: unset;
+  background: unset;
+  border: 1px solid #a0c7ad;
   font: inherit;
-  border-radius: 2px;
+  border-radius: 4px;
+  padding: 8px 10px;
 }
 
 .form-control input:focus,
 .form-control textarea:focus {
-  outline-color: rgba(34, 34, 33, 0.911);
+  outline: none;
+  border: 1px solid #0f9276e8;
 }
 .image {
   border-radius: 20px;
