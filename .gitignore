@@ -3,4 +3,5 @@
 .vscode/
 IMAGES
 config.js
+.env
 /data/*
