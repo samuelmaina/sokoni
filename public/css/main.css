@@ -76,7 +76,7 @@ body > header > h1 {
   min-height: 2rem;
   margin-left: 30%;
   background-color: rgb(238, 252, 244);
-  color: rgb(12, 134, 12);
+  color: #0c860c;
   border: 3px solid rgb(6, 221, 42);
   box-shadow: 2px 5px 20px rgba(21, 228, 39, 0.5);
   border-radius: 12px;
@@ -137,7 +137,7 @@ form {
 .main-header__item button:hover,
 .main-header__item button:active {
   color: #19e6a1;
-  border-bottom: 1px dotted #19e6a1;
+  border-bottom: 1px dotted #e64919;
 }
 
 .mobile-nav {
@@ -170,12 +170,6 @@ form {
 }
 .cat-section li a{
   text-decoration: none;
-  padding: 5px 10px;
-  border-radius: 20px;
-}
-
-.cat-section li a.active{
-   background: #19e6a1;
 }
 
 .mobile-nav__item-list {
@@ -248,61 +242,38 @@ form {
 .grid {
   display: flex;
   flex-wrap: wrap;
-  padding: 0 2em;
 }
 
 .card {
   box-shadow: 0 2px 8px #0000003f;
   display: flex;
   flex-direction: column;
-  max-width: 300px !important;
 }
 
 
 
 .card__header,
 .card__content {
-  padding: .5rem;
+  padding: 1rem;
 }
 
 .card__header h1,
-.card__content h1{
-   margin: 0;
-  padding: 0;
-  font-size: 18px;
-  color: #000;
-  color: rgb(0,0,0,.8);
-}
-.card__content h2{
-  margin: 0;
-  font-size: 18px;
-}
+.card__content h1,
+.card__content h2,
 .card__content p {
-  font-size: 14px;
-  color: rgb(0,0,0,.7);
+  margin: 0;
 }
 
 .card__image {
   width: 100%;
-  height: 140px;
-  background: linear-gradient(45deg, rgba(0,0,0,.1), transparent);
-  overflow: hidden;
-  
 }
-
 
 .card__image img {
   width: 100%;
-  object-fit: cover;
-  transition: all .3s ease;
 }
-.card__image:hover img{
-  transform: scale(1.1);
-}
-
 
 .card__actions {
-  padding: .5rem;
+  padding: 1rem;
   text-align: center;
 }
 
@@ -315,21 +286,16 @@ form {
   font-family: "Noto Sans JP", "Noto Sans JP ", Calibri, "Trebuchet MS", sans-serif;
   display: inline-block;
   padding: 0.25rem 1rem;
-  border: 1px solid transparent;
+  border: 1px solid rgba(34, 34, 33, 0.911);
   color: rgba(34, 34, 33, 0.911);
-  font-size: 15px;
-  text-transform: uppercase;
-  background: #e64919;
-  border-radius: 2px;
-  color: #fff;
+  font-size: 20px;
+  background: rgb(27, 99, 109);
+  border-radius: 3px;
   cursor: pointer;
   transition: all .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .pagination {
   text-align: center;
-  margin-bottom: 5rem;
-  margin-top: 4rem;
-  
 }
 .pagination a {
   text-decoration: none;
