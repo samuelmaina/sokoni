@@ -1,28 +1,38 @@
 @import url("https://fonts.googleapis.com/css?family=Open+Sans:400,700");
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;300;400&display=swap');
 
 * {
   margin: 0;
+  padding: 0;
+  font-family: "Noto Sans JP", sans-serif;
+  box-sizing: border-box;
+  color: rgb(30, 27, 44);
 }
 
 body {
-  font-family: "Open Sans", sans-serif;
-  background-color: rgb(228, 222, 228);
+  font-family: "Noto Sans JP", sans-serif;
 }
 
 body > header > h1 {
-  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-family: "Noto Sans JP", Calibri, "Trebuchet MS", sans-serif;
   font-weight: 300;
-  margin: 20px 30px;
+  padding: 4px 10px;
   color: rgb(161, 161, 161);
+  order: 2;
+  border: 1px dotted;
+  font-size: 18px;
 }
 .main-header {
   border-bottom: 3px solid black;
   position: fixed;
   width: 100%;
-  background: rgba(33, 33, 34, 0.911);
+  background: rgba(8, 8, 8, 0.911);
   box-shadow: 2px 5px 20px rgb(102, 101, 101);
-  height: auto;
+  padding: 1em 3em;
   top: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 .main-header::before {
   content: "";
@@ -38,8 +48,9 @@ body > header > h1 {
   position: absolute;
   background-color: black;
 }
+
 .error-message {
-  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-family: "Noto Sans JP", "Noto Sans JP ", Calibri, "Trebuchet MS", sans-serif;
   font-size: 20px;
   margin-top: 20px;
   padding: 2px;
@@ -56,7 +67,7 @@ body > header > h1 {
 }
 
 .info {
-  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-family: "Noto Sans JP", "Noto Sans JP ", Calibri, "Trebuchet MS", sans-serif;
   font-size: 1.2rem;
   margin-top: 20px;
   padding: 2px;
@@ -65,7 +76,7 @@ body > header > h1 {
   min-height: 2rem;
   margin-left: 30%;
   background-color: rgb(238, 252, 244);
-  color: rgb(12, 134, 12);
+  color: #0c860c;
   border: 3px solid rgb(6, 221, 42);
   box-shadow: 2px 5px 20px rgba(21, 228, 39, 0.5);
   border-radius: 12px;
@@ -103,24 +114,20 @@ form {
 
 .main-header__item-list {
   list-style: none;
-  margin: 0;
-  padding: 0;
   display: flex;
 }
 
 .main-header__item {
   margin: 0 1rem;
-  padding: 0;
 }
 
 .main-header__item a,
 .main-header__item button {
-  font-family: "Courier New", Courier, monospace;
-  font-size: 20px;
+  font-size: 15px;
+  padding: 4px 5px;
   background: transparent;
-  border: none;
   text-decoration: none;
-  color: rgb(121, 121, 122);
+  color: #eee;
   cursor: pointer;
 }
 
@@ -129,7 +136,8 @@ form {
 .main-header__item a.active,
 .main-header__item button:hover,
 .main-header__item button:active {
-  color: white;
+  color: #19e6a1;
+  border-bottom: 1px dotted #e64919;
 }
 
 .mobile-nav {
@@ -148,6 +156,20 @@ form {
 
 .mobile-nav.open {
   transform: translateX(0);
+}
+
+
+.cat-section{
+  display: flex;
+  list-style: none;
+  padding: 1em 3em;
+}
+
+.cat-section li{
+  margin-right: 1em;
+}
+.cat-section li a{
+  text-decoration: none;
 }
 
 .mobile-nav__item-list {
@@ -216,16 +238,19 @@ form {
   display: none;
 }
 
+
 .grid {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-evenly;
-  align-items: stretch;
 }
 
 .card {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 8px #0000003f;
+  display: flex;
+  flex-direction: column;
 }
+
+
 
 .card__header,
 .card__content {
@@ -258,16 +283,16 @@ form {
 }
 
 .btn {
-  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-family: "Noto Sans JP", "Noto Sans JP ", Calibri, "Trebuchet MS", sans-serif;
   display: inline-block;
   padding: 0.25rem 1rem;
-  text-decoration: none;
   border: 1px solid rgba(34, 34, 33, 0.911);
   color: rgba(34, 34, 33, 0.911);
   font-size: 20px;
-  background: rgb(228, 222, 228);
+  background: rgb(27, 99, 109);
   border-radius: 3px;
   cursor: pointer;
+  transition: all .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 .pagination {
   text-align: center;
