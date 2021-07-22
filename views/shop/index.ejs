@@ -5,26 +5,30 @@
 <body>
     <%- include('../includes/navigation.ejs') %>
     <% if (productsData) { %>
-    <div class="grid">
-        <% for (let product of productsData.products) { %>
-        <article class="card product-item">
-            <header class="card__header">
-                <h1 class="product__title"><%= product.title %></h1>
-            </header>
-            <div class="card__image">
-                <img src="/<%= product.imageUrl %>" alt="<%= product.title %>">
-            </div>
-            <div class="card__content">
-                <h2 class="product__price">Ksh <%= product.sellingPrice %></h2>
-                <p class="product__description"> <%= product.description %></p>
-            </div>
-            <div class="card__actions">
-                <%- include('../includes/add-to-cart.ejs',{product}) %>
-            </div>
-        </article>
-        <% } %>
+    <div class="container-grid">
+        <%- include('../includes/categories.ejs') %>
+
+        <div class="grid">
+            <% for (let product of productsData.products) { %>
+            <article class="card product-item">
+                <div class="card__image">
+                    <img src="/<%= product.imageUrl %>" alt="<%= product.title %>">
+                </div>
+                <div class="card__content">
+                    <header class="card__header">
+                        <h1 class="product__title"><%= product.title %></h1>
+                    </header>
+                    <h2 class="product__price">Ksh <%= product.sellingPrice %></h2>
+                    <p class="product__description"> <%= product.description %></p>
+                </div>
+                <div class="card__actions">
+                    <%- include('../includes/add-to-cart.ejs',{product}) %>
+                </div>
+            </article>
+            <% } %>
+        </div>
     </div>
-    <%- include('../includes/categories.ejs') %>   
+        
     <%- include('../includes/pagination.ejs') %>
     <% } else { %>
     <h1>No Products Found!</h1>

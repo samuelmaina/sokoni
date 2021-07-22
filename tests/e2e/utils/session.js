@@ -1,12 +1,12 @@
 const assert = require('assert');
 
 const { MongoClient } = require('mongodb');
-const { SESSION_STORE } = require('../../../config/env');
+const { MONGO_URI } = require('../../../config/env');
 let db;
 
 exports.clearSessions = async () => {
 	try {
-		const client = await MongoClient.connect(SESSION_STORE, {
+		const client = await MongoClient.connect(MONGO_URI, {
 			useNewUrlParser: true,
 			useUnifiedTopology: true,
 		});

@@ -1,6 +1,6 @@
 const session = require("express-session");
 const MongoDBSession = require("connect-mongodb-session")(session);
-const {SESSION_SECRET, SESSION_STORE} = require("../config/env");
+const {SESSION_SECRET, MONGO_URI} = require("../config/env");
 
 /**
  * @param {number} validityPeriodInMs- the Time limit in which the
@@ -14,7 +14,7 @@ const validityPeriodInMs = 5 * 60 * 1000;
 
 const dbStorage = "sessions";
 const store = new MongoDBSession({
-  uri: SESSION_STORE,
+  uri: MONGO_URI,
   collection: dbStorage,
 });
 
