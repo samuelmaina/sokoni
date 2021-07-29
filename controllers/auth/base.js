@@ -56,7 +56,7 @@ class Auth {
 			var message = {
 				from: EMAIL,
 				to: email,
-				subject: 'Reset Password',
+				subject: 'Welcome to SM Online Shop',
 				html: `<h1> Password Rest</h1>
 						<p> Thanks for joining SM Online Shop. The online shop you can trust.</p>
 						 `,
@@ -162,7 +162,7 @@ class Auth {
 				//http://localhost:3000/auth/user/new-password/57543e4605348c1d428f72eff767487bd255983f74119b2b221cab4f2c28bbf3
 				from: EMAIL,
 				to: document.email,
-				subject: 'Reset Password',
+				subject: 'Password Reset',
 				html: `<strong> Dear ${document.name}</strong>,
 			           <br><p>You can click this link to reset your password :
 			           <a href=${BASE_URL}/auth/${this.type}/new-password/${token.token}>
