@@ -1,4 +1,4 @@
-const { ensureUserIsAuth } = require('../../authmiddleware');
+const { ensureUserIsAuth } = require('../../authMiddleware');
 
 const express = require('express');
 
