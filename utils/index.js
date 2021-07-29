@@ -1,12 +1,5 @@
-const Flash = require("./Flash");
-const Renderer = require("./Renderer");
-const validationResults = require("./validationResults");
-const emailSender = require("./emailSender");
-const fileManipulators = require("./fileManipulators");
-module.exports = {
-  Flash,
-  Renderer,
-  validationResults,
-  emailSender,
-  fileManipulators,
-};
+exports.Flash = require('./Flash');
+exports.Renderer = require('./Renderer');
+exports.validationResults = require('./validationResults');
+exports.emailSender = require('./emailSender');
+exports.fileManipulators = require('./fileManipulators');

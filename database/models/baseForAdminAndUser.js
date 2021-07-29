@@ -13,7 +13,7 @@ const Schema = mongoose.Schema;
 
 const baseOptions = {
 	discrimatorKeys: '_member',
-	collection: 'data',
+	collection: 'auth',
 };
 
 const Base = new Schema(

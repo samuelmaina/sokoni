@@ -1,12 +1,12 @@
 require('dotenv').config();
 const envVaribles = process.env;
 
-module.exports = {
-	PORT: envVaribles.PORT,
-	MONGO_URI: envVaribles.MONGO_URI,
-	PRODUCTS_PER_PAGE: Number(envVaribles.PRODUCTS_PER_PAGE),
-	SESSION_SECRET: envVaribles.SESSION_SECRET,
-	SESSION_STORE: envVaribles.SESSION_STORE,
-	SESSION_VALIDITY_IN_HOURS: envVaribles.SESSION_VALIDITY_IN_HOURS,
-	TOKEN_VALIDITY_IN_HOURS: envVaribles.TOKEN_VALIDITY_IN_HOURS,
-};
+exports.PORT = envVaribles.PORT;
+exports.MONGO_URI = envVaribles.MONGO_URI;
+exports.PRODUCTS_PER_PAGE = Number(envVaribles.PRODUCTS_PER_PAGE);
+exports.SESSION_SECRET = envVaribles.SESSION_SECRET;
+exports.SESSION_STORE = envVaribles.SESSION_STORE;
+exports.SESSION_VALIDITY_IN_HOURS = envVaribles.SESSION_VALIDITY_IN_HOURS;
+exports.TOKEN_VALIDITY_IN_HOURS = envVaribles.TOKEN_VALIDITY_IN_HOURS;
+exports.EMAIL = envVaribles.EMAIL;
+exports.BASE_URL = envVaribles.BASE_URL;

@@ -1,6 +1,12 @@
+const { EMAIL, BASE_URL } = require('../../config/env');
 const { TokenGenerator } = require('../../database/models');
 
-const { validationResults, Renderer, Flash } = require('../../utils');
+const {
+	validationResults,
+	Renderer,
+	Flash,
+	emailSender,
+} = require('../../utils');
 
 class Auth {
 	constructor(Model, type) {
@@ -32,20 +38,30 @@ class Auth {
 	}
 	async postSignUp(req, res, next) {
 		try {
-			const flash = new Flash(req, res).appendPreviousData(req.body);
+			const { body } = req;
+			const flash = new Flash(req, res).appendPreviousData(body);
+			const { email, name } = body;
 			const validationErrors = validationResults(req);
 			if (validationErrors) {
 				return flash.appendError(validationErrors).redirect(this.routes.signUp);
 			}
-			const existingEmail = await this.Model.findByEmail(req.body.email);
+			const existingEmail = await this.Model.findByEmail(email);
 			if (existingEmail) {
 				const errorMessage = 'Email already exists.Please try another one.';
 				return flash.appendError(errorMessage).redirect(this.routes.signUp);
 			}
-			await this.Model.createOne(req.body);
-			const successSignUpMessage = `Dear ${req.body.name}, You have successfully signed up.`;
+			await this.Model.createOne(body);
+			const successSignUpMessage = `Dear ${name}, You have successfully signed up.`;
 			flash.appendInfo(successSignUpMessage).redirect(this.routes.logIn);
-			// transporter.sendMail(emailBody);
+			var message = {
+				from: EMAIL,
+				to: email,
+				subject: 'Reset Password',
+				html: `<h1> Password Rest</h1>
+						<p> Thanks for joining SM Online Shop. The online shop you can trust.</p>
+						 `,
+			};
+			emailSender(message);
 		} catch (error) {
 			next(error);
 		}
@@ -142,18 +158,18 @@ class Auth {
 			}
 			const token = await TokenGenerator.createOneForId(document.id);
 
-			// transporter.send({
-			//   //http://localhost:3000/auth/user/new-password/57543e4605348c1d428f72eff767487bd255983f74119b2b221cab4f2c28bbf3
-			//   from: "samuelsonlineshop@online.com",
-			//   to: document.email,
-			//   subject: "Reset Password",
-			//   html: `<strong> Dear ${document.name}</strong>,
-			//            <br><p>You can click this link to reset your password :
-			//            <a href='http://localhost:3000/${baseRoute}/newPassword/${token}'>
-			//             Reset password</a></p>
-			//            <p>Please note your have only one hour to reset your password</p>
-			//            <br> Thank you `,
-			// });
+			emailSender({
+				//http://localhost:3000/auth/user/new-password/57543e4605348c1d428f72eff767487bd255983f74119b2b221cab4f2c28bbf3
+				from: EMAIL,
+				to: document.email,
+				subject: 'Reset Password',
+				html: `<strong> Dear ${document.name}</strong>,
+			           <br><p>You can click this link to reset your password :
+			           <a href=${BASE_URL}/auth/${this.type}/new-password/${token.token}>
+			            Reset password</a></p>
+			           <p>Please note your have only one hour to reset your password</p>
+			           <br> Thank you `,
+			});
 			flash
 				.appendInfo(
 					'A link has been sent to your email. Please click the link to reset password.'
