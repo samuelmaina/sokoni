@@ -31,7 +31,7 @@ exports.clearModel = async Model => {
 	const noOfDocs = async () => {
 		return await Model.countDocuments();
 	};
-	await Model.deleteMany();
+	await Model.remove();
 	const countAfterDeletion = await noOfDocs();
 	assert.strictEqual(
 		countAfterDeletion,

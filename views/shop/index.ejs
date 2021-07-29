@@ -4,9 +4,10 @@
 
 <body>
     <%- include('../includes/navigation.ejs') %>
+     <%- include('../includes/categories.ejs') %>
     <% if (productsData) { %>
     <div class="container-grid">
-        <%- include('../includes/categories.ejs') %>
+       
         <div class="grid">
             <% for (let product of productsData.products) { %>
             <article class="card product-item">

@@ -14,7 +14,7 @@ const {
 } = require('../utils/testsUtils');
 const { includeSetUpAndTearDown, ValidationError, ranges } = require('./utils');
 
-describe.skip('Metadata', () => {
+describe('Metadata', () => {
 	let doc;
 	includeSetUpAndTearDown();
 	beforeEach(async () => {
@@ -129,6 +129,59 @@ describe.skip('Metadata', () => {
 			if (category.adminId.toString() === adminId.toString())
 				ensureArrayContains(retrieved, category.category);
 		}
+	});
+
+	it('should remove category from the the metadata', async () => {
+		const trials = 3;
+		const categories = generateRandomCategories(trials);
+		for (const category of categories) {
+			await doc.addCategory(category);
+		}
+		await doc.removeCategory(categories[0].category);
+		verifyEqual(doc.categories.length, trials - 1);
+	});
+
+	describe('should be remove an admin Id from a category', () => {
+		it('when the admin id is not the last in the category list', async () => {
+			const testCategory = 'category 1';
+			const adminId1 = generateMongooseId();
+			const adminId2 = generateMongooseId();
+			const category1 = {
+				category: testCategory,
+				adminId: adminId1,
+			};
+			const category2 = {
+				category: testCategory,
+				adminId: adminId2,
+			};
+			await doc.addCategory(category1);
+			await doc.addCategory(category2);
+
+			await doc.removeAdminIdFromCategory(testCategory, adminId1);
+			const presentCategories = doc.categories[0];
+			verifyEqual(presentCategories.adminIds.length, 1);
+			ensureArrayContains(presentCategories.adminIds, adminId2);
+		});
+		it('when the adminId  is the last the category, the category should be done away with.', async () => {
+			const adminId1 = generateMongooseId();
+			const testCategory = 'category 1';
+			const category1 = {
+				category: testCategory,
+				adminId: adminId1,
+			};
+
+			const category2 = {
+				category: 'category 2',
+				adminId: adminId1,
+			};
+			await doc.addCategory(category1);
+			await doc.addCategory(category2);
+
+			await doc.removeAdminIdFromCategory(category1.category, adminId1);
+
+			const presentCategories = doc.categories;
+			verifyEqual(presentCategories.length, 1);
+		});
 	});
 });
 

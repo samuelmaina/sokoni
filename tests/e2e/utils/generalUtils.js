@@ -1,4 +1,4 @@
-const { session } = require('.');
+const mongoose = require('mongoose');
 const {
 	Product,
 	Metadata,
@@ -24,6 +24,19 @@ exports.clearModelsInProductTests = async () => {
 	await clearModel(Metadata);
 	await clearModel(Order);
 	await clearModel(AdminSales);
+};
+exports.clearSessions = async () => {
+	return new Promise((resolve, reject) => {
+		mongoose.connection.db.collection('sessions', async (err, collection) => {
+			if (err) reject(err);
+			else {
+				collection.remove({}, err => {
+					if (err) reject(err);
+					else resolve(true);
+				});
+			}
+		});
+	});
 };
 exports.includeTearDowns = async page => {};
 

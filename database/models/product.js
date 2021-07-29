@@ -19,7 +19,6 @@ const {
 
 const { PRODUCTS_PER_PAGE } = require('../../config/env');
 const { fileManipulators } = require('../../utils');
-const { Metadata } = require('.');
 
 const POSITIVE_QUNTITY_QUERY = { quantity: { $gt: 0 } };
 
@@ -128,7 +127,8 @@ statics.findPageProductsForAdminId = async function (adminId, page) {
 	};
 };
 
-statics.findProductsForPage = async function (page = 1) {
+statics.findProductsForPage = async function (page) {
+	ensureIsPositiveInt(page, 'Page must be a positive int.');
 	const products = await this.getProductsPerPage(page);
 	const paginationData = await this.calculatePaginationData(page);
 	if (products.length === 0) return null;
@@ -155,6 +155,11 @@ statics.findCategoryProductsForAdminIdAndPage = async function (
 	const query = { adminId, category };
 	const paginationData = await this.calculatePaginationData(page, query);
 	const products = await this.getProductsPerPageForQuery(page, query);
+	if (products.length === 0) {
+		const metadata = await getMetadata();
+		await metadata.removeAdminIdFromCategory(category, adminId);
+		return null;
+	}
 	return {
 		paginationData,
 		products,
@@ -168,7 +173,9 @@ statics.findCategoryProductsForPage = async function (category, page) {
 		page,
 		categoryQuery
 	);
-	if (products.length === 0) return null;
+	if (products.length === 0) {
+		return null;
+	}
 	return {
 		products,
 		paginationData,
@@ -196,25 +203,30 @@ methods.updateDetails = async function (productData) {
 	if (this.imageUrl !== productData.imageUrl) {
 		fileManipulators.deleteFile(this.imageUrl);
 	}
+	const adminId = this.adminId;
+	const metadata = await getMetadata();
+	const previousCategory = this.category;
 	calculateSellingPrice(productData);
 	for (const property in productData) {
 		this[property] = productData[property];
 	}
-	const metadata = await getMetadata();
+
 	const { brand, category } = productData;
-	const adminId = this.adminId;
-	await metadata.addCategory({
-		category,
-		adminId,
-	});
-	await metadata.addBrand({
-		brand,
-		adminId,
-	});
+	if (this.category !== previousCategory) {
+		await metadata.addCategory({
+			category,
+			adminId,
+		});
+		await metadata.addBrand({
+			brand,
+			adminId,
+		});
+	}
 	return await this.save();
 };
 methods.customDelete = async function () {
-	await fileManipulators.deleteFile(this.imageUrl);
+	const { imageUrl } = this;
+	await fileManipulators.deleteFile(imageUrl);
 	await this.deleteOne();
 };
 

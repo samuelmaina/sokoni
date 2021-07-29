@@ -9,6 +9,7 @@ const {
 	verifyEqual,
 	ensureArrayContains,
 	ensureObjectHasKeyValuePair,
+	ensureObjectHasProps,
 } = require('../utils/testsUtils');
 const { includeSetUpAndTearDown } = require('./utils');
 const credentials = {
@@ -17,9 +18,9 @@ const credentials = {
 	password: 'PassWord55?',
 };
 
-describe.skip('User test', () => {
+describe('User test', () => {
 	includeSetUpAndTearDown();
-	describe.skip('Auth tests', () => {
+	describe('Auth tests', () => {
 		baseTest(User);
 	});
 	describe('user methods', () => {
@@ -38,20 +39,20 @@ describe.skip('User test', () => {
 				const cart = user.cart;
 				verifyEqual(cart.length, 1);
 				const first = cart[0];
-				ensureObjectHasKeyValuePair(first, 'productData', productId);
-				ensureObjectHasKeyValuePair(first, 'quantity', quantity);
+				verifyProductData(first);
 			});
-			it.skip('should remove product from cart', async () => {
+			it('should remove product from cart', async () => {
 				const productId = generateMongooseId();
 				const productId2 = generateMongooseId();
 				const quantity = 50;
 				await user.addProductsToCart(productId, quantity);
-				await user.addProductsToCart(productId2, quantity);
+				await user.addProductsToCart(productId2, quantity * 2);
+				const deletedQuantity = await user.deleteProductIdFromCart(productId);
 				const cart = user.cart;
 				verifyEqual(cart.length, 1);
-				const first = cart[0];
-				ensureObjectHasKeyValuePair(first, 'productData', productId);
-				ensureObjectHasKeyValuePair(first, 'quantity', quantity);
+				verifyEqual(deletedQuantity, quantity);
+				const remaining = cart[0];
+				verifyProductData(remaining);
 			});
 			it('decrement balance', async () => {
 				let initial = 10000,
@@ -64,3 +65,8 @@ describe.skip('User test', () => {
 		});
 	});
 });
+
+function verifyProductData(product) {
+	const props = ['productData', 'quantity'];
+	ensureObjectHasProps(product, props);
+}

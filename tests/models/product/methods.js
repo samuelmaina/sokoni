@@ -4,11 +4,16 @@ const {
 	clearDb,
 } = require('../../utils/generalUtils/database');
 const { generateMongooseId } = require('../../utils/generalUtils/utils');
-const { verifyEqual } = require('../../utils/testsUtils');
+const {
+	verifyEqual,
+	verifyTruthy,
+	ensureValueLessThan,
+} = require('../../utils/testsUtils');
 const { ensureObjectsHaveSameFields, productProps } = require('../utils');
 const {
 	ensureHasValidSellingPrice,
 	ensureMetadataIsAdded,
+	getSingleton,
 } = require('./utils');
 
 module.exports = () => {
@@ -48,16 +53,27 @@ module.exports = () => {
 					verifyEqual(product.quantity, initial - decrement);
 				});
 			});
-
-			describe.only('custom delete', () => {
+			describe('custom delete', () => {
 				it('should delete a product ', async () => {
 					let noOfDocs = await Product.find().countDocuments();
 					verifyEqual(noOfDocs, 1);
 					await product.customDelete();
 					noOfDocs = await Product.find().countDocuments();
+					const metadata = await getSingleton();
+					verifyEqual(metadata.categories.length, 1);
 					verifyEqual(noOfDocs, 0);
 				});
 			});
 		});
 	});
 };
+
+async function ensureThatThePreviousCategoryIsRemoved(categoryName) {
+	const metadata = await getSingleton();
+	const categories = metadata.categories;
+
+	const index = categories.findIndex(category => {
+		return category.category === categoryName;
+	});
+	ensureValueLessThan(index, 0);
+}

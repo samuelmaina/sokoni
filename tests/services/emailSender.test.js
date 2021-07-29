@@ -1,6 +1,7 @@
 const emailSender = require('../../utils/emailSender');
 
-describe.skip('Email Sender', () => {
+describe('Email Sender', () => {
+	const receiver = 'samuelmayna@gmail.com';
 	it('should send emails', async () => {
 		const body = {
 			subject: 'Test',

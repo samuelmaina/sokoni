@@ -15,3 +15,9 @@ exports.addElementIfNonExisting = (field, arr, element) => {
 		if (!adminIds.includes(adminId)) adminIds.push(adminId);
 	}
 };
+exports.removeElement = (field, arr, data) => {
+	const updated = arr.filter(cp => {
+		return cp[field] !== data;
+	});
+	return updated;
+};

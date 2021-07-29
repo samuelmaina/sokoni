@@ -8,6 +8,8 @@ const {
 	verifyTruthy,
 	verifyIDsAreEqual,
 	ensureObjectHasKeyValuePair,
+	ensureGreaterThanOrEqual,
+	ensureLessThanOrEqual,
 } = require('../../utils/testsUtils');
 
 exports.createProductsWithAdminIdAndCategory = async (
@@ -42,7 +44,7 @@ exports.modifyProductsCategories = async (products, categories) => {
 
 exports.validateDisplayData = (data, page) => {
 	const { products, paginationData } = data;
-	verifyEqual(products.length, PRODUCTS_PER_PAGE);
+	ensureLessThanOrEqual(products.length, PRODUCTS_PER_PAGE);
 	ensureEachProductHasPositiveQuantity(products);
 	ensureObjectHasKeyValuePair(paginationData, 'currentPage', page);
 };
@@ -52,9 +54,12 @@ function ensureEachProductHasPositiveQuantity(prods) {
 		expect(prod.quantity).toBeGreaterThan(0);
 	});
 }
+exports.getSingleton = async () => {
+	return await Metadata.getSingleton();
+};
 
 exports.ensureMetadataIsAdded = async dataUsedDuringCreation => {
-	const metadata = await Metadata.getSingleton();
+	const metadata = await this.getSingleton();
 	const { brands, categories } = metadata;
 	let brandExists = false;
 	for (const brand of brands) {

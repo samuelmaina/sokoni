@@ -18,16 +18,3 @@ exports.calculatePaginationData = (page, noOfProducts) => {
 		currentPage: page,
 	};
 };
-exports.findCategoriesPresent = products => {
-	let categories = [];
-	for (const product of products) {
-		let prodCategory = product.category;
-		const categoryIndex = categories.findIndex(c => {
-			return c === prodCategory;
-		});
-		if (categoryIndex < 0) {
-			categories.push(prodCategory);
-		}
-	}
-	return categories;
-};

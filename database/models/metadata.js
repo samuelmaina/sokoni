@@ -6,6 +6,7 @@ const {
 	throwErrorIfStringLengthNotInRange,
 	ensureIsMongooseId,
 } = require('./utils');
+const { removeElement } = require('../services/metadata');
 
 const { addElementIfNonExisting } = metadata;
 
@@ -23,7 +24,7 @@ const Metadata = new Schema({
 				minlength: category.minlength,
 				maxlength: category.maxlength,
 			},
-			adminIds: [Array],
+			adminIds: [ObjectId],
 		},
 	],
 	brands: [
@@ -56,6 +57,12 @@ methods.addCategory = async function (category) {
 	addElementIfNonExisting(field, categories, category);
 	return await this.save();
 };
+
+methods.removeCategory = async function (categoryName) {
+	const field = 'category';
+	this.categories = removeElement(field, this.categories, categoryName);
+	return await this.save();
+};
 methods.addBrand = async function (brand) {
 	const field = 'brand';
 	const brands = this.brands;
@@ -79,6 +86,31 @@ methods.getAllCategoriesForAdminId = function (adminId) {
 		if (adminIds.includes(adminId)) result.push(category.category);
 	}
 	return result;
+};
+
+methods.removeAdminIdFromCategory = async function (categoryName, adminId) {
+	const categories = this.categories;
+	if (categories.length < 1) {
+		return;
+	}
+	const index = categories.findIndex(cp => {
+		return cp.category === categoryName;
+	});
+	const category = categories[index];
+	const adminIds = category.adminIds;
+	const updatedAdminIds = adminIds.filter(cp => {
+		return cp.toString() !== adminId.toString();
+	});
+	if (updatedAdminIds.length < 1) {
+		const categoriesToSave = categories.filter(cp => {
+			return cp.category !== categoryName;
+		});
+		this.categories = categoriesToSave;
+		return await this.save();
+	}
+
+	category.adminIds = updatedAdminIds;
+	return await this.save();
 };
 methods.clear = async function () {
 	this.brands = [];

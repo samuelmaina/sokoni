@@ -43,14 +43,17 @@ const { methods } = userSchema;
 
 methods.addProductsToCart = async function (productId, quantity) {
 	const howMany = Number(quantity);
-	const cart = this.cart;
-	addProductIdToCart(cart, productId, howMany);
+	addProductIdToCart(this.cart, productId, howMany);
 	return await this.save();
 };
 
 methods.deleteProductIdFromCart = async function (prodId) {
 	const cart = this.cart;
-	const deletedQuantity = userServices.deleteProductIdfromCart(cart, prodId);
+	const { updated, deletedQuantity } = userServices.deleteProductIdfromCart(
+		cart,
+		prodId
+	);
+	this.cart = updated;
 	await this.save();
 	return deletedQuantity;
 };

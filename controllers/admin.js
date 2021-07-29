@@ -188,7 +188,6 @@ exports.getCategoryProducts = async (req, res, next) => {
 
 exports.deleteProduct = async (req, res, next) => {
 	try {
-		console.log('reached this route');
 		const flash = new Flash(req, res);
 		const page = req.body.page;
 		const adminId = returnAdminIdIfAdminIsInSession(req);

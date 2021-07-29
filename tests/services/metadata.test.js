@@ -1,4 +1,7 @@
-const { addElementIfNonExisting } = require('../../database/services/metadata');
+const {
+	addElementIfNonExisting,
+	removeElement,
+} = require('../../database/services/metadata');
 const { generateMongooseId } = require('../utils/generalUtils/utils');
 const { ensureArrayContains, verifyEqual } = require('../utils/testsUtils');
 
@@ -64,4 +67,28 @@ describe('should be able to add element to arr', () => {
 		ensureArrayContains(adminIds, category1.adminId);
 		ensureArrayContains(adminIds, category1DifferentAdmin.adminId);
 	});
+});
+
+describe('should remove an element', () => {
+	const field = 'category';
+	const category1 = {
+		category: 'category 1',
+		adminId: generateMongooseId(),
+	};
+	const category2 = {
+		category: 'category 2',
+		adminId: generateMongooseId(),
+	};
+	const category3 = {
+		category: 'category 3',
+		adminId: generateMongooseId(),
+	};
+
+	const arr = [];
+
+	addElementIfNonExisting(field, arr, category1);
+	addElementIfNonExisting(field, arr, category2);
+	addElementIfNonExisting(field, arr, category3);
+	const updated = removeElement(field, arr, category1.category);
+	verifyEqual(updated.length, 2);
 });

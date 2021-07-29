@@ -3,6 +3,7 @@ const { Product, Metadata } = require('../../../database/models');
 const {
 	createTestProducts,
 	clearDb,
+	clearModel,
 } = require('../../utils/generalUtils/database');
 const {
 	generatePerfectProductData,
@@ -20,6 +21,7 @@ const {
 	verifyIDsAreEqual,
 	ensureResolvesToNull,
 	verifyResolvesWithData,
+	verifyNull,
 } = require('../../utils/testsUtils');
 
 const {
@@ -35,6 +37,7 @@ const {
 	ensureMetadataIsAdded,
 	ensureHasValidSellingPrice,
 	ensureProductsHaveAdminId,
+	getSingleton,
 } = require('./utils');
 
 const prodRanges = ranges.product;
@@ -121,7 +124,7 @@ module.exports = () => {
 			await expect(Product.findProductsForPage(1)).resolves.toBeNull();
 		});
 		describe('NonEmpty db', () => {
-			const TRIALS = 20;
+			const TRIALS = PRODUCTS_PER_PAGE * 1.5;
 			let adminIds;
 			beforeAll(async () => {
 				//an admin will have many products, hence the
@@ -133,10 +136,26 @@ module.exports = () => {
 			afterAll(async () => {
 				await clearDb();
 			});
+
+			it(' throws when page is non-numeric', async () => {
+				const err = 'Page must be a positive int.';
+				const page = 'text';
+				verifyRejectsWithError(async () => {
+					await Product.findProductsForPage(page);
+				}, err);
+			});
+
 			it('returns products for first page ', async () => {
 				const first = 1;
 				const productData = await Product.findProductsForPage(first);
 				validateDisplayData(productData, first);
+			});
+			it('returns products for second page ', async () => {
+				const second = 2;
+				const productData = await Product.findProductsForPage(second);
+				const { products, paginationData } = productData;
+				verifyEqual(products.length, PRODUCTS_PER_PAGE * 0.5);
+				validateDisplayData(productData, second);
 			});
 		});
 	});
@@ -168,6 +187,7 @@ module.exports = () => {
 			verifyEqual(categories.length, 0);
 		});
 		describe('non Empty db', () => {
+			let product;
 			const example = {
 				category: 'category 1',
 				adminId,
@@ -176,7 +196,7 @@ module.exports = () => {
 				const productData = generatePerfectProductData();
 				productData.category = example.category;
 				productData.adminId = adminId;
-				await createOne(productData);
+				product = await createOne(productData);
 			}, MAX_SETUP_TIME);
 			afterAll(async () => {
 				await clearDb();
@@ -190,13 +210,13 @@ module.exports = () => {
 
 	describe('findCategoryProductsForAdminIdAndPage', () => {
 		let adminId = generateMongooseId();
-		it('returns empty array on empty db', async () => {
+		it('returns null array on empty db', async () => {
 			const page = 1;
 			const retrieved = await Product.findCategoryProductsForAdminIdAndPage(
 				adminId,
 				page
 			);
-			verifyEqual(retrieved.products.length, 0);
+			verifyNull(retrieved);
 		});
 		describe('non empty db', () => {
 			afterEach(async () => {
@@ -254,6 +274,24 @@ module.exports = () => {
 					'hasNextPage',
 					true
 				);
+			});
+			it('should delete adminId from category if the adminId does not have products in the category.', async () => {
+				const testCategory = 'category 1';
+				const product1 = generatePerfectProductData();
+				product1.adminId = adminId;
+				product1.category = testCategory;
+				const created = await Product.createOne(product1);
+				created.category = 'somecategory';
+				await created.save();
+
+				const page = 1;
+				await Product.findCategoryProductsForAdminIdAndPage(
+					adminId,
+					testCategory,
+					page
+				);
+				const metadata = await getSingleton();
+				verifyEqual(metadata.categories.length, 0);
 			});
 		});
 	});

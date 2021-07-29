@@ -1,4 +1,4 @@
-// const { TokenGenerator, User, Admin } = require('../../database/models');
+// const { TokenGenerator } = require('../../database/models');
 
 // const {
 // 	startApp,
@@ -12,7 +12,7 @@
 
 // const { clearDb, createDocForType, confirmPassword, fetchByIdForType } =
 // 	require('../utils/generalUtils').database;
-// const { Auth, session, generalUtils } = require('./utils');
+// const { Auth, generalUtils } = require('./utils');
 
 // const { ensureHasTitleAndError, ensureHasTitleAndInfo, ensureHasTitle } =
 // 	generalUtils;
@@ -36,7 +36,7 @@
 // 		page = await new Auth(getNewDriverInstance());
 // 	}, MAX_SETUP_TIME);
 // 	afterAll(async () => {
-// 		await session.clearSessions();
+// 		await generalUtils.clearSessions();
 // 		await page.close();
 // 		await clearDb();
 // 		await closeApp();
@@ -137,7 +137,7 @@
 // 		await createDocForType(type, data);
 // 	});
 // 	afterEach(async () => {
-// 		await session.clearSessions();
+// 		await generalUtils.clearSessions();
 // 		await clearDb();
 // 	});
 // 	it(

@@ -1,6 +1,14 @@
 exports.verifyEqual = (actual, expected) => {
 	expect(actual).toEqual(expected);
 };
+
+exports.ensureLessThanOrEqual = (less, greater) => {
+	expect(less).toBeLessThanOrEqual(greater);
+};
+
+exports.ensureGreaterThanOrEqual = (greater, less) => {
+	expect(greater).toBeGreaterThanOrEqual(less);
+};
 exports.ensureCloselyEqual = (actual, expected, delta) => {
 	expect(actual).toBeCloseTo(expected, delta);
 };
@@ -40,6 +48,11 @@ exports.verifyIDsAreEqual = (actualId, expectedId) => {
 };
 exports.ensureObjectHasKeyValuePair = (object, key, value) => {
 	expect(object).toHaveProperty(key, value);
+};
+exports.ensureObjectHasProps = (object, props) => {
+	for (const prop of props) {
+		expect(object).toHaveProperty(prop);
+	}
 };
 
 exports.verifyNull = object => {

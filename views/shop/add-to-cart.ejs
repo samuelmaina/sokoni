@@ -12,11 +12,12 @@
             </div>
         </div>
         <form action="/cart" method="post">
-            <label for="quantity"
-                style="font-size: 4rem;font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;"></label>Quantity</label>
-            <input class="btn" type="number" name="quantity" value="<%= previousData.quantity%>">
             <%- include('../includes/csurf.ejs') %>
-            <input class='push-to-cart-btn btn' type="submit" value="Push To Cart">
+            <div class="form-control">
+                <label for="quantity">Quantity</label>
+            <input type="number" name="quantity" value="<%= previousData.quantity%>">
+            </div>
+            <button class='btn' id="push-to-cart-btn" type="submit" >Push To Cart</button>
             <input type="hidden" value="<%=page %>" name="page">
             <input type="hidden" name="productId" value="<%= product.id %>">
         </form>

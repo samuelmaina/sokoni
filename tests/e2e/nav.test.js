@@ -8,10 +8,9 @@
 // const { clearDb } = require('../utils/generalUtils').database;
 
 // const { Auth, utilLogin, generalUtils } = require('./utils');
+// const { clearSessions } = generalUtils;
 // const { ensureHasTitleAfterClickingLink, ensureHasTitleAfterClickingId } =
 // 	generalUtils;
-
-// const { clearSessions } = require('./utils/session');
 
 // const TEST_MAX_TIME = 25000;
 
@@ -54,7 +53,7 @@
 // 		it(
 // 			'SignUp',
 // 			async () => {
-// 				const link = 'Sign Up';
+// 				const link = 'User Sign Up';
 // 				const title = 'User Sign Up';
 // 				await ensureHasTitleAfterClickingLink(page, link, title);
 // 			},
@@ -64,7 +63,7 @@
 // 		it(
 // 			'Login',
 // 			async () => {
-// 				const link = 'Login';
+// 				const link = 'User Login';
 // 				const title = 'User Log In';
 // 				await ensureHasTitleAfterClickingLink(page, link, title);
 // 			},

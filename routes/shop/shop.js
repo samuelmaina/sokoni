@@ -7,18 +7,14 @@ const { productQuery } = require('../../validators');
 
 const router = express.Router();
 
-const { pageV, productQueryValidator } = productQuery;
+const { pageV, categoryV, productQueryValidator } = productQuery;
 
 router.get('/', shop.getIndex);
 
 router.get('/products', pageV, shop.getProducts);
 
 router.get('/product/:productId', shop.getProduct);
-router.get(
-	'/category/:category',
-	productQueryValidator,
-	shop.getProductsPerCategory
-);
+router.get('/category/:category', categoryV, shop.getProductsPerCategory);
 router.post('/add-to-cart', ensureUserIsAuth, shop.getAddToCart);
 router
 	.route('/cart')

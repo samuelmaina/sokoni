@@ -1,8 +1,9 @@
-<div class="btn " style="background-color:#19e6a1;">
-        Categories
-</div>
-<ul class="cat-section"> 
-    <% for (let category of categories) { %>
-        <li><a href="/category/<%=category%>?page=<%=productsData.paginationData.currentPage%>"> <%=category%></a></li>
-    <% } %>
-</ul>
+
+     <%if(categories&&categories.length>0){%>
+        <div class="btn " style="background-color:#19e6a1;">Categories </div>
+        <ul class="cat-section"> 
+            <% for (let category of categories) { %>
+                <li><a href="/category/<%=category%>"> <%=category%></a></li>
+            <% } %>
+        </ul>
+     <% }%>

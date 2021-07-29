@@ -13,6 +13,7 @@ const { productQuantityValidator, cartTotalValidator, pipeInvoicePdf } =
 exports.getIndex = async (req, res, next) => {
 	try {
 		const redirectUrl = '/';
+		const page = +req.query.page || 1;
 		const flash = new Flash(req, res);
 		const validationErrors = validationResults(req);
 		if (validationErrors) {
@@ -21,7 +22,7 @@ exports.getIndex = async (req, res, next) => {
 		const categories = await Product.findCategories();
 		//for now the home page will contain some few products
 		//other logic may be added later.
-		const productsData = await Product.findProductsForPage(1);
+		const productsData = await Product.findProductsForPage(page);
 		new Renderer(res)
 			.templatePath('shop/index')
 			.pageTitle('SM Online Shop')
@@ -35,6 +36,33 @@ exports.getIndex = async (req, res, next) => {
 		next(error);
 	}
 };
+
+exports.getProducts = async (req, res, next) => {
+	try {
+		const redirectUrl = '/products/?page=1';
+		const flash = new Flash(req, res);
+		const validationErrors = validationResults(req);
+		if (validationErrors) {
+			return flash.appendError(validationErrors).redirect(redirectUrl);
+		}
+		const page = +req.query.page || 1;
+		const categories = await Product.findCategories();
+		const productsData = await Product.findProductsForPage(page);
+
+		new Renderer(res)
+			.templatePath('shop/products-list')
+			.pageTitle('Products')
+			.activePath('/products')
+			.appendDataToResBody({
+				productsData,
+				categories,
+			})
+			.render();
+	} catch (err) {
+		next(err);
+	}
+};
+
 exports.getProductsPerCategory = async (req, res, next) => {
 	try {
 		const redirectUrl = '/products?page=1';
@@ -60,31 +88,6 @@ exports.getProductsPerCategory = async (req, res, next) => {
 			.render();
 	} catch (error) {
 		next(error);
-	}
-};
-exports.getProducts = async (req, res, next) => {
-	try {
-		const redirectUrl = '/products/?page=1';
-		const flash = new Flash(req, res);
-		const validationErrors = validationResults(req);
-		if (validationErrors) {
-			return flash.appendError(validationErrors).redirect(redirectUrl);
-		}
-		const page = +req.query.page || 1;
-		const categories = await Product.findCategories();
-		const productsData = await Product.findProductsForPage(page);
-
-		new Renderer(res)
-			.templatePath('shop/products-list')
-			.pageTitle('Products')
-			.activePath('/products')
-			.appendDataToResBody({
-				productsData,
-				categories,
-			})
-			.render();
-	} catch (err) {
-		next(err);
 	}
 };
 
@@ -155,7 +158,9 @@ exports.postToCart = async (req, res, next) => {
 		if (balanceError) return renderError(balanceError);
 		req.session.total += productTotal;
 		await req.user.decrementBalance(productTotal);
+
 		await req.user.addProductsToCart(productId, quantity);
+
 		await product.decrementQuantity(quantity);
 		new Flash(req, res)
 			.appendInfo('Product successfully added to cart.')
@@ -201,9 +206,7 @@ exports.postCartDeleteProduct = async (req, res, next) => {
 		//increase the quantity earlier deleted since the product(s) were rejected
 		await product.incrementQuantity(deletedQuantity);
 		// refund the customer
-		await req.user.incrementAccountBalance(
-			deletedQuantity * product.sellingPrice
-		);
+		await req.user.incrementBalance(deletedQuantity * product.sellingPrice);
 	} catch (error) {
 		next(error);
 	}

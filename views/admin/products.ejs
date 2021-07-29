@@ -3,15 +3,17 @@
 </head>
 <body>
     <%- include('../includes/navigation.ejs') %>
-    <% if (productsData) { %>
-         <div class="btn " style="background-color:rgba(9, 218, 165, 0.733);">
+
+    <div class="btn " style="background-color:rgba(9, 218, 165, 0.733);">
         Categories
     </div>
     <ul class="cat-section"> 
     <% for (let category of categories) { %>
-        <li><a href="/admin/category/<%=category%>?page=<%=productsData.paginationData.currentPage%>"> <%=category%></a></li>
+        <li><a href="/admin/category/<%=category%>?page=1"> <%=category%></a></li>
     <% } %>
     </ul>
+    <% if (productsData) { %>
+         
    
     <div class="grid">
         <% for (let product of productsData.products) { %>

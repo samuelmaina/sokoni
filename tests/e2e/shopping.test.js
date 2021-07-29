@@ -41,6 +41,7 @@
 // 	clearModelsInProductTests,
 // 	ensureHasTitleAndError,
 // 	includeTearDowns,
+// 	clearSessions,
 // } = require('./utils/generalUtils');
 // const {
 // 	verifyEqual,
@@ -50,7 +51,7 @@
 // 	verifyFalsy,
 // } = require('../utils/testsUtils');
 // const { ranges } = require('../models/utils');
-// const { addProductIdToCart } = require('../../database/services/user');
+// const { logout } = require('./utils/authUtils');
 
 // const adminId = generateMongooseId();
 
@@ -62,36 +63,93 @@
 
 // const PORT = TEST_PORT;
 // const base = `http://localhost:${PORT}`;
-// const homePage = `${base}/`;
+
+// const productPage = base + '/products?page=1';
 
 // const data = {
 // 	name: 'John Doe ',
 // 	email: 'johndoe@email.com',
 // 	password: 'Pa55word?',
 // };
+
+// const userLoginUrl = `${base}/auth/user/log-in`;
 // describe('logged in user can be able to shop', () => {
 // 	let user;
 // 	let products = [];
 // 	beforeAll(async () => {
 // 		await startApp(PORT);
 // 		page = new Page(getNewDriverInstance());
-// 		const userLoginUrl = `${base}/auth/user/log-in`;
-// 		user = await utilLogin(page, userLoginUrl, data, 'user');
-// 		await ensureHasTitle(page, 'Products');
 // 	}, MAX_TEST_PERIOD);
 // 	afterAll(async () => {
-// 		await session.clearSessions();
+// 		await clearSessions();
 // 		await page.close();
 // 		await clearDb();
 // 		await closeApp();
 // 	});
 
 // 	beforeEach(async () => {
+// 		user = await utilLogin(page, userLoginUrl, data, 'user');
+// 		await ensureHasTitle(page, 'Products');
 // 		products = await createTestProducts([adminId], TRIALS);
-// 		await page.openUrl(base + '/products?page=1');
+// 		await page.openUrl(productPage);
 // 	}, MAX_TEST_PERIOD);
 
-// 	afterEach(clearModelsInProductTests);
+// 	afterEach(async () => {
+// 		await logout(page);
+// 		await clearDb();
+// 	}, MAX_TEST_PERIOD);
+
+// 	it.only('shold be able to view products regardless of their category, at first entry', async () => {
+// 		const noOfProducts = 4;
+// 		//want to create a set of new products.
+// 		await clearDb();
+// 		products = await createTestProducts([adminId], noOfProducts);
+// 		await page.openUrl(productPage);
+// 		await ensureNumberOfProductsRenderedAre(noOfProducts);
+// 	});
+
+// 	describe('Movement to other pages', () => {
+// 		describe('Category', () => {
+// 			it.only(
+// 				'should click category links',
+// 				async () => {
+// 					const categories = ['category 1', 'category 2'];
+// 					const noOfProducts = categories.length;
+// 					await clearDb();
+// 					products = await createTestProducts([adminId], noOfProducts);
+// 					await feedProductsWithTestCategories(products, categories);
+// 					for (const category of categories) {
+// 						//reload incase the there are errors.
+// 						await page.openUrl(productPage);
+// 						await page.clickLink(category);
+// 						//A category page should come with the category as the title.
+// 						await ensureHasTitle(page, category);
+// 						await ensureNumberOfProductsRenderedAre(1);
+// 					}
+// 				},
+// 				MAX_TEST_PERIOD
+// 			);
+// 			it(
+// 				'should refuse for invalid url params(should refuse when category is out of range)',
+// 				async () => {
+// 					const { maxlength, error } = ranges.product.category;
+// 					await page.openUrl(
+// 						`${base}/category/${generateStringSizeN(maxlength + 1)}?page=1`
+// 					);
+// 					await ensureHasTitleAndError(page, 'Products', error);
+// 				},
+// 				MAX_TEST_PERIOD
+// 			);
+// 		});
+// 		it(
+// 			'should click a pagination link ',
+// 			async () => {
+// 				await page.clickLink('1');
+// 				//the passing of this test is that it should not throw.
+// 			},
+// 			MAX_TEST_PERIOD
+// 		);
+// 	});
 
 // 	it(
 // 		'can add to cart',
@@ -102,47 +160,11 @@
 // 		MAX_TEST_PERIOD
 // 	);
 
-// 	describe('Category', () => {
-// 		it(
-// 			'should click category links',
-// 			async () => {
-// 				const categories = ['category 1', 'category 2', 'category 3'];
-// 				await feedProductsWithTestCategories(products, categories);
-// 				for (const category of categories) {
-// 					//reload incase the there are errors.
-// 					await page.openUrl(homePage);
-// 					await page.clickLink(category);
-// 					const title = await page.getTitle();
-// 					expect(title).toEqual(category);
-// 				}
-// 			},
-// 			MAX_TEST_PERIOD
-// 		);
-// 		it(
-// 			'should refuse for invalid url params(should refuse when category is out of range)',
-// 			async () => {
-// 				const { maxlength, error } = ranges.product.category;
-// 				await page.openUrl(
-// 					`${base}/category/${generateStringSizeN(maxlength + 1)}?page=1`
-// 				);
-// 				await ensureHasTitleAndError(page, 'Products', error);
-// 			},
-// 			MAX_TEST_PERIOD
-// 		);
-// 	});
-// 	it(
-// 		'should click a pagination link ',
-// 		async () => {
-// 			await page.clickLink('1');
-// 			//the passing of this test is that it should not throw.
-// 		},
-// 		MAX_TEST_PERIOD
-// 	);
-
 // 	test(
 // 		'should be able to click Continue Shopping',
 // 		async () => {
 // 			await clickAddToCart();
+// 			await page.hold(50);
 // 			await page.clickLink('Continue Shopping');
 // 			await ensureHasTitle(page, 'Products');
 // 		},
@@ -177,12 +199,12 @@
 // 						quantity,
 // 						buyingPrice
 // 					);
-// 					//reload since the product in the database have changed.
-// 					await page.openUrl(homePage);
+
+// 					await page.openUrl(productPage);
 // 					await clickAddToCart();
 // 					const addedQuantity = 3;
 // 					await page.enterDataByName('quantity', addedQuantity);
-// 					await page.clickByClassName('push-to-cart-btn');
+// 					await clickPushToCart();
 // 					await ensureHasTitleAndInfo(
 // 						page,
 // 						'Products',
@@ -207,19 +229,28 @@
 // 				'should be able to delete from cart',
 // 				async () => {
 // 					const balance = (await User.findById(user.id)).balance;
-// 					const trials = 3;
-// 					await addTRIALProductsToCart(user, products, trials);
+// 					const quantity = 4,
+// 						buyingPrice = 200.3;
+// 					const product = await generateOneProductWithQuantityAndBuyingPrice(
+// 						quantity,
+// 						buyingPrice
+// 					);
+// 					await page.openUrl(productPage);
+// 					await clickAddToCart();
+// 					await page.enterDataByName('quantity', quantity);
+// 					await clickPushToCart();
 // 					await page.clickLink('Cart');
 // 					await page.clickByClassName('delete');
 // 					await ensureHasTitle(page, 'Your Cart');
 // 					const savedUser = await User.findById(user.id);
-// 					verifyEqual(savedUser.cart.length, trials - 1);
-// 					//balance is not changed
+// 					//ensure that the cart is cleared.
+// 					verifyEqual(savedUser.cart.length, 0);
+// 					//ensure that money is refunded
 // 					const newBalance = savedUser.balance;
 // 					verifyEqual(newBalance, balance);
-// 					//ensure quantity is also reduced
+// 					//ensure quantity is returned.
 // 					const savedProduct = await Product.findById(product.id);
-// 					verifyEqual(savedProduct.quantity, trial - 1);
+// 					verifyEqual(savedProduct.quantity, quantity);
 // 				},
 // 				MAX_TEST_PERIOD
 // 			);
@@ -231,10 +262,10 @@
 // 					const presentQuantity = product.quantity;
 // 					await Product.createOne(product);
 // 					//reload since the product in the database have changed.
-// 					await page.openUrl(homePage);
+// 					await page.openUrl(productPage);
 // 					await clickAddToCart();
 // 					await page.enterDataByName('quantity', presentQuantity + 1);
-// 					await page.clickByClassName('push-to-cart-btn');
+// 					await clickPushToCart();
 // 					await ensureHasTitleAndError(
 // 						page,
 // 						'Add To Cart',
@@ -266,10 +297,10 @@
 // 					savedUser.balance = newBalance;
 // 					await savedUser.save();
 // 					for (let i = 0; i < 2; i++) {
-// 						await page.openUrl(homePage);
+// 						await page.openUrl(productPage);
 // 						await clickAddToCart();
 // 						await page.enterDataByName('quantity', 3);
-// 						await page.clickByClassName('push-to-cart-btn');
+// 						await clickPushToCart();
 // 					}
 
 // 					await ensureHasTitleAndError(
@@ -322,8 +353,9 @@
 // 				const data = await createOrderData();
 // 				await Order.createOne(data);
 // 				await page.openUrl(`${base}/orders`);
-// 				await page.hold(400);
 // 				await page.clickLink('Download Invoice');
+// 				//reopen the product
+// 				await page.openUrl(productPage);
 // 			},
 // 			MAX_TEST_PERIOD
 // 		);
@@ -345,9 +377,16 @@
 // 		}
 // 	});
 
+// 	async function ensureNumberOfProductsRenderedAre(expected) {
+// 		const articles = await page.getELements('article');
+// 		verifyEqual(articles.length, expected);
+// 	}
+
 // 	async function clickAddToCart() {
 // 		await page.clickByClassName('add-to-cart-btn');
-// 		await page.hold(400);
+// 	}
+// 	async function clickPushToCart() {
+// 		await page.clickById('push-to-cart-btn');
 // 	}
 
 // 	async function ensureUserCartIsCleared() {
