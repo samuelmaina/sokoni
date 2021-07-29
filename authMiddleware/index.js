@@ -1,2 +1,2 @@
-exports.ensureUserIsAuth = require("./ensureUserIsAuth");
-exports.ensureAdminIsAuth = require("./ensureAdminIsAuth");
+exports.ensureUserIsAuth = require('./ensureUserIsAuth');
+exports.ensureAdminIsAuth = require('./ensureAdminIsAuth');
