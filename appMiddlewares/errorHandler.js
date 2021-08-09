@@ -1,9 +1,11 @@
 module.exports = app => {
 	const errorHandlerMiddleware = (error, req, res, next) => {
-		console.error(error);
 		let statusCode = error.httpStatusCode || 500;
 		//the setResLocals is not called so
 		//we need to set them manually.
+
+		console.error(error);
+
 		res.locals.csrfToken = req.csrfToken();
 		res.locals.isUserLoggedIn = req.session.isUserLoggedIn;
 		res.locals.isAdminLoggedIn = req.session.isAdminLoggedIn;
