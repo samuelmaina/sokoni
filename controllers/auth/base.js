@@ -57,7 +57,7 @@ class Auth {
 				from: EMAIL,
 				to: email,
 				subject: 'Welcome to SM Online Shop',
-				html: `<h1> Password Rest</h1>
+				html: `<h3> Welcome ${name}</h3>
 						<p> Thanks for joining SM Online Shop. The online shop you can trust.</p>
 						 `,
 			};
