@@ -18,7 +18,7 @@ const credentials = {
 	password: 'PassWord55?',
 };
 
-describe('User test', () => {
+describe.skip('User test', () => {
 	includeSetUpAndTearDown();
 	describe('Auth tests', () => {
 		baseTest(User);

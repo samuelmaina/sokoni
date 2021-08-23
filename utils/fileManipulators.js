@@ -1,6 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 
+exports.getImageUrl = file => {
+	return this.resolvePath(file.path + 'resized' + file.extension);
+};
+
 exports.resolvePath = pathString => {
 	return path.resolve(pathString);
 };

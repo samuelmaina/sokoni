@@ -2,19 +2,9 @@
 <link rel="stylesheet" href="/css/product.css">
 </head>
 <body>
-    <%- include('../includes/navigation.ejs') %>
-
-    <div class="btn " style="background-color:rgba(9, 218, 165, 0.733);">
-        Categories
-    </div>
-    <ul class="cat-section"> 
-    <% for (let category of categories) { %>
-        <li><a href="/admin/category/<%=category%>?page=1"> <%=category%></a></li>
-    <% } %>
-    </ul>
+    <%- include('../includes/admin-nav.ejs') %>
+    <%- include('../includes/categories.ejs',{path:'admin/category'}) %>
     <% if (productsData) { %>
-         
-   
     <div class="grid">
         <% for (let product of productsData.products) { %>
         <article class="card product-item">

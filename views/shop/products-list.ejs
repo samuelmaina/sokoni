@@ -1,8 +1,8 @@
 <%- include('../includes/head.ejs') %>
     <link rel="stylesheet" href="/css/product.css">
     </head>
-    <%- include('../includes/navigation.ejs') %>
-    <%- include('../includes/categories.ejs') %>
+    <%- include('../includes/user-nav.ejs') %>
+    <%- include('../includes/categories',{path:'category'}) %>
     <% if (productsData) { %>
             <div class="grid">
                 <% for (let product of productsData.products) { %>

@@ -1,27 +1,32 @@
 <%- include('../includes/head.ejs') %>
-<link rel="stylesheet" href="/css/orders.css">
+<link rel="stylesheet" href="/css/product.css">
 </head>
 
 <body>
-    <%- include('../includes/navigation.ejs') %>
-    <div class="card orders__item">
-        <div class="grid">
+    <%- include('../includes/user-nav.ejs') %>
+    <div class="form grid orders__item">
+        <div class="container">
             <div>
                 <h1 class="order_header" style="font-size: 25px;"><%= product.title %></h1><br>
                 <img src="<%= product.imageUrl %>" alt=" <%= product.title %>" style="width:20rem;height:25rem;">
             </div>
+           
+
+            <div class="card__actions">
+                <form action="/cart" method="post">
+                    <%- include('../includes/csurf.ejs') %>
+                    <span class="form-control">
+                        <label for="quantity">Quantity</label>
+                    <input type="number" name="quantity" value="<%= previousData.quantity%>">
+                    </span>
+                    <button class='btn' id="push-to-cart-btn" type="submit" >Push To Cart</button>
+                    <input type="hidden" value="<%=page %>" name="page">
+                    <input type="hidden" name="productId" value="<%= product.id %>">
+                </form>
+                <a class="btn" href="/products/?page=<%=page%>">Continue Shopping</a>
+            </div>            
         </div>
-        <form action="/cart" method="post">
-            <%- include('../includes/csurf.ejs') %>
-            <div class="form-control">
-                <label for="quantity">Quantity</label>
-            <input type="number" name="quantity" value="<%= previousData.quantity%>">
-            </div>
-            <button class='btn' id="push-to-cart-btn" type="submit" >Push To Cart</button>
-            <input type="hidden" value="<%=page %>" name="page">
-            <input type="hidden" name="productId" value="<%= product.id %>">
-        </form>
-        <a class="btn" href="/products/?page=<%=page%>">Continue Shopping</a>
+        
     </div>
     </main>
     <script src="/js/calculator.js"></script>

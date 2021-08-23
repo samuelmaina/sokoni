@@ -1,5 +1,5 @@
-<!-- link should be not be viewed by an admin -->
-<% if (!isAdminLoggedIn) { %>
+<!-- link should be not be viewed by a user -->
+<% if (!isUserLoggedIn) { %>
 <li class="mobile-nav__item">
     <a class="<%= path === '/' ? 'active' : '' %>" href="/">Shop</a>
 </li>

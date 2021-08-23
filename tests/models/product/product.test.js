@@ -1,9 +1,9 @@
-const { includeSetUpAndTearDown } = require('../utils');
-const statics = require('./statics');
-const methods = require('./methods');
+const { includeSetUpAndTearDown } = require("../utils");
+const statics = require("./statics");
+const methods = require("./methods");
 
-describe('--Product', () => {
-	includeSetUpAndTearDown();
-	describe('Statics', statics);
-	describe('Methods', methods);
+describe.skip("--Product", () => {
+  includeSetUpAndTearDown();
+  describe("Statics", statics);
+  describe("Methods", methods);
 });

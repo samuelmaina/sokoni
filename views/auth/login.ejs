@@ -2,9 +2,8 @@
 <link rel="stylesheet" href="/css/forms.css">
 <link rel="stylesheet" href="/css/auth.css">
 </head>
-
+<%- include('../includes/error-info.ejs') %>
 <body>
-    <%- include('../includes/navigation.ejs') %>
     <div class="form grid">
         <article class="card">
             <form class="login-form" action="<%= postPath%>" method="POST">
@@ -14,7 +13,10 @@
                 <input class="btn" id="login" type="submit" value="Login">
             </form>
             <div class='centered'>
-                <a id='reset' href="reset">Reset Password</a>
+                Forgot Password ?  <a id='reset' href="reset" style="color: rgb(4, 4, 167);">  Reset Password</a>
+            </div>
+            <div class='centered'>
+                 Does not Have an Account ?<a id='sign-up' href="sign-up" style="color: rgb(231, 152, 4);">  Sign Up</a>
             </div>
         </article>
     </div>

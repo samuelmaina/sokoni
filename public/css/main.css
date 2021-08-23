@@ -298,8 +298,9 @@ form {
 
 .card__image img {
 	width: 100%;
-	object-fit: cover;
 	transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	margin-bottom: 0.5rem;
+	margin-top: 0.5rem;
 }
 
 .card__actions {
@@ -359,7 +360,6 @@ form {
 	background: red;
 	color: white;
 }
-
 @media (min-width: 768px) {
 	.main-header__nav {
 		display: flex;
