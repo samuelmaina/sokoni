@@ -6,6 +6,7 @@ const {
 } = require("../utils");
 
 const { Product, AdminSales, Metadata } = require("../database/models");
+const { notImage } = require("../config/constraints");
 
 //when admins don't interact with page for
 //too long,the session is expired.reading admin._id from it will throw an error.
@@ -38,12 +39,20 @@ exports.getAddProduct = (req, res, next) => {
 
 exports.postAddProduct = async (req, res, next) => {
   try {
-    const flash = new Flash(req, res).appendPreviousData(req.body);
-    let image = req.file;
+    const { body, file, sizeError, isNotImage } = req;
+    const flash = new Flash(req, res).appendPreviousData(body);
+    const redirectUrl = "add-product";
+    let image = file;
+    if (sizeError) {
+      return flash.appendError(sizeError).redirect(redirectUrl);
+    }
+    if (isNotImage) {
+      return flash.appendError(notImage.error).redirect(redirectUrl);
+    }
     const validationErrors = validationResults(req);
 
     if (validationErrors) {
-      return flash.appendError(validationErrors).redirect("add-product");
+      return flash.appendError(validationErrors).redirect(redirectUrl);
     }
 
     if (!image) {
@@ -94,9 +103,10 @@ exports.getEditProduct = async (req, res, next) => {
 
 exports.postEditProduct = async (req, res, next) => {
   try {
-    const { page, id } = req.body;
+    const { body, file, sizeError, isNotImage } = req;
+    const { page, id } = body;
     const editMode = true;
-    let image = req.file;
+    let image = file;
 
     const renderer = new Renderer(res)
       .templatePath("admin/edit-product")
@@ -108,12 +118,20 @@ exports.postEditProduct = async (req, res, next) => {
         editing: editMode,
         page,
       });
-    const productData = req.body;
+    const productData = body;
 
     const adminId = returnAdminIdIfAdminIsInSession(req);
     if (image) {
       productData.imageUrl = image.path;
     }
+
+    if (sizeError) {
+      return renderer.appendError(sizeError).render();
+    }
+    if (isNotImage) {
+      return renderer.appendError(notImage.error).render();
+    }
+
     const validationErrors = validationResults(req);
     if (validationErrors) {
       return renderer.appendError(validationErrors).render();

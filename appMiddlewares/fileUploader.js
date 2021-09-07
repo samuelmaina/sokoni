@@ -1,7 +1,10 @@
 const multer = require("multer");
-const fs = require("fs");
-const sharp = require("sharp");
+
 const path = require("path");
+const { maxImageSize } = require("../config/constraints");
+
+const { lengthInBytes, error } = maxImageSize;
+
 const fileFieldName = "image";
 
 function determineWhereToSave() {
@@ -17,7 +20,6 @@ const fileStorage = multer.diskStorage({
     cb(null, determineWhereToSave());
   },
   filename: (req, file, cb) => {
-    // generate random numbers to make file names unique
     cb(
       null,
       file.fieldname + "-" + Date.now() + path.extname(file.originalname)
@@ -30,20 +32,25 @@ const filter = (req, file, cb) => {
   if (isImage(fileType)) {
     cb(null, true);
   } else {
+    req.isNotImage = true;
     cb(null, false);
   }
 };
-const isImage = (fileType) => {
-  return (
-    fileType === "image/png" ||
-    fileType === "image/jpg" ||
-    fileType === "image/jpeg"
-  );
+const isImage = (type) => {
+  return type === "image/png" || type === "image/jpg" || type === "image/jpeg";
 };
-const multerSettings = { storage: fileStorage, fileFilter: filter };
+const multerSettings = {
+  storage: fileStorage,
+  fileFilter: filter,
+  limits: {
+    files: 1,
+    fileSize: lengthInBytes,
+  },
+};
 /**
  * @returns - returns an image uploader for express app
  */
+
 const fileUploader = multer(multerSettings).single(fileFieldName);
 
 // const imageResizer = async (req, res, next) => {
@@ -65,7 +72,14 @@ const fileUploader = multer(multerSettings).single(fileFieldName);
 // 		next(error);
 // 	}
 // };
-module.exports = (app) => {
-  app.use(fileUploader);
-  // app.use(imageResizer);
+
+module.exports = (req, res, next) => {
+  fileUploader(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      req.sizeError = error;
+    } else if (err) {
+      return next(err);
+    }
+    next();
+  });
 };

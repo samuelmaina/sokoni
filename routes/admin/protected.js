@@ -1,5 +1,7 @@
 const express = require("express");
 
+const fileUploader = require("../../appMiddlewares/fileUploader");
+
 const { admin } = require("../../controllers");
 
 const { product, productQuery } = require("../../validators");
@@ -13,7 +15,7 @@ const router = express.Router();
 router
   .route("/add-product")
   .get(controller.getAddProduct)
-  .post(productValidtor, controller.postAddProduct);
+  .post(fileUploader, productValidtor, controller.postAddProduct);
 
 router.get(
   "/edit-product/:id",
@@ -22,6 +24,7 @@ router.get(
 );
 router.post(
   "/edit-product",
+  fileUploader,
   productValidtor,
   productQueryValidator,
   controller.postEditProduct

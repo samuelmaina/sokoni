@@ -1,7 +1,7 @@
 exports.viewEngineSetUp = require("./viewEngineSetUp");
 exports.renderStatic = require("./renderStatic");
 exports.bodyParser = require("./bodyParser");
-exports.fileUploader = require("./fileUploader");
+// exports.fileUploader = require("./fileUploader");
 exports.session = require("./sessionConnection");
 exports.csurf = require("./csurfMware");
 exports.compress = require("./compress");

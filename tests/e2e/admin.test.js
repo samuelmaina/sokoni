@@ -13,6 +13,7 @@
 //   generatePerfectProductData,
 //   returnObjectWithoutProp,
 //   generateStringSizeN,
+//   PRODUCT_PROPERTIES,
 // } = require("../utils/generalUtils/utils");
 // const {
 //   verifyEqual,
@@ -35,7 +36,7 @@
 //   clearModelsInProductTests,
 //   clearSessions,
 // } = require("./utils/generalUtils");
-// const { product } = require("../../config/constraints");
+// const { product, maxImageSize } = require("../../config/constraints");
 // const { Product, Metadata } = require("../../database/models");
 // const {
 //   createTestProducts,
@@ -72,16 +73,15 @@
 //   description: "The product was very good I  loved it.",
 // };
 
-// const invalidProduct = {
-//   title: "te",
-//   file: path.resolve("tests/data/images/199707738.jpg"),
-//   buyingPrice: 300.25,
-//   percentageProfit: 20,
-//   quantity: 200,
-//   brand: "The good Brand",
-//   category: "clothing",
-//   description: "The product was very good I  loved it.",
-// };
+// const veryLargeImage = { ...validProduct };
+// veryLargeImage.file = path.resolve("tests/data/images/too-large.jpg");
+
+// const invalidFieldLength = { ...validProduct };
+// invalidFieldLength.title = "te";
+
+// const nonImage = { ...validProduct };
+// nonImage.file = path.resolve("tests/data/images/non_image.pdf");
+
 // let admin;
 
 // const productsUrl = `${base}/admin/products`;
@@ -159,15 +159,15 @@
 //       productData = { ...validProduct };
 //       productData.buyingPrice = "";
 //       errorMessage = "buyingPrice must be a number.";
-//       runInvalidProductTest(
+//       runinvalidFieldLengthTest(
 //         "reject if  data is missing",
 //         productData,
 //         errorMessage
 //       );
 
-//       runInvalidProductTest(
+//       runinvalidFieldLengthTest(
 //         "should refuse if the product data is incorrect ",
-//         invalidProduct,
+//         invalidFieldLength,
 //         product.title.error
 //       );
 
@@ -193,7 +193,30 @@
 //         MAX_TESTING_TIME
 //       );
 
-//       function runInvalidProductTest(testMessage, product, errorMessage) {
+//       it(
+//         "should refuse when an admin enters a larger image than the allowed size.",
+//         async () => {
+//           await enterProductData(veryLargeImage);
+//           await ensureHasTitleAndError(page, "Add Product", maxImageSize.error);
+//           await ensureProductDoesNotExistUsingItsTitle(validProduct.title);
+//         },
+//         MAX_TESTING_TIME
+//       );
+//       it(
+//         "should refuse when selected file is not an image.",
+//         async () => {
+//           await enterProductData(nonImage);
+//           await ensureHasTitleAndError(
+//             page,
+//             "Add Product",
+//             `Selected file is not an image! Select an image less than 2 MB in size.`
+//           );
+//           await ensureProductDoesNotExistUsingItsTitle(validProduct.title);
+//         },
+//         MAX_TESTING_TIME
+//       );
+
+//       function runinvalidFieldLengthTest(testMessage, product, errorMessage) {
 //         it(
 //           testMessage,
 //           async () => {
@@ -225,7 +248,7 @@
 //             "Product updated successfully."
 //           );
 
-//           const update = await findProductByTitle(validProduct.title);
+//           const update = await findProductById(created.id);
 //           ensureObjectsHaveSameFields(update, validProduct, [
 //             "title",
 //             "description",
@@ -234,26 +257,72 @@
 //         MAX_TESTING_TIME
 //       );
 
+//       let productData;
+//       let errorMessage;
+//       productData = { ...validProduct };
+//       productData.buyingPrice = "";
+//       errorMessage = "buyingPrice must be a number.";
+//       runInvalidObjectDataTest(
+//         "reject if  data is missing",
+//         productData,
+//         errorMessage
+//       );
+
+//       runInvalidObjectDataTest(
+//         "should refuse if the product data is incorrect ",
+//         invalidFieldLength,
+//         product.title.error
+//       );
+
 //       it(
-//         "should  refuse for invalid data",
+//         "should refuse when an admin enters a larger image than the allowed size.",
 //         async () => {
-//           await page.hold(400);
-//           await enterProductData(invalidProduct);
+//           await enterProductData(veryLargeImage);
 //           await ensureHasTitleAndError(
 //             page,
 //             "Edit Product",
-//             product.title.error
+//             maxImageSize.error
 //           );
-//           const retrieved = await Product.findById(created.id);
-//           //ensure product data is not updated
-//           ensureObjectsHaveSameFields(retrieved, created, [
-//             "title",
-//             "description",
-//             "buyingPrice",
-//           ]);
+//           await ensureProductNotChanged();
 //         },
 //         MAX_TESTING_TIME
 //       );
+//       it(
+//         "should refuse when selected file is not an image.",
+//         async () => {
+//           await enterProductData(nonImage);
+//           await ensureHasTitleAndError(
+//             page,
+//             "Edit Product",
+//             `Selected file is not an image! Select an image less than 2 MB in size.`
+//           );
+//           await ensureProductNotChanged();
+//         },
+//         MAX_TESTING_TIME
+//       );
+
+//       function runInvalidObjectDataTest(testMessage, product, errorMessage) {
+//         it(
+//           testMessage,
+//           async () => {
+//             await enterProductData(product);
+//             await ensureHasTitleAndError(page, "Edit Product", errorMessage);
+//             await ensureProductNotChanged();
+//           },
+//           MAX_TESTING_TIME
+//         );
+//       }
+
+//       async function ensureProductNotChanged() {
+//         //don't check of admin Id similarity.
+//         const fields = Object.keys(PRODUCT_PROPERTIES).filter(
+//           (value, index) => {
+//             return value !== "adminId";
+//           }
+//         );
+//         const update = await findProductById(created.id);
+//         ensureObjectsHaveSameFields(update, created, fields);
+//       }
 //     });
 //     it(
 //       "should be able to delete  a product",
@@ -462,4 +531,8 @@
 // }
 // async function findProductByTitle(title) {
 //   return await Product.findOne({ title });
+// }
+
+// async function findProductById(id) {
+//   return await Product.findById(id);
 // }

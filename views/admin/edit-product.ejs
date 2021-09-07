@@ -7,7 +7,7 @@
         <div class="form grid">
                 <article class="card">
                     <form class="product-form"
-                        action="/admin/<% if (editing) { %>edit-product<% } else { %>add-product<% }%>" method="POST"
+                        action="/admin/<% if (editing) { %>edit-product<% } else { %>add-product<% }%>?_csrf=<%=csrfToken%> " method="POST"
                         enctype="multipart/form-data">
                         <%if(editing){%>
                             <%- include('./includes/present-prod-image.ejs') %>
