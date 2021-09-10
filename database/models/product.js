@@ -18,7 +18,7 @@ const {
 } = require("./utils");
 
 const { PRODUCTS_PER_PAGE } = require("../../config/env");
-const { fileManipulators } = require("../../utils");
+const { fileManipulators, cloudUploder } = require("../../utils");
 
 const POSITIVE_QUNTITY_QUERY = { quantity: { $gt: 0 } };
 
@@ -34,6 +34,13 @@ const Product = new Schema(
       maxlength: ranges.title.maxlength,
     },
     imageUrl: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: ranges.imageUrl.minlength,
+      maxlength: ranges.imageUrl.maxlength,
+    },
+    public_id: {
       type: String,
       required: true,
       trim: true,
@@ -103,7 +110,7 @@ statics.createOne = async function (productData) {
   const metadata = await getMetadata();
   const { category, brand, adminId } = productData;
   const Product = mongoose.model("Product");
-  const product = Product(productData);
+  const product = new Product(productData);
   await product.save();
   await metadata.addCategory({
     category,
@@ -225,8 +232,6 @@ methods.updateDetails = async function (productData) {
   return await this.save();
 };
 methods.customDelete = async function () {
-  const { imageUrl } = this;
-  await fileManipulators.deleteFile(imageUrl);
   await this.deleteOne();
 };
 

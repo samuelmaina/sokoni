@@ -1,12 +1,16 @@
 const {
-  fileManipulators,
+  cloudUploder,
   validationResults,
   Renderer,
   Flash,
+  fileManipulators,
 } = require("../utils");
 
 const { Product, AdminSales, Metadata } = require("../database/models");
 const { notImage } = require("../config/constraints");
+const { adminServices } = require("../services");
+
+const { resolvePath, deleteFile } = fileManipulators;
 
 //when admins don't interact with page for
 //too long,the session is expired.reading admin._id from it will throw an error.
@@ -20,7 +24,6 @@ exports.getAdminPage = (req, res, next) => {
     new Renderer(res)
       .templatePath("admin/home")
       .pageTitle("Admin Actions")
-      .appendDataToResBody({})
       .render();
   } catch (err) {
     next(err);
@@ -39,33 +42,15 @@ exports.getAddProduct = (req, res, next) => {
 
 exports.postAddProduct = async (req, res, next) => {
   try {
-    const { body, file, sizeError, isNotImage } = req;
+    const { body } = req;
     const flash = new Flash(req, res).appendPreviousData(body);
-    const redirectUrl = "add-product";
-    let image = file;
-    if (sizeError) {
-      return flash.appendError(sizeError).redirect(redirectUrl);
+    const results = await adminServices.addProduct(req);
+    if (results.error) {
+      return flash.appendError(results.error).redirect("add-product");
     }
-    if (isNotImage) {
-      return flash.appendError(notImage.error).redirect(redirectUrl);
+    if (results.info) {
+      return flash.appendInfo(results.info).redirect("/admin/products");
     }
-    const validationErrors = validationResults(req);
-
-    if (validationErrors) {
-      return flash.appendError(validationErrors).redirect(redirectUrl);
-    }
-
-    if (!image) {
-      return flash
-        .appendError("Please enter an image for your product.")
-        .redirect("add-product");
-    }
-
-    const productData = req.body;
-    productData.imageUrl = image.path;
-    productData.adminId = returnAdminIdIfAdminIsInSession(req);
-    await Product.createOne(productData);
-    flash.appendInfo("Product added successfully.").redirect("/admin/products");
   } catch (error) {
     next(error);
   }
@@ -77,7 +62,7 @@ exports.getEditProduct = async (req, res, next) => {
     const adminId = returnAdminIdIfAdminIsInSession(req);
     const { edit, page } = req.query;
 
-    const prodId = req.params.id;
+    const result = adminServices.getEditPage(req);
     const product = await Product.findById(prodId);
 
     if (!product || !product.isCreatedByAdminId(adminId)) {
@@ -121,9 +106,6 @@ exports.postEditProduct = async (req, res, next) => {
     const productData = body;
 
     const adminId = returnAdminIdIfAdminIsInSession(req);
-    if (image) {
-      productData.imageUrl = image.path;
-    }
 
     if (sizeError) {
       return renderer.appendError(sizeError).render();
@@ -136,7 +118,16 @@ exports.postEditProduct = async (req, res, next) => {
     if (validationErrors) {
       return renderer.appendError(validationErrors).render();
     }
+
     const product = await Product.findById(id);
+
+    if (image) {
+      const uploadResult = await UploadToCloudAndDeleteFile(image.path);
+      productData.imageUrl = uploadResult.url;
+      productData.public_id = uploadResult.id;
+      await cloudUploder.deleteFile(product.public_id);
+    }
+
     if (!product || !product.isCreatedByAdminId(adminId)) {
       return renderer
         .appendError(
@@ -216,6 +207,12 @@ exports.getCategoryProducts = async (req, res, next) => {
   }
 };
 
+async function UploadToCloudAndDeleteFile(path) {
+  const uploadResult = await cloudUploder.uploads(path);
+  await deleteFile(resolvePath(path));
+  return uploadResult;
+}
+
 exports.deleteProduct = async (req, res, next) => {
   try {
     const flash = new Flash(req, res);
@@ -223,15 +220,20 @@ exports.deleteProduct = async (req, res, next) => {
     const adminId = returnAdminIdIfAdminIsInSession(req);
     const prodId = req.params.id;
     const prod = await Product.findById(prodId);
+    //store the imageUrl to be used for deletion in
+    //the cloud. The product data is deleted before deletion in
+    //the cloud.
+    const imageUrl = prod.imageUrl;
     if (!prod || !prod.isCreatedByAdminId(adminId)) {
       return flash
         .appendError("You can't delete this product")
         .redirect("/admin/products");
     }
     await prod.customDelete();
-    return flash
+    flash
       .appendInfo("Product deleted successfully.")
       .redirect(`/admin/products?page=${page}`);
+    await cloudUploder.deleteFile(imageUrl);
   } catch (error) {
     next(error);
   }

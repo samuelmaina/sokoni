@@ -16,7 +16,7 @@
                 </h1>
             </header>
             <div class="card__image">
-                <img src="\<%= product.imageUrl %>" alt="<%= product.title %>">
+                <img src="<%= product.imageUrl %>" alt="<%= product.title %>">
             </div>
 
             <div class="card__content">
@@ -40,7 +40,11 @@
                    >Edit</a>
                 <input type="hidden" value="<%= product.id %>" name="id">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <button class="btn delete"  type="submit">Delete</button>
+                <form action="/admin/product/<%= product.id %>" method="delete">
+                    <%- include('../includes/csurf.ejs') %>
+                        <input class="btn add-to-cart-btn delete" type="submit" value="Delete">
+                      >
+                </form>
             </div>
         </article>
         <% } %>
