@@ -59,16 +59,11 @@ exports.postAddProduct = async (req, res, next) => {
 exports.getEditProduct = async (req, res, next) => {
   try {
     const flash = new Flash(req, res);
-    const adminId = returnAdminIdIfAdminIsInSession(req);
     const { edit, page } = req.query;
-
-    const result = adminServices.getEditPage(req);
-    const product = await Product.findById(prodId);
-
-    if (!product || !product.isCreatedByAdminId(adminId)) {
-      return flash
-        .appendError("Product not there or you are not authorised to modify it")
-        .redirect("/admin/products");
+    const result = await adminServices.getEditPage(req);
+    if (result.error) {
+      const error = result.error;
+      return flash.appendError(error.error).redirect(error.redirect);
     }
     new Renderer(res)
       .templatePath("admin/edit-product")

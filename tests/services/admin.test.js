@@ -56,7 +56,7 @@ describe("admin services", () => {
     );
   });
 
-  describe.only("Editing ", () => {
+  describe("Editing ", () => {
     let created;
     beforeEach(async () => {
       created = (await createTestProducts([session.admin._id], 1))[0];
@@ -97,6 +97,37 @@ describe("admin services", () => {
           result.error.message,
           "Product not there or you are not authorised to modify it"
         );
+        verifyEqual(result.error.redirect, "/admin/products");
+      },
+      MAX_TESTING_TIME
+    );
+
+    it(
+      "should add a product all the relevant data is there",
+      async () => {
+        const valid = {
+          title: "test 1",
+          buyingPrice: 200.34,
+          percentageProfit: 20,
+          quantity: 200,
+          brand: "The good Brand",
+          category: "clothing",
+          description: "The product was very good I  loved it.",
+        };
+        const path = await createTestFile();
+
+        const req = {
+          body: valid,
+          session,
+          file: { path },
+        };
+
+        const result = await adminServices.addProduct(req);
+        const prods = await findExistingProducts();
+        verifyEqual(prods.length, 1);
+        verifyEqual(result.info, "Product added successfully.");
+        verifyFalsy(isFileExisting(path));
+        verifyTruthy(await checkIfExist(prods[0].public_id));
       },
       MAX_TESTING_TIME
     );

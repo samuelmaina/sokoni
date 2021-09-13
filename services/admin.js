@@ -8,9 +8,6 @@ const {
 
 const { uploads } = cloudUploader;
 
-//return an error or return a success message.
-//
-
 exports.addProduct = async (req) => {
   const { body, file, sizeError, isNotImage } = req;
   const missingImageError = "Please enter an image for your product.";
@@ -47,7 +44,7 @@ exports.addProduct = async (req) => {
 exports.getEditPage = async (req) => {
   const result = {};
   const prodId = req.params.id;
-  const adminId = req.session.admin.id;
+  const adminId = req.session.admin._id;
   const product = await Product.findById(prodId);
 
   if (!product || !product.isCreatedByAdminId(adminId)) {
