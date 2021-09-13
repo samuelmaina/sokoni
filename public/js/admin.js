@@ -1,24 +1,29 @@
-const btn = document.getElementsByClassName("delete")[0];
-console.log(btn);
+const btn = document.getElementById("delete");
 
-btn.addEventListener("click", (event) => {
+btn.addEventListener("click", async (event) => {
   event.preventDefault();
-  request(btn);
+  await request(btn);
 });
 
-function request(btn) {
-  const prodId = btn.parentNode.querySelector("[name=id]").value;
-  const csurf = btn.parentNode.querySelector("[name=_csrf]").value;
-  const productElement = btn.closest("article");
-  fetch("/admin/product/" + prodId, {
-    method: "DELETE",
-    headers: {
-      "csrf-token": csurf,
-    },
-  })
-    .then((result) => console.log(result))
-    .then((data) => {
+async function request(btn) {
+  try {
+    const prodId = btn.parentNode.querySelector("[name=id]").value;
+    const csurf = btn.parentNode.querySelector("[name=_csrf]").value;
+    const productElement = btn.closest("article");
+
+    const result = await fetch("/admin/product/" + prodId, {
+      method: "DELETE",
+      headers: {
+        "csrf-token": csurf,
+      },
+    });
+
+    if (result) {
+      document.getElementsByClassName("info")[0].innerHTML =
+        "Product successfully deleted.";
       productElement.parentNode.removeChild(productElement);
-    })
-    .catch((err) => console.log("This is the error," + err));
+    }
+  } catch (err) {
+    console.log("This is the error," + err);
+  }
 }

@@ -39,12 +39,12 @@
                 <a   class = 'edit_product btn' href="/admin/edit-product/<%= product.id %>?edit=true&page=<%= productsData.paginationData.currentPage %>"
                    >Edit</a>
                 <input type="hidden" value="<%= product.id %>" name="id">
+                <input type="hidden" value="<%= product %>" name="id">
+                
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <form action="/admin/product/<%= product.id %>" method="delete">
-                    <%- include('../includes/csurf.ejs') %>
-                        <input class="btn add-to-cart-btn delete" type="submit" value="Delete">
-                      >
-                </form>
+                <%- include('../includes/csurf.ejs') %>
+                <input class="btn add-to-cart-btn delete" id='delete' type="button" value="Delete">
+              >
             </div>
         </article>
         <% } %>

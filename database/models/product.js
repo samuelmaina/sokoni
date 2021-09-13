@@ -18,7 +18,7 @@ const {
 } = require("./utils");
 
 const { PRODUCTS_PER_PAGE } = require("../../config/env");
-const { fileManipulators, cloudUploder } = require("../../utils");
+const { fileManipulators, cloudUploader } = require("../../utils");
 
 const POSITIVE_QUNTITY_QUERY = { quantity: { $gt: 0 } };
 
@@ -232,6 +232,7 @@ methods.updateDetails = async function (productData) {
   return await this.save();
 };
 methods.customDelete = async function () {
+  await cloudUploader.deleteFile(this.imageUrl);
   await this.deleteOne();
 };
 

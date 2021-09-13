@@ -235,7 +235,7 @@ describe("Admin  ", () => {
         );
       }
     });
-    describe.only("Edit Product", () => {
+    describe("Edit Product", () => {
       //TODO add to test to ensure that that editing comes with the previous data
       let created;
       beforeEach(async () => {
@@ -340,7 +340,7 @@ describe("Admin  ", () => {
         ensureObjectsHaveSameFields(update, created, fields);
       }
     });
-    describe.skip("should be able to delete products", () => {
+    describe.only("should be able to delete products", () => {
       afterEach(async () => {
         await clearDb();
       });
@@ -351,9 +351,9 @@ describe("Admin  ", () => {
           await createTestProducts([admin.id], noOfProducts);
           await page.openUrl(productsUrl);
           await clickOneDelete();
-          await page.hold(2000);
-          const articles = await page.getELements("article");
 
+          const articles = await page.getELements("article");
+          await page.hold(200);
           //ensure that the product is removed without reloading.
           verifyEqual(articles.length, 1);
 
@@ -372,11 +372,6 @@ describe("Admin  ", () => {
           await page.openUrl(productsUrl);
           await clickOneDelete();
           await page.hold(500);
-
-          //ensure that the user is informed of the deletion when they reload.
-          await page.openUrl(productsUrl);
-
-          await page.hold(5000);
           await ensureHasTitleAndInfo(
             page,
             "Your Products",

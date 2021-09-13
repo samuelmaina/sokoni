@@ -55,6 +55,8 @@ exports.getEditPage = async (req) => {
     result.error = error;
     return result;
   }
+  result.product = product;
+  return result;
 };
 
 async function UploadToCloudAndDeleteFile(path) {
