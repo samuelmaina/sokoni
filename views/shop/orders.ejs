@@ -1,5 +1,7 @@
 <%- include('../includes/head.ejs') %>
 <link rel="stylesheet" href="/css/orders.css">
+<link rel="stylesheet" href="/css/css/all.min.css">
+
 </head>
 <%- include('../includes/user-nav.ejs') %>
 <% if (orders.length <= 0) { %>
@@ -18,7 +20,7 @@
             </strong>
             <% }); %>
         </ul>
-        <a href="/orders/<%= order.id%>" class="btn order-btn">Download Invoice</a>
+        <a href="/orders/<%= order.id%>" class="btn order-btn" style="width: 50%;">Download Invoice</a>
     </li>
 
     <% }); %>

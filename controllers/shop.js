@@ -23,15 +23,18 @@ exports.getIndex = async (req, res, next) => {
     //for now the home page will contain some few products
     //other logic may be added later.
     const productsData = await Product.findProductsForPage(page);
-    new Renderer(res)
+
+    const renderer = new Renderer(res)
       .templatePath("shop/index")
       .pageTitle("SM Online Shop")
       .activePath("/")
       .appendDataToResBody({
         productsData,
         categories,
-      })
-      .render();
+      });
+
+    if (!req.user) return renderer.render();
+    else return renderer.appendDataToResBody({ name: req.user.name }).render();
   } catch (error) {
     next(error);
   }
@@ -49,15 +52,21 @@ exports.getProducts = async (req, res, next) => {
     const categories = await Product.findCategories();
     const productsData = await Product.findProductsForPage(page);
 
-    new Renderer(res)
+    const renderer = new Renderer(res)
       .templatePath("shop/products-list")
       .pageTitle("Products")
       .activePath("/products")
       .appendDataToResBody({
         productsData,
         categories,
-      })
-      .render();
+      });
+    if (!req.user) return renderer.render();
+    else
+      return renderer
+        .appendDataToResBody({
+          name: req.user.name,
+        })
+        .render();
   } catch (err) {
     next(err);
   }
@@ -78,14 +87,22 @@ exports.getProductsPerCategory = async (req, res, next) => {
       category,
       page
     );
-    return new Renderer(res)
+
+    const renderer = new Renderer(res)
       .templatePath("shop/products-list")
       .pageTitle(`${category}`)
       .appendDataToResBody({
         productsData,
         categories,
-      })
-      .render();
+      });
+
+    if (req.user)
+      return renderer
+        .appendDataToResBody({
+          name: req.user.name,
+        })
+        .render();
+    else return renderer.render();
   } catch (error) {
     next(error);
   }
@@ -99,15 +116,21 @@ exports.getProduct = async (req, res, next) => {
     if (!product) {
       return res.redirect("/");
     }
-    new Renderer(res)
+    const renderer = new Renderer(res)
       .templatePath("shop/product-detail")
       .pageTitle(product.title)
       .activePath("/product")
       .appendDataToResBody({
         product,
         currentPage: page,
-      })
-      .render();
+      });
+    if (!req.user) return renderer.render();
+    else
+      return renderer
+        .appendDataToResBody({
+          name: req.user.name,
+        })
+        .render();
   } catch (error) {
     next(error);
   }
@@ -124,9 +147,12 @@ exports.getAddToCart = async (req, res, next) => {
       .appendDataToResBody({
         product,
         page,
+        name: req.user.name,
       })
       .render();
-  } catch (error) {}
+  } catch (error) {
+    next(error);
+  }
 };
 exports.postToCart = async (req, res, next) => {
   try {
@@ -143,6 +169,7 @@ exports.postToCart = async (req, res, next) => {
         page,
         product,
         previousData,
+        name: req.user.name,
       });
 
     if (validationErrors) {
@@ -195,6 +222,7 @@ exports.getCart = async (req, res, next) => {
       .appendDataToResBody({
         products: cart,
         total,
+        name: req.user.name,
       })
       .activePath("/cart")
       .render();
@@ -230,6 +258,7 @@ exports.createOrder = async (req, res, next) => {
     await req.user.clearCart();
     res.redirect("/orders");
     await order.populateDetails();
+    console.log(order.products);
     await AdminSales.addSalesToAdmins(order.products);
   } catch (error) {
     next(error);
@@ -245,6 +274,7 @@ exports.getOrders = async (req, res, next) => {
         .activePath("/orders")
         .appendDataToResBody({
           orders,
+          name: req.user.name,
         })
         .render();
   } catch (error) {

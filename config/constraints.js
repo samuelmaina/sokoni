@@ -21,16 +21,20 @@ exports.base = {
     error: stringErrorGenerator("Name", 5, 20),
   },
   email: {
-    minlength: 8,
-    maxlength: 25,
+    minlength: 1,
+    maxlength: 100,
     error: stringErrorGenerator("Email", 8, 25),
   },
   password: {
     minlength: 8,
-    maxlength: 15,
+    maxlength: 500,
     error: stringErrorGenerator("Password", 8, 15),
   },
-  tel: 13,
+  tel: {
+    minlength: 10,
+    maxlength: 13,
+    error: stringErrorGenerator("Tel", 10, 13),
+  },
 };
 
 exports.shop = {
@@ -45,6 +49,8 @@ exports.shop = {
     error: intErrorGenerator("Page", 1, 200),
   },
 };
+
+exports.paymentMethods = ["M-Pesa"];
 
 exports.product = {
   title: {
@@ -92,8 +98,8 @@ exports.product = {
 exports.user = {
   balance: {
     min: 1,
-    max: 20000,
-    error: currencyErrorGenerator("Balance", 1, 20000),
+    max: 2000000,
+    error: currencyErrorGenerator("Balance", 1, 2000000),
   },
   quantity: {
     min: 1,

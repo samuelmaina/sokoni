@@ -1,7 +1,7 @@
-const {Renderer} = require("../../utils");
+const { Renderer } = require("../../utils");
 
 const BaseAuth = require("./base");
-const {User} = require("../../database/models");
+const { User } = require("../../database/models");
 
 const changeDetailsPath = "/edit/user/change-details";
 const changePasswordPath = "/edit/user/change-password";
@@ -29,6 +29,7 @@ class UserAuth extends BaseAuth {
         .appendDataToResBody({
           user,
           navigationData,
+          name: user.name,
         })
         .render();
     } catch (error) {

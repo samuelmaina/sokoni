@@ -39,10 +39,15 @@ const Base = new Schema(
     },
     tel: {
       type: String,
-      required: true,
-      minlength: ranges.tel,
-      maxlength: ranges.tel,
+      required: ranges.tel.error,
+      minlength: ranges.tel.minlength,
+      maxlength: ranges.tel.maxlength,
       default: "+254700000000",
+      //the regular expression is failing, will construct my own.
+      // match: [
+      //   "^(?:254|+254|0)?((?:(?:7(?:(?:3[0-9])|(?:5[0-6])|(8[5-9])))|(?:1(?:[0][0-2])))[0-9]{6})$",
+      //   "Please fill a valid tel number",
+      // ],
     },
     password: {
       type: String,
@@ -104,11 +109,10 @@ methods.update = async function (field, data) {
   this.set(field, data);
   return await this.save();
 };
+
 methods.updateMany = async function (data) {
   for (const key in data) {
-    if (data.hasOwnProperty(key)) {
-      await this.update(key, data[key]);
-    }
+    await this.update(key, data[key]);
   }
 };
 

@@ -4,13 +4,20 @@
 </head>
 
 <body>
-    <%- include('../includes/navigation.ejs') %>
-    <div class="grid">
+    <%- include('../includes/user-nav.ejs') %>
+    <div class=" form grid">
         <article class="card">
             <form class="login-form" action="<%= postPath%>" method="POST" novalidate>
                 <div class="form-control">
                     <label for="payment"> Payment Options </label>
-                    <input type="select" name="paymentMethod" value="<%= previousData.paymentMethod%>" />
+                    <select name="paymentMethod">
+                        <!-- option tag starts -->
+                        <option>Choose an option</option>
+                        <% options.forEach(function(entry, i, entries){ %>
+                            <option value="<%= entry %>"><%= entry %></option>
+                        <% })%>
+                        <!-- option tag ends -->
+                        </select>
                 </div>
                 <div class="form-control">
                     <label for="amount"> Amount</label>

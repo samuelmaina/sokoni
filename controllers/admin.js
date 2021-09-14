@@ -36,7 +36,7 @@ exports.getAddProduct = (req, res, next) => {
     .pageTitle("Add Product")
     .pathToPost("/admin/add-product")
     .activePath("/add-product")
-    .appendDataToResBody({ editing: false })
+    .appendDataToResBody({ editing: false, name: req.session.admin.name })
     .render();
 };
 
@@ -61,6 +61,7 @@ exports.getEditProduct = async (req, res, next) => {
     const flash = new Flash(req, res);
     const { edit, page } = req.query;
     const result = await adminServices.getEditPage(req);
+
     if (result.error) {
       const error = result.error;
       return flash.appendError(error.error).redirect(error.redirect);
@@ -75,6 +76,7 @@ exports.getEditProduct = async (req, res, next) => {
         .appendDataToResBody({
           editing: edit,
           page,
+          name: req.session.admin.name,
         })
         .render();
   } catch (error) {
@@ -98,6 +100,7 @@ exports.postEditProduct = async (req, res, next) => {
       .appendDataToResBody({
         editing: editMode,
         page,
+        name: req.session.admin.name,
       });
     const productData = body;
 
@@ -160,6 +163,7 @@ exports.getProducts = async (req, res, next) => {
       .appendDataToResBody({
         productsData,
         categories,
+        name: req.session.admin.name,
       })
       .render();
   } catch (error) {
@@ -196,6 +200,7 @@ exports.getCategoryProducts = async (req, res, next) => {
       .appendDataToResBody({
         productsData,
         categories,
+        name: req.session.admin.name,
       })
       .render();
   } catch (error) {
@@ -240,6 +245,7 @@ exports.getAdminSales = async (req, res, next) => {
       .activePath("/sales")
       .appendDataToResBody({
         sales: salesProfits,
+        name: req.session.admin.name,
       })
       .render();
   } catch (error) {

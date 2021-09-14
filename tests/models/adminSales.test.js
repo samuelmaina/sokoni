@@ -21,7 +21,7 @@ const {
 } = require("../utils/generalUtils/database");
 const { generateMongooseId } = require("../utils/generalUtils/utils");
 
-describe.skip("Admin Sales", () => {
+describe("Admin Sales", () => {
   includeSetUpAndTearDown();
   afterEach(async () => {
     await clearDb();

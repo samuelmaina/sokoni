@@ -4,10 +4,10 @@
 </head>
 
 <body>
-    <%- include('../includes/navigation.ejs') %>
+    <%- include('../includes/user-nav.ejs') %>
     <div class=" form grid">
         <article class="card">
-            <form class="product-form" action="/<%= postPath %>" method="POST" enctype="multipart/form-data">
+            <form class="product-form" action="/<%= postPath %>" method="POST">
                 <%- include('../includes/textFields/name.ejs') %>
                 <%- include('../includes/textFields/email.ejs') %>
                 <%- include('../includes/csurf.ejs') %>

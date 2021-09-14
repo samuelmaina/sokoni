@@ -4,6 +4,9 @@
   <button id="side-menu-toggle">Menu</button>
   <nav class="main-header__nav">
     <ul class="main-header__item-list">
+      <% if (isUserLoggedIn) { %>
+        <%- include('./user-nav-sections/web/icon.ejs') %>
+        <% } %>
       <%- include('./user-nav-sections/web/general.ejs') %>
       <% if (isUserLoggedIn) { %>
       <%- include('./user-nav-sections/web/userLoggedIn.ejs') %>
