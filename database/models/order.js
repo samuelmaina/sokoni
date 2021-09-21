@@ -18,26 +18,26 @@ const Order = new Schema({
   products: [
     {
       productData: {
-        required: [true, error],
+        required: "Your must provide a product Id.",
         type: ObjectId,
         ref: "Product",
-        maxlength: [exact, error],
-        minlength: [exact, error],
+        maxlength: 24,
+        minlength: 24,
       },
       quantity: {
-        required: quantity.error,
+        required: "Quantity must be 1 to 20000",
         type: Number,
-        min: [min, quantity.error],
-        max: [max, quantity.error],
+        min: 1,
+        max: 20000,
       },
     },
   ],
   userId: {
     type: ObjectId,
     ref: "User",
-    required: [true, error],
-    maxlength: [exact, error],
-    minlength: [exact, error],
+    required: "The user id must be provided.",
+    maxlength: 24,
+    minlength: 24,
   },
   time: {
     type: Date,
@@ -45,9 +45,9 @@ const Order = new Schema({
   },
   total: {
     type: Number,
-    required: total.error,
-    min: [total.min, total.error],
-    max: [total.max, total.error],
+    required: "Total must be provided. must be 1 to 2,000,000",
+    min: 1,
+    max: 2000000,
   },
 });
 

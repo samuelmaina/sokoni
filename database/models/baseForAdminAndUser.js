@@ -21,27 +21,32 @@ const Base = new Schema(
     name: {
       type: String,
       trim: true,
-      minlength: ranges.name.minlength,
-      maxlength: ranges.name.maxlength,
-      required: ranges.name.error,
+      minlength: 1,
+      maxlength: 100,
+      required: "Name must be 1 to 100 characters long.",
     },
     email: {
       type: String,
-      required: true,
+      required: "Email must be 1 to 100 characters long and well formatted",
       trim: true,
       lowercase: true,
-      minlength: ranges.email.minlength,
-      maxlength: ranges.email.maxlength,
+      minlength: 1,
+      maxlength: 100,
       match: [
         /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
         "Please fill a valid email address",
       ],
     },
+    isEmailConfirmed: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
     tel: {
       type: String,
-      required: ranges.tel.error,
-      minlength: ranges.tel.minlength,
-      maxlength: ranges.tel.maxlength,
+      required: "Tell must be 10 or 13 characters long",
+      minlength: 10,
+      maxlength: 13,
       default: "+254700000000",
       //the regular expression is failing, will construct my own.
       // match: [

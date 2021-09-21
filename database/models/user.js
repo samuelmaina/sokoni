@@ -20,22 +20,22 @@ const userSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Product",
         required: true,
-        maxlength: mongooseId,
-        minlength: mongooseId,
+        maxlength: 24,
+        minlength: 24,
       },
       quantity: {
         type: Number,
         required: true,
-        min: user.quantity.min,
-        max: user.quantity.max,
+        min: 1,
+        max: 20000,
       },
     },
   ],
   balance: {
     type: Number,
     default: 10000,
-    min: user.balance.min,
-    max: user.balance.max,
+    min: 0,
+    max: 2000000,
   },
 });
 

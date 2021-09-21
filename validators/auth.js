@@ -44,8 +44,9 @@ exports.passwordV = stringValidator({
   .matches(complexPassword)
   .withMessage(complexPasswordError);
 
-const telFormat =
-  "^(?:254|\\+254|0)?(7(?:(?:[12][0-9])|(?:0[0-8])|(?:9[0-2]))[0-9]{6})$";
+// the good thing that ws there to thosw who were there to do the last thing. I was teh
+
+const telFormat = /^(?:254|\+254|0)?(7[0-9]{8})$/;
 
 const telConstrain = ranges.tel;
 

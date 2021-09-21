@@ -1,5 +1,13 @@
 const assert = require("assert");
 
+exports.update = {
+  shortCode: {
+    min: 100000,
+    max: 900000,
+    error: "Verification Code must be of 6 numbers.",
+  },
+};
+
 exports.mongooseId = {
   exact: 24,
   error: "Should be a mongoose Id",
@@ -16,19 +24,19 @@ exports.notImage = {
 };
 exports.base = {
   name: {
-    minlength: 5,
-    maxlength: 20,
-    error: stringErrorGenerator("Name", 5, 20),
+    minlength: 1,
+    maxlength: 40,
+    error: stringErrorGenerator("Name", 1, 40),
   },
   email: {
     minlength: 1,
-    maxlength: 100,
-    error: stringErrorGenerator("Email", 8, 25),
+    maxlength: 50,
+    error: stringErrorGenerator("Email", 1, 50),
   },
   password: {
     minlength: 8,
-    maxlength: 500,
-    error: stringErrorGenerator("Password", 8, 15),
+    maxlength: 16,
+    error: stringErrorGenerator("Password", 8, 16),
   },
   tel: {
     minlength: 10,
@@ -39,9 +47,9 @@ exports.base = {
 
 exports.shop = {
   category: {
-    minlength: 5,
-    maxlength: 50,
-    error: stringErrorGenerator("Category", 5, 20),
+    minlength: 1,
+    maxlength: 30,
+    error: stringErrorGenerator("Category", 1, 30),
   },
   page: {
     min: 1,
@@ -50,13 +58,19 @@ exports.shop = {
   },
 };
 
-exports.paymentMethods = ["M-Pesa"];
+exports.paymentMethods = [
+  {
+    method: "M-Pesa",
+    numRegularExp:
+      /^(?:254|\+254|0)?((?:(?:7(?:(?:[01249][0-9])|(?:5[789])|(?:6[89])))|(?:1(?:[1][0-5])))[0-9]{6})$/,
+  },
+];
 
 exports.product = {
   title: {
-    minlength: 5,
+    minlength: 1,
     maxlength: 20,
-    error: stringErrorGenerator("Title", 5, 20),
+    error: stringErrorGenerator("Title", 1, 20),
   },
   //does not need error message.
   imageUrl: {
@@ -76,7 +90,7 @@ exports.product = {
   description: {
     minlength: 10,
     maxlength: 400,
-    error: stringErrorGenerator("Description", 10, 40),
+    error: stringErrorGenerator("Description", 10, 400),
   },
   quantity: {
     min: 0,
@@ -84,14 +98,14 @@ exports.product = {
     error: intErrorGenerator("Quantity", 0, 20000),
   },
   category: {
-    minlength: 5,
-    maxlength: 20,
-    error: stringErrorGenerator("Category", 5, 20),
+    minlength: 1,
+    maxlength: 200,
+    error: stringErrorGenerator("Category", 1, 200),
   },
   brand: {
-    minlength: 5,
+    minlength: 1,
     maxlength: 20,
-    error: stringErrorGenerator("Brand", 5, 20),
+    error: stringErrorGenerator("Brand", 1, 20),
   },
 };
 
@@ -124,21 +138,21 @@ exports.order = {
 };
 exports.adminSales = {
   quantity: {
-    min: 0,
+    min: 1,
     max: 20000,
   },
 };
 
 exports.metadata = {
   category: {
-    minlength: 4,
+    minlength: 1,
     maxlength: 20,
-    error: stringErrorGenerator("Category", 4, 20),
+    error: stringErrorGenerator("Category", 1, 20),
   },
   brand: {
-    minlength: 4,
+    minlength: 1,
     maxlength: 20,
-    error: stringErrorGenerator("Brand", 4, 20),
+    error: stringErrorGenerator("Brand", 1, 20),
   },
 };
 

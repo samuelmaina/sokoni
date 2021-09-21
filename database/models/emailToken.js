@@ -9,12 +9,12 @@ const Schema = mongoose.Schema;
 
 const tokenValidityPeriodInMs = 1000 * 60 * 60 * TOKEN_VALIDITY_IN_HOURS;
 
-const tokenGenerator = new Schema({
-  requesterId: {
-    type: Schema.Types.ObjectId,
-    required: "Please provide a mongoose id for the requester id.",
-    maxlength: 24,
-    minlength: 24,
+const EmailToken = new Schema({
+  email: {
+    type: String,
+    required: "please provide a valid email",
+    minlength: 2,
+    maxlength: 200,
   },
 
   token: {
@@ -27,11 +27,11 @@ const tokenGenerator = new Schema({
     min: Date.now(),
   },
 });
-const { statics, methods } = tokenGenerator;
+const { statics, methods } = EmailToken;
 
-statics.createOneForId = async function (requesterId) {
+statics.createOneForEmail = async function (email) {
   const tokenDetails = new this({
-    requesterId,
+    email,
     token: crypto.randomBytes(32).toString("hex"),
     expiryTime: Date.now() + tokenValidityPeriodInMs,
   });
@@ -50,4 +50,4 @@ methods.delete = async function () {
   await this.deleteOne();
 };
 
-module.exports = mongoose.model("Token", tokenGenerator);
+module.exports = mongoose.model("Email Token", EmailToken);

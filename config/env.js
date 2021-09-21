@@ -1,6 +1,7 @@
-require('dotenv').config();
+require("dotenv").config();
 const envVaribles = process.env;
 
+exports.SENDGRID_API_KEY = envVaribles.SENDGRID_API_KEY;
 exports.PORT = envVaribles.PORT;
 exports.MONGO_URI = envVaribles.MONGO_URI;
 exports.PRODUCTS_PER_PAGE = Number(envVaribles.PRODUCTS_PER_PAGE);

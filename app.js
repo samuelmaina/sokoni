@@ -1,6 +1,7 @@
 const express = require("express");
 
 const middlewares = require("./appMiddlewares/index");
+const { SESSION_SECRET } = require("./config/env");
 
 const routes = require("./routeLoaders/index");
 
@@ -8,7 +9,7 @@ const app = express();
 
 for (const key in middlewares) {
   if (middlewares.hasOwnProperty(key)) {
-    //the two middleware are supposed to be inserted after the routes have been loaded so we skip them
+    //the two middleware are supposed to be inserted after the routes have been loaded
     if (key === " errorHandler" || key === "notFound") continue;
     middlewares[key](app);
   }

@@ -1,4 +1,4 @@
-let {auth} = require("../../validators");
+let { auth } = require("../../validators");
 const {
   signUpValidator,
   loginValidator,
@@ -10,6 +10,7 @@ const routes = {
   signUp: `/sign-up`,
   logIn: `/log-in`,
   reset: `/reset`,
+  confirmEmail: "/confirm-email",
   newPassword: `/new-password`,
   logOut: `/logout`,
 };
@@ -20,9 +21,14 @@ class BaseRouting {
     this.router
       .route(routes.signUp)
       .get((req, res, next) => controller.getSignUp(req, res, next))
-      .post(signUpValidator, (req, res, next) =>
-        controller.postSignUp(req, res, next)
+      .post(
+        signUpValidator,
+        (req, res, next) => controller.postSignUp(req, res, next),
+        (req, res, next) => controller.sendEmailConfirmation(req, res, next)
       );
+    this.router.route(`${routes.confirmEmail}/:token`).get((req, res, next) => {
+      controller.confirmEmail(req, res, next);
+    });
     this.router
       .route(routes.logIn)
       .get((req, res, next) => {
