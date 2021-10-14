@@ -1,0 +1,42 @@
+<%- include('../includes/head.ejs') %>
+<link rel="stylesheet" href="/css/dashboard.css">
+<link rel="stylesheet" href="/css/css/all.min.css">
+</head>
+
+<body>
+    <%- include('../includes/user-nav.ejs') %>
+    <div class="form grid">
+        <article class="container">
+            <div class="user-info">
+                <div>
+                    <span class=" label">Name</span>: <%= user.name %>
+                </div>
+                <div>
+                    <span class=" label">Email
+                    </span>: <%= user.email%>
+                </div>
+                <br>
+                <div>
+                    <span class=" label">Tel
+                    </span>: <%= user.tel%>
+                </div>
+                <div>
+                    <span class="label">Current_Account_Balance</span>: Kshs <%= user.balance%>
+                </div>
+            </div>
+            <div class="grid" >
+                <a class="btn" href="<%=navigationData.changeDetailsPath%>" style="margin: 0.25rem ">
+                    Change Details
+                </a>
+                <a class="btn" href="<%=navigationData.changePasswordPath%>" style="margin: 0.25rem">
+                    Change Password
+                </a>
+                <a class="btn" href="<%=navigationData.depositPath%>" style="margin: 0.25rem">
+                    Deposit into the Account
+                </a>
+            </div>
+
+        </article>
+    </div>
+    </main>
+    <%- include('../includes/end.ejs') %>

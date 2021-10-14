@@ -1,0 +1,31 @@
+<%- include('../includes/head.ejs') %>
+<link rel="stylesheet" href="/css/orders.css">
+<link rel="stylesheet" href="/css/css/all.min.css">
+
+</head>
+<%- include('../includes/user-nav.ejs') %>
+<% if (orders.length <= 0) { %>
+<h1>Nothing there!</h1>
+<% } else { %>
+<ul class=" orders">
+    <% orders.forEach(order => { %>
+    <li class="card orders__item">
+        <h1 class="order_header">Order - # <%= order._id %></h1>
+        <h1><%= order.time.toDateString()%></h1>
+        <ul class="orders__products">
+            <% order.products.forEach(p=> { %>
+            <strong>
+
+                <li class="orders__products-item"> Name: <%= p.productData.title %> (<%= p.quantity %>)</li>
+            </strong>
+            <% }); %>
+        </ul>
+        <a href="/orders/<%= order.id%>" class="btn order-btn" style="width: 50%;">Download Invoice</a>
+    </li>
+
+    <% }); %>
+
+</ul>
+<% } %>
+</main>
+<%- include('../includes/end.ejs') %>

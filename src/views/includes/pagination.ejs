@@ -1,0 +1,24 @@
+<section class="pagination">
+    <% if (productsData.paginationData.currentPage !==1 && productsData.paginationData.previousPage !==1) { %>
+        <a href="?page=1">1</a>
+        <% } %>
+            <% if (productsData.paginationData.hasPreviousPage) { %>
+                <a href="?page=<%= productsData.paginationData.previousPage %>">
+                    <%=productsData.paginationData.previousPage %>
+                </a>
+                <% } %>
+                    <a href="?page=<%= productsData.paginationData.currentPage %>" class="active">
+                        <%= productsData.paginationData.currentPage %>
+                    </a>
+                    <% if (productsData.paginationData.hasNextPage) { %>
+                        <a href="?page=<%= productsData.paginationData.nextPage %>">
+                            <%= productsData.paginationData.nextPage %>
+                        </a>
+                        <% } %>
+                            <% if (productsData.paginationData.lastPage !==productsData.paginationData.currentPage && productsData.paginationData.nextPage
+                                !==productsData.paginationData.lastPage) { %>
+                                <a href="?page=<%= productsData.paginationData.lastPage %>">
+                                    <%= productsData.paginationData.lastPage %>
+                                </a>
+                                <% } %>
+</section>

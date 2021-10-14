@@ -1,0 +1,24 @@
+
+
+<li class="main-header__item" style="border: ridge rgb(75, 73, 73) 1.5px; display: flex; flex-direction: row;  align-items: center; border-radius: 0.5rem; padding: 0rem 0.5rem">
+    <div style="font-size: 2rem; margin: 0.5rem;">
+        <i class="fas fa-user-circle" style="color: white;"></i>
+    </div>
+    <p style="color: rgba(255, 255, 255, 0.678);  font-size: smaller;"><%=name %></p>
+</li>
+
+<li class="main-header__item">
+    <i class="fas fa-shopping-bag shop-icon"></i>
+    <a id="view-products" class="<%= path === '/products' ? 'active' : '' %>" href="/admin/products">Your Products
+    </a>
+</li>
+<li class="main-header__item">
+    <i class="fas fa-chart-line shop-icon"></i>
+    <a id="see-sales" class="<%= path === '/sales' ? 'active' : '' %>" href="/admin/get-admin-sales">See Your Sales
+    </a>
+</li>
+<li class="main-header__item">
+    <i class="fas fa-plus shop-icon"></i>
+    <a id="add-product" class="<%= path === '/add-product' ? 'active' : '' %>" href="/admin/add-product">Add Product
+    </a>
+</li>

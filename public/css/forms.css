@@ -1,0 +1,38 @@
+
+
+.form-control {
+  margin: 1rem 0;
+}
+
+.form-control label,
+.form-control input,
+.form-control textarea {
+  font-family: "Noto Sans JP", "Noto Sans JP ", Calibri, "Trebuchet MS", sans-serif;
+  font-size: 1.2rem;
+  color: rgba(8, 1, 1, 0.7);
+  width: 100%;
+  margin-bottom: 0.25rem;
+}
+
+.form-control input,
+.form-control textarea {
+  border: unset;
+  background: unset;
+  border: 1px solid #a0c7ad;
+  font: inherit;
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 15px;
+}
+
+.form-control input:focus,
+.form-control textarea:focus {
+  outline: none;
+  border: 1px solid #0f9276e8;
+}
+.image {
+  border-radius: 20px;
+  margin-left: 33%;
+  height: 20rem;
+  width: 18rem;
+}

@@ -1,0 +1,9 @@
+<li class="mobile-nav__item">
+    <i class="fas fa-sign-out-alt shop-icon"></i>
+    <form action="<% if (isAdminLoggedIn) { %>/auth/admin/logout<% } else { %>/auth/user/logout<% } %>" method="post">
+        <input type="hidden" name="_csrf" value="<%=csrfToken %>" />
+        <button id='logout' class="<%= path === '/logout' ? 'active' : '' %>" type="submit">
+            Logout
+        </button>
+    </form>
+</li>

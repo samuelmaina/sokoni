@@ -1,0 +1,43 @@
+.orders {
+  width: 50%;
+  margin: auto;
+  list-style: none;
+  padding: 0;
+}
+
+.orders__item h1 {
+  margin: 0;
+  font-size: 1rem;
+}
+.order-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  width: 10%;
+  box-shadow: 0 2px 8px rgba(57, 250, 57, 0.26);
+  margin-bottom: 1rem;
+}
+.order-btn:hover {
+  color: greenyellow;
+}
+.order_header {
+  color: rgb(19, 17, 17);
+  font-size: 20px;
+}
+.orders__item {
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.orders__products {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.orders__products-item {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}

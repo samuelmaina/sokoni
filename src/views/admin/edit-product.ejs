@@ -1,0 +1,39 @@
+<%- include('../includes/head.ejs') %>
+    <link rel="stylesheet" href="/css/forms.css">
+    <link rel="stylesheet" href="/css/product.css">
+    <link rel="stylesheet" href="/css/css/all.min.css">
+    </head>
+<body>
+    <%- include('../includes/admin-nav') %>
+        <div class="form grid">
+                <article class="card">
+                    <form class="product-form"
+                        action="/admin/<% if (editing) { %>edit-product<% } else { %>add-product<% }%>?_csrf=<%=csrfToken%> " method="POST"
+                        enctype="multipart/form-data">
+                        <%if(editing){%>
+                            <%- include('./includes/present-prod-image.ejs') %>
+                        <% }%>
+                        <%- include('./includes/string-field',{ label:'Title',fieldName:'title' }) %>                   
+                        <%- include('./includes/image-picker.ejs') %>
+                        <%- include('./includes/float-field',{ label:'Buying Price',fieldName:'buyingPrice' }) %>
+                        <%- include('./includes/float-field',{ label:'Percentage Profit', fieldName:'percentageProfit' }) %>
+                        <%- include('./includes/int-field',{ label:'Quantity',fieldName:'quantity' }) %>
+                        <%- include('./includes/string-field',{ label:'Brand',fieldName:'brand' }) %>
+                        <%- include('./includes/string-field',{label:'Category', fieldName:'category' }) %>
+                        <%- include('./includes/text-area',{label:'Product Description',fieldName:'description' }) %>
+                    
+                       <% if (editing) { %>
+                            <input type="hidden"  value="<%=previousData.id %>" name="id">
+                            <input type="hidden" value="<%=page %>" name="page">
+                            <input type="hidden" value="<%=previousData.imageUrl %>"name="imageUrl">
+                       <% } %>
+                       <%- include('../includes/csurf') %>
+                       <input class="btn"  id="submit" type="submit" value='<% if (editing) { %>Update Product<% } else { %>Add Product<% } %> '>
+                    </form>
+                </article>
+        </div>
+
+</main>
+ <%- include('../includes/end.ejs') %>
+        
+    

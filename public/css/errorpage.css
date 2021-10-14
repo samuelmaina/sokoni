@@ -1,0 +1,20 @@
+.container {
+	display: flexbox;
+}
+.error-message {
+	margin-top: 20px;
+	font-size: small;
+	padding: 2px;
+	text-align: center;
+	width: 40vw;
+	height: 3rem;
+	margin-left: 30%;
+	background-color: rgb(240, 203, 203);
+	color: rgb(245, 10, 10);
+	border: 3px solid red;
+	border-radius: 12px;
+}
+p {
+	text-align: center;
+	margin-left: 40vw;
+}

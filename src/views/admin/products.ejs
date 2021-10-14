@@ -1,0 +1,64 @@
+<%- include('../includes/head.ejs') %>
+<link rel="stylesheet" href="/css/product.css">
+<link rel="stylesheet" href="/css/css/all.min.css">
+</head>
+<body>
+    <%- include('../includes/admin-nav.ejs') %>
+    <%- include('../includes/categories.ejs',{path:'admin/category'}) %>
+    <% if (productsData) { %>
+    <div class="grid">
+        <% for (let product of productsData.products) { %>
+        <article class="card product-item">
+            <header class="card__header">
+                <h1 class="product__title">
+                </h1>
+                <h1 class="product__title">
+                    Name: <%= product.title %>
+                </h1>
+            </header>
+            <div class="card__image">
+                <img src="<%= product.imageUrl %>" alt="<%= product.title %>">
+            </div>
+
+            <div class="card__content">
+                <h2 class="product__price">
+                    Price: Ksh <%= product.sellingPrice%>
+                </h2>
+                <br>
+
+                <p class="product__description">
+                    <strong>Description:</strong> <%= product.description %>
+                </p>
+                <br>
+                <br>
+                <p class="product__description">
+                    <strong>Quantity:</strong><%= product.quantity %>
+                </p>
+                <br>
+            </div>
+            <div class="card__actions">
+                <a   class = 'edit_product btn' href="/admin/edit-product/<%= product.id %>?edit=true&page=<%= productsData.paginationData.currentPage %>"
+                   >Edit</a>
+                <input type="hidden" value="<%= product.id %>" name="id">
+                <input type="hidden" value="<%= product %>" name="id">
+                
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <%- include('../includes/csurf.ejs') %>
+                <input class="btn add-to-cart-btn delete" id='delete' type="button" value="Delete">
+              >
+            </div>
+        </article>
+        <% } %>
+    </div>
+    <ul> 
+  
+</ul>
+     <%- include('../includes/pagination.ejs') %>
+
+    <% } else { %>
+    <h1>No Products Found!</h1>
+    <% } %>
+    </main>
+    <%- include('../includes/end.ejs') %>
+    <script src="/js/admin.js">
+    </script>
