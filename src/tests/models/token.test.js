@@ -5,7 +5,7 @@ const {
   verifyNull,
   verifyIDsAreEqual,
 } = require("../utils/testsUtils");
-const { mongooseId, tokenGen } = require("../../config/constraints");
+const { token } = require("../../config/constraints");
 
 const { TOKEN_VALIDITY_IN_HOURS } = require("../../config/env");
 const {
@@ -22,20 +22,37 @@ describe.skip("--Token generator", () => {
   afterEach(async () => {
     await clearDb();
   });
-  describe("createOneForId", () => {
-    it("generates a 64 long random string for requester Id", async () => {
-      const requesterId = generateMongooseId();
-      const tokenDetails = await TokenGenerator.createOneForId(requesterId);
+  describe.only("createForRequester", () => {
+    it("generates a 64 long random string for  requester", async () => {
+      const requester = generateMongooseId();
+      const tokenDetails = await TokenGenerator.createOneForId(requester);
       verifyEqual(tokenDetails.token.length, 64);
 
       //ensure token is valid at time of creation.
-      validateTokenDetails(tokenDetails, { requesterId });
+      validateTokenDetails(tokenDetails, { requester });
     });
-    it("rejects if requesterId  is not a mongoose Id", async () => {
-      const requesterId = generateStringSizeN(mongooseId.exact);
-      await expect(
-        TokenGenerator.createOneForId(requesterId)
-      ).rejects.toThrowError(ValidationError);
+    it("should not create a new token for a requester, if the requester had requested a token earlier, The previous token is returned.", async () => {
+      const requester = generateStringSizeN(token.requester.minlength);
+      const tokenOne = await TokenGenerator.createOneForId(requester);
+      const tokenTwo = await TokenGenerator.createOneForId(requester);
+      //Each doc in mongoose has a special id. The ids can be used to
+      //verify that actually it the same docuemnt that is being returned.
+      verifyIDsAreEqual(tokenOne._id, tokenTwo._id);
+      verifyEqual(await TokenGenerator.countDocuments(), 1);
+    });
+    describe("rejects if requester length is out of range", () => {
+      it("too short", async () => {
+        const requesterId = generateStringSizeN(token.requester.minlength - 1);
+        await expect(
+          TokenGenerator.createOneForId(requesterId)
+        ).rejects.toThrowError(ValidationError);
+      });
+      it("too long", async () => {
+        const requesterId = generateStringSizeN(token.requester.maxlength + 1);
+        await expect(
+          TokenGenerator.createOneForId(requesterId)
+        ).rejects.toThrowError(ValidationError);
+      });
     });
   });
   describe("findTokenDetailsByToken", () => {
@@ -83,7 +100,7 @@ async function makeTokenExpired(tokenDetails) {
 }
 
 function validateTokenDetails(actual, expected) {
-  verifyIDsAreEqual(actual.requesterId, expected.requesterId);
+  verifyIDsAreEqual(actual.requester, expected.requester);
   ensureTokenNotExpired(actual.expiryTime);
 }
 async function createNewTokenDetailsForId(id) {

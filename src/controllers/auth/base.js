@@ -101,9 +101,7 @@ class Auth {
       }
 
       const doc = await this.Model.findByEmail(tokenDetails.email);
-      doc.isEmailConfirmed = true;
-      await doc.save();
-
+      await doc.markEmailAsConfirmed();
       flash
         .appendInfo("Email confirmation succcessful.")
         .redirect(this.routes.logIn);

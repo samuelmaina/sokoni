@@ -319,7 +319,7 @@ module.exports = (Model) => {
         verifyTruthy(await doc.isCorrect(password));
         verifyFalsy(await doc.isCorrect("somerandomPas"));
       });
-      it.only("markEmailAsConfirmed", async () => {
+      it("markEmailAsConfirmed", async () => {
         await doc.markEmailAsConfirmed();
         verifyTruthy(doc.isEmailConfirmed);
       });

@@ -8,6 +8,18 @@ exports.update = {
   },
 };
 
+exports.token = {
+  requester: {
+    minlength: 2,
+    maxlength: 100,
+    error: "The requester should be 2 to 100 characters long.",
+  },
+  howLong: {
+    exact: 64,
+    error: "The token to be generated should be 64 characters long.",
+  },
+};
+
 exports.mongooseId = {
   exact: 24,
   error: "Should be a mongoose Id",
@@ -121,9 +133,7 @@ exports.user = {
     error: intErrorGenerator("Quantity", 1, 2000),
   },
 };
-exports.tokenGen = {
-  token: 64,
-};
+
 exports.order = {
   quantity: {
     min: 1,

@@ -3,24 +3,24 @@ const crypto = require("crypto");
 
 const { TOKEN_VALIDITY_IN_HOURS } = require("../../config/env");
 
-const { tokenGen, mongooseId } = require("../../config/constraints");
+const { token } = require("../../config/constraints");
 const { ensureIsMongooseId, ensureStringIsLength } = require("./utils");
 const Schema = mongoose.Schema;
 
 const tokenValidityPeriodInMs = 1000 * 60 * 60 * TOKEN_VALIDITY_IN_HOURS;
 
 const tokenGenerator = new Schema({
-  requesterId: {
-    type: Schema.Types.ObjectId,
-    required: "Please provide a mongoose id for the requester id.",
-    maxlength: 24,
-    minlength: 24,
+  requester: {
+    type: String,
+    required: token.requester.error,
+    minlength: token.requester.minlength,
+    maxlength: token.requester.maxlength,
   },
 
   token: {
     type: String,
-    maxlength: 64,
-    minlength: 64,
+    maxlength: [token.howLong.exact, token.howLong.error],
+    minlength: [token.howLong.exact, token.howLong.error],
   },
   expiryTime: {
     type: Date,
@@ -29,9 +29,13 @@ const tokenGenerator = new Schema({
 });
 const { statics, methods } = tokenGenerator;
 
-statics.createOneForId = async function (requesterId) {
+statics.createOneForId = async function (requester) {
+  const existingRequesters = await this.find({ requester });
+  if (existingRequesters.length > 0) {
+    return existingRequesters[0];
+  }
   const tokenDetails = new this({
-    requesterId,
+    requester,
     token: crypto.randomBytes(32).toString("hex"),
     expiryTime: Date.now() + tokenValidityPeriodInMs,
   });
@@ -39,9 +43,9 @@ statics.createOneForId = async function (requesterId) {
   return tokenDetails;
 };
 
-statics.findTokenDetailsByToken = async function (token) {
-  // ensureStringIsLength(token, 64);
+statics.findTokenDetailsByToken = async function (requesterId, token) {
   return await this.findOne({
+    requesterId,
     token,
     expiryTime: { $gt: Date.now() },
   });
