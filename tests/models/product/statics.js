@@ -1,5 +1,6 @@
-const { PRODUCTS_PER_PAGE } = require("../../../config/env");
-const { Product, Metadata } = require("../../../database/models");
+const requires= require("../../utils/requires");
+const { PRODUCTS_PER_PAGE } = requires.envs;
+const { Product } = requires.Models;
 const {
   createTestProducts,
   clearDb,
@@ -15,12 +16,8 @@ const {
 const {
   verifyEqual,
   ensureObjectHasKeyValuePair,
-  verifyTruthy,
   verifyRejectsWithError,
   ensureArrayContains,
-  verifyIDsAreEqual,
-  ensureResolvesToNull,
-  verifyResolvesWithData,
   verifyNull,
 } = require("../../utils/testsUtils");
 

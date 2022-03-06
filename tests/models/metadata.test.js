@@ -1,5 +1,10 @@
-const { mongooseId } = require("../../config/constraints");
-const { Metadata } = require("../../database/models");
+const requires= require("../utils/requires");
+
+
+const { mongooseId } = requires.constrains;
+const { Metadata } = requires.Models;
+
+
 const { clearDb } = require("../utils/generalUtils/database");
 const {
   generateMongooseId,
@@ -9,7 +14,6 @@ const {
   ensureArrayContains,
   verifyEqual,
   verifyIDsAreEqual,
-  ensureMongooseArraysAreEqual,
   verifyRejectsWithError,
 } = require("../utils/testsUtils");
 const { includeSetUpAndTearDown, ValidationError, ranges } = require("./utils");

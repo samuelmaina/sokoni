@@ -2,6 +2,7 @@
 const { equal } = require("assert");
 
 const { database, utils } = require("../utils/generalUtils");
+const requires= require('../utils/requires');
 const { clearDb } = database;
 const { returnObjectWithoutProp, generateStringSizeN } = utils;
 
@@ -21,7 +22,7 @@ const {
   mergeBintoA,
 } = require("./utils");
 
-const ranges = require("../../src/config/constraints").base;
+const ranges = requires.constrains.base;
 
 const MAX_SETUP_TIME_IN_MS = 10000;
 

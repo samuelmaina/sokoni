@@ -1,13 +1,14 @@
-const { TokenGenerator } = require("../../database/models");
+const requires= require("../utils/requires");
+
+const { TokenGenerator } = requires.Models;
 
 const {
   verifyEqual,
-  verifyNull,
   verifyIDsAreEqual,
 } = require("../utils/testsUtils");
-const { token } = require("../../config/constraints");
+const { token } = requires.constrains;
 
-const { TOKEN_VALIDITY_IN_HOURS } = require("../../config/env");
+const { TOKEN_VALIDITY_IN_HOURS } = requires.envs;
 const {
   generateMongooseId,
   generateStringSizeN,

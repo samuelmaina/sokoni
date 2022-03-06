@@ -1,7 +1,11 @@
+const requires= require("../utils/requires");
+
+
+
 const {
   throwErrorIfStringLengthNotInRange,
   ensureIsMongooseId,
-} = require("../../database/models/utils");
+} = requires.ModelUtils;
 const { generateMongooseId } = require("../utils/generalUtils/utils");
 const {
   verifyThrowsError,

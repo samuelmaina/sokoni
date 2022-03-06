@@ -1,11 +1,13 @@
-const { productServices } = require("../../../database/services");
+const requires= require("../../utils/requires");
+
+const { productServices } = requires.services;
 const {
   verifyEqual,
   verifyFalsy,
   verifyTruthy,
 } = require("../../utils/testsUtils");
 
-const { PRODUCTS_PER_PAGE } = require("../../../config/env");
+const { PRODUCTS_PER_PAGE } = requires.envs;
 const { calculateSellingPrice, calculatePaginationData } = productServices;
 
 describe.skip("Product services", () => {

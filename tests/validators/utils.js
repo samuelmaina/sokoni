@@ -1,6 +1,8 @@
 const { strictEqual } = require('assert');
 
-const { validationResults } = require('../../utils');
+const requires= require('../utils/requires');
+
+const { validationResults } = requires.utils;
 
 const { verifyEqual, verifyTruthy } = require('../utils/testsUtils');
 

@@ -1,4 +1,8 @@
-const { shop, product } = require("../../config/constraints");
+const requires= require('../utils/requires');
+
+
+
+const { shop, product } = requires.constrains;
 
 const { page } = shop;
 const { category } = product;
@@ -11,7 +15,7 @@ const {
   productQueryValidator,
   pageV,
   categoryV,
-} = require("../../utils/validators/productQuery");
+} = requires.validators.productQuery;
 const { ensureGeneratesErrorOnPart } = require("./utils");
 
 describe.skip("productQuery validators", () => {

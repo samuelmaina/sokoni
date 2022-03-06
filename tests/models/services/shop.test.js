@@ -1,4 +1,6 @@
-const { shopServices } = require("../../../database/services");
+const requires= require("../../utils/requires");
+
+const { shopServices } = requires.services;
 const {
   verifyEqual,
   verifyNull,

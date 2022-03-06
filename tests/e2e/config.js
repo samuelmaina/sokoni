@@ -1,6 +1,6 @@
 const webdriver = require('selenium-webdriver');
 
-const app = require('../../app');
+const app = require('../../src/app');
 
 const { connectToDb, closeConnectionToBd } = require('../config');
 

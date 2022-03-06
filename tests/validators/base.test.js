@@ -1,11 +1,15 @@
-const { mongooseId } = require("../../config/constraints");
-const { validationResults } = require("../../utils");
+
+const requires= require('../utils/requires');
+
+
+const { mongooseId } = requires.constrains;
+const { validationResults } = requires.utils;
 const {
   intValidator,
   stringValidator,
   floatValidator,
   mongoIdValidator,
-} = require("../../utils/validators/utils");
+} =requires.validators.utils;
 const { ranges } = require("../models/utils");
 const {
   generateStringSizeN,

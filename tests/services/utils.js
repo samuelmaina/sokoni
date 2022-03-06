@@ -1,7 +1,8 @@
 const fs = require("fs");
 const path = require("path");
+const requires= require('../utils/requires');
 
-const { Product } = require("../../database/models");
+const { Product } = requires.Models;
 
 exports.findExistingProducts = async () => {
   return await Product.find();

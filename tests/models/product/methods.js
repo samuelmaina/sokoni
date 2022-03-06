@@ -1,4 +1,8 @@
-const { Product } = require('../../../database/models');
+const requires= require("../../utils/requires");
+const { Product } = requires.Models;
+
+
+
 const {
 	createTestProducts,
 	clearDb,

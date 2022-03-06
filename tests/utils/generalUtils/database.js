@@ -1,8 +1,10 @@
 const bcrypt = require("bcrypt");
 const assert = require("assert");
+const requires= require("../requires");
 
-const Models = require("../../../database/models");
-const { User, Admin, Product } = require("../../../database/models");
+const Models = requires.Models;
+
+const { User, Admin, Product } = Models;
 const {
   generateRandomProductData,
   generatePerfectProductData,

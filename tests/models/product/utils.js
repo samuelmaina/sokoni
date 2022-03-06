@@ -1,14 +1,15 @@
-const { PRODUCTS_PER_PAGE } = require("../../../config/env");
-const { Product, Metadata } = require("../../../database/models");
+const requires= require("../../utils/requires");
+
+
+const { PRODUCTS_PER_PAGE } = requires.envs;
+const { Product, Metadata } = requires.Models;
 const {
   generatePerfectProductData,
 } = require("../../utils/generalUtils/utils");
 const {
-  verifyEqual,
   verifyTruthy,
   verifyIDsAreEqual,
   ensureObjectHasKeyValuePair,
-  ensureGreaterThanOrEqual,
   ensureLessThanOrEqual,
 } = require("../../utils/testsUtils");
 

@@ -1,4 +1,9 @@
-const { addSale } = require("../../../database/services/adminSales");
+const requires= require("../../utils/requires");
+
+
+
+
+const { addSale } = requires.services.adminSalesServices;
 
 const { generateMongooseId } = require("../../utils/generalUtils/utils");
 const {

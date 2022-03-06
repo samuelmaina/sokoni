@@ -1,4 +1,6 @@
-const { Order } = require("../../database/models");
+const requires= require("../utils/requires");
+
+const { Order } = requires.Models;
 const {
   clearDb,
   createUserWithData,

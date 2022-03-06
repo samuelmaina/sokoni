@@ -1,4 +1,7 @@
-const emailSender = require("../../../utils/emailSender");
+
+const requires= require("../../utils/requires");
+
+const {emailSender} = requires.utils;
 
 describe.skip("Email Sender", () => {
   const receiver = "samuelmayna@gmail.com";

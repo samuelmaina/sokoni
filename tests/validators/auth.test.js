@@ -1,11 +1,13 @@
+const requires= require('../utils/requires');
+
 const {
   validateStringField,
   ensureGeneratesErrorOnPart,
   ensureDoesNotGeneratesErrorOnPart,
 } = require("./utils");
 
-const ranges = require("../../config/constraints").base;
-const { auth } = require("../../utils/validators");
+const ranges = requires.constrains.base;
+const { auth } = requires.validators
 
 const { generateStringSizeN } = require("../utils/generalUtils/utils");
 const {

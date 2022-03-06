@@ -1,5 +1,10 @@
-const { baseServices } = require("../../../database/services");
 const bcrypt = require("bcrypt");
+
+const requires= require("../../utils/requires");
+
+
+const { baseServices } = requires.services;
+
 const { hashPassword, confirmPassword } = baseServices;
 
 const password = "password";

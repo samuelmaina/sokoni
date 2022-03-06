@@ -1,7 +1,11 @@
+const requires= require("../../utils/requires");
+
+
+
 const {
   addElementIfNonExisting,
   removeElement,
-} = require("../../../database/services/metadata");
+} = requires.services.metadata;
 const { generateMongooseId } = require("../../utils/generalUtils/utils");
 const { ensureArrayContains, verifyEqual } = require("../../utils/testsUtils");
 

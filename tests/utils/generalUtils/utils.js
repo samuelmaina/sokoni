@@ -1,13 +1,15 @@
 const path = require("path");
 
+const requires= require('../requires')
+
 const { unlink, readdir } = require("fs");
 
 const ObjectId = require("mongoose").Types.ObjectId;
-const { product } = require("../../../config/constraints");
+const { product } = requires.constrains;
 
-const { Product } = require("../../../database/models");
+const { Product } = requires.Models;
 
-const { cloudUploader } = require("../../../utils");
+const { cloudUploader } = requires.utils;
 
 exports.generateStringSizeN = function (N) {
   let string = "";

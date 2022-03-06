@@ -1,9 +1,12 @@
-const { User } = require("../../database/models");
+const requires= require("../utils/requires");
+
+
+const { User } = requires.Models;
 const {
   clearDb,
   createUserWithData,
 } = require("../utils/generalUtils/database");
-const baseTest = require("./baseAdminAndUser");
+const baseTest = require("./baseAuth");
 const { generateMongooseId } = require("../utils/generalUtils/utils");
 const {
   verifyEqual,
