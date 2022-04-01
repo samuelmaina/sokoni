@@ -1,4 +1,4 @@
-let { auth } = require("../../utils/validators");
+let { auth } = require("../../validators");
 const {
   signUpValidator,
   loginValidator,
