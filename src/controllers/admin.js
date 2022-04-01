@@ -31,13 +31,17 @@ exports.getAdminPage = (req, res, next) => {
 };
 
 exports.getAddProduct = (req, res, next) => {
-  new Renderer(res)
-    .templatePath("admin/edit-product")
-    .pageTitle("Add Product")
-    .pathToPost("/admin/add-product")
-    .activePath("/add-product")
-    .appendDataToResBody({ editing: false, name: req.session.admin.name })
-    .render();
+  try {
+    new Renderer(res)
+      .templatePath("admin/edit-product")
+      .pageTitle("Add Product")
+      .pathToPost("/admin/add-product")
+      .activePath("/add-product")
+      .appendDataToResBody({ editing: false, name: req.session.admin.name })
+      .render();
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.postAddProduct = async (req, res, next) => {
