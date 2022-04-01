@@ -1,6 +1,16 @@
+const { renderables } = require("../../utils");
+
 module.exports = (req, res, next) => {
-	if (!(req.session && req.session.isUserLoggedIn)) {
-		return res.redirect('/auth/user/log-in');
-	}
-	next();
+  try {
+    const redirect = `/user/log-in`;
+    if (!(req.session && req.session.isUserLoggedIn)) {
+      return renderables
+        .logInRenderer(res, "User", "User Log In", redirect)
+        .appendInfo("Your are required to log in to continue")
+        .render();
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
 };
