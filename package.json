@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "node index.js",
     "start": "node index.js --imageFolder=images",
-    "test": " jest --runInBand --forceExit --imageFolder=testFolder ",
-    "mocha-test": "mocha test.js"
+    "test": " jest --runInBand --forceExit --imageFolder=testFolder "
   },
   "author": "Samuel Maina",
   "license": "ISC",
