@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Base = require("./baseForAdminAndUser");
+const Base = require("./baseAuth");
 
 const { user, mongooseId } = require("../../config/constraints");
 const { userServices } = require("../services/index");
@@ -74,7 +74,6 @@ methods.clearCart = function () {
 };
 
 methods.incrementBalance = function (amount) {
-  console.log(amount);
   let increment = +amount;
   let balance = +this.balance;
   balance += increment;
