@@ -11,3 +11,5 @@ exports.SESSION_VALIDITY_IN_HOURS = envVaribles.SESSION_VALIDITY_IN_HOURS;
 exports.TOKEN_VALIDITY_IN_HOURS = envVaribles.TOKEN_VALIDITY_IN_HOURS;
 exports.EMAIL = envVaribles.EMAIL;
 exports.BASE_URL = envVaribles.BASE_URL;
+exports.SMS_AUTHTOKEN = envVaribles.SMS_AUTHTOKEN;
+exports.SMS_ACCOUNTSID = envVaribles.SMS_ACCOUNTSID;
