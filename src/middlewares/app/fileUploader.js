@@ -11,9 +11,11 @@ function determineWhereToSave() {
   let args = process.argv;
   const productionDestination = "images";
   const productFed = args[2].split("=")[1];
-  if (productFed === productionDestination) return "data/".concat(productFed);
+
+  const folder = "src/data/";
+  if (productFed === productionDestination) return folder.concat(productFed);
   const testFed = args[4].split("=")[1];
-  return "data/".concat(testFed);
+  return folder.concat(testFed);
 }
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
