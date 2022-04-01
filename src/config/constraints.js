@@ -80,9 +80,9 @@ exports.paymentMethods = [
 
 exports.product = {
   title: {
-    minlength: 1,
+    minlength: 3,
     maxlength: 20,
-    error: stringErrorGenerator("Title", 1, 20),
+    error: stringErrorGenerator("Title", 3, 20),
   },
   //does not need error message.
   imageUrl: {
