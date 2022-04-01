@@ -6,7 +6,10 @@ const {
   Renderer,
   Flash,
   emailSender,
+  renderables,
 } = require("../../utils");
+
+const { logInRenderer } = renderables;
 
 class Auth {
   constructor(Model, type) {
@@ -113,15 +116,18 @@ class Auth {
 
   getLogin(req, res, next) {
     try {
-      const renderer = new Renderer(res)
-        .templatePath("auth/login")
-        .pageTitle(`${this.person} Log In`);
+      let activePath;
       if (this.type === "admin") {
-        renderer.activePath("/admin/login");
+        activePath = "/admin/login";
       } else {
-        renderer.activePath("/login");
+        activePath = "/login";
       }
-      renderer.pathToPost(this.routes.logIn).render();
+      return logInRenderer(
+        res,
+        this.person,
+        activePath,
+        this.routes.login
+      ).render();
     } catch (error) {
       next(error);
     }
@@ -207,9 +213,9 @@ class Auth {
           .appendError(` No ${this.person} by that email exists.`)
           .redirect(this.routes.reset);
       }
-      const token = await TokenGenerator.createOneForId(document.id);
+      const token = await EmailToken.createOneForEmail(email);
 
-      await emailSender({
+      emailSender({
         //http://localhost:3000/auth/user/new-password/57543e4605348c1d428f72eff767487bd255983f74119b2b221cab4f2c28bbf3
         from: EMAIL,
         to: document.email,
@@ -220,12 +226,21 @@ class Auth {
 			            Reset password</a></p>
 			           <p>Please note your have only one hour to reset your password</p>
 			           <br> Thank you `,
-      });
-      flash
-        .appendInfo(
-          "A link has been sent to your email. Please click the link to reset password."
-        )
-        .redirect(this.routes.logIn);
+      })
+        .then((result) => {
+          flash
+            .appendInfo(
+              "A link has been sent to your email. Please click the link to reset password. \n If mail is not in the  inbox, look at the spam folder."
+            )
+            .redirect(this.routes.logIn);
+        })
+        .catch((err) => {
+          flash
+            .appendInfo(
+              "You are offline. Get back online to reset your password."
+            )
+            .redirect(this.routes.logIn);
+        });
     } catch (error) {
       next(error);
     }
@@ -235,7 +250,7 @@ class Auth {
     try {
       const flash = new Flash(req, res);
       const token = req.params.token;
-      const tokenDetails = await TokenGenerator.findTokenDetailsByToken(token);
+      const tokenDetails = await EmailToken.findTokenDetailsByToken(token);
       if (!tokenDetails) {
         return flash
           .appendError("Too late for reset. Please try again.")
@@ -273,10 +288,8 @@ class Auth {
       if (validationErrors) {
         return renderer.appendError(validationErrors).render();
       }
-
-      const tokenDetails = await TokenGenerator.findTokenDetailsByToken(token);
-      const document = await this.Model.findById(tokenDetails.requesterId);
-
+      const tokenDetails = await EmailToken.findTokenDetailsByToken(token);
+      const document = await this.Model.findByEmail(tokenDetails.email);
       const resettingToSamePassword = await document.isCorrect(password);
       if (resettingToSamePassword) {
         return renderer
@@ -287,7 +300,7 @@ class Auth {
       new Flash(req, res)
         .appendInfo("Password reset successful.")
         .redirect(this.routes.logIn);
-      tokenDetails.delete();
+      await tokenDetails.delete();
     } catch (error) {
       next(error);
     }
