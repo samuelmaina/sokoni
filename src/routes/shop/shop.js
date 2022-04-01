@@ -3,7 +3,7 @@ const { ensureUserIsAuth } = require("../../middlewares/auth");
 const express = require("express");
 
 const { shop } = require("../../controllers");
-const { productQuery, product } = require("../../utils/validators");
+const { productQuery, product } = require("../../validators");
 
 const router = express.Router();
 

@@ -4,7 +4,7 @@ const fileUploader = require("../../middlewares/app/fileUploader");
 
 const { admin } = require("../../controllers");
 
-const { product, productQuery } = require("../../utils/validators");
+const { product, productQuery } = require("../../validators");
 const productValidtor = product.productValidator;
 const productQueryValidator = productQuery.productQueryValidator;
 

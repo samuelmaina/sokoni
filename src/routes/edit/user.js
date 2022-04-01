@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-let { auth, accounting, update } = require("../../utils/validators");
+let { auth, accounting, update } = require("../../validators");
 const { edit } = require("../../controllers");
 
 const { newPasswordValidator, updateValidator } = auth;
