@@ -17,7 +17,7 @@
  
  
   ## Running tests
- 1) create an empty MongoDB database say test.
+ 1) create an empty MongoDB database, say test.
  2) Put the name of the database in the MONGO_TEST_URI field in the .env file.
  3) Download chrome driver for your chrome version and include the path 
     where one has unziped it in the PATH in the system. The chrome driver is used to run end-to-end tests
