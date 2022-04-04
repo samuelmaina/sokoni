@@ -1,8 +1,28 @@
 
 
-# online-shop
- A web-based online shop.
+# SM online-shop
+ A web-based online shop written in Node.js and Ejs.
+ Jest had been used for unit and intergration tests while  Selenium has been employed for end-to-end tests.
  
+ 
+ ## Running the  application
+ 1) clone the repository 
+ 2) put  all key-values pairs for all the fields exported in the src/config/env.js file  in a .env file such as MONGO_URI
+ 3) run
+ ### npm start
+ 
+ 3) Open the browser at http://localhost:3000/
+ 
+ 
+  ## Running  the test
+ 1) Create a MongodDb database named test.
+ 2) To run the end-to-end tests, download the chrome driver for your chrome version and include the path 
+     where one has unziped the chrome driver in the PATH in the system.
+ 3) Run
+ ### npm test 
+ 
+# Some Parts of the Application
+### The home page
 ![home-page](https://user-images.githubusercontent.com/55924723/130409303-61e4a3ab-5293-4b72-84ca-1563bb1dc084.png)
 
 
