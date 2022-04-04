@@ -9,17 +9,20 @@
  1) clone the repository 
  2) put  all key-values pairs for all the fields exported in the src/config/env.js file  in a .env file such as MONGO_URI
  3) run
- ### npm start
+### npm install
+### npm start
  
- 3) Open the browser at http://localhost:3000/
+ 3) Open the browser at http://localhost:3000/ (in my case,3000 was set as the port number in the .env file. 
+   Put your port as the port number when opening in the browser)
  
  
   ## Running  the test
- 1) Create a MongodDb database named test.
- 2) To run the end-to-end tests, download the chrome driver for your chrome version and include the path 
-     where one has unziped the chrome driver in the PATH in the system.
+ 1) create an empty MongoDB database say test.
+ 2) Put the name of the database in the MONGO_TEST_URI field in the .env file.
+ 3)Download chrome driver for your chrome version and include the path 
+    where one has unziped it in the PATH in the system. The chrome driver is used to run end-to-end tests
  3) Run
- ### npm test 
+### npm test 
  
 # Some Parts of the Application
 ### The home page
