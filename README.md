@@ -12,7 +12,7 @@
 ### npm install
 ### npm start
  
- 3) Open the browser at http://localhost:3000/ (in my case,3000 was set as the port number in the .env file. 
+ 3) Open the browser at http://localhost:3000/ (in my case,3000 was set as the PORT number in the .env file. 
    Put your port as the port number when opening in the browser)
  
  
