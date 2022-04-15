@@ -1,5 +1,6 @@
 const { EMAIL, BASE_URL } = require("../../config/env");
-const { TokenGenerator, EmailToken } = require("../../database/models");
+const { EmailToken } = require("../../database/models");
+const { baseAuth } = require("../../useCases");
 
 const {
   validationResults,
@@ -44,36 +45,21 @@ class Auth {
     try {
       const { body } = req;
       const flash = new Flash(req, res).appendPreviousData(body);
-      const { email, name } = body;
+
       const validationErrors = validationResults(req);
-      if (validationErrors) {
-        return flash.appendError(validationErrors).redirect(this.routes.signUp);
-      }
-      const existingEmail = await this.Model.findByEmail(email);
-      if (existingEmail) {
-        const errorMessage = "Email already exists.Please try another one.";
-        return flash.appendError(errorMessage).redirect(this.routes.signUp);
-      }
 
-      const token = await EmailToken.createOneForEmail(email);
+      const result = await baseAuth.signUp(
+        body,
+        this.type,
+        validationErrors,
+        this.Model,
+        EmailToken,
+        emailSender
+      );
 
-      var message = {
-        from: EMAIL,
-        to: email,
-        subject: "Email Confirmation",
-
-        html: `<h3> Email Confirmation</h3>
-						<p> Thanks for joining SM Online Shop. The online shop you can trust.</p>
-            <br><p>Please click the link to confirm your email :
-            <a href=${BASE_URL}/auth/${this.type}/confirm-email/${token.token}>
-             Confirm Email</a></p>
-            <p>Please note you only have one hour to confirm your email.</p>
-            <br> Thank you 
-						 `,
-      };
-      await this.Model.createOne(body);
-      await emailSender(message);
-      next();
+      if (result.error)
+        return flash.appendError(result.error).redirect(this.routes.signUp);
+      if (result.success) next();
     } catch (error) {
       next(error);
     }
@@ -93,22 +79,15 @@ class Auth {
     try {
       const flash = new Flash(req, res);
       const token = req.params.token;
-      const tokenDetails = await EmailToken.findTokenDetailsByToken(token);
-      if (!tokenDetails) {
-        return flash
-          .appendError(
-            "Too late for confirmation or the token is incorrect. Please try again."
-          )
-          .appendPreviousData()
-          .redirect(this.routes.signUp);
-      }
 
-      const doc = await this.Model.findByEmail(tokenDetails.email);
-      await doc.markEmailAsConfirmed();
-      flash
-        .appendInfo("Email confirmation succcessful.")
-        .redirect(this.routes.logIn);
-      await tokenDetails.delete();
+      const result = await baseAuth.confirmEmail(token, EmailToken, this.Model);
+
+      if (result.error) {
+        return flash.appendError(result.error).redirect(this.routes.signUp);
+      }
+      if (result.success) {
+        return flash.appendInfo(result.info).redirect(this.routes.logIn);
+      }
     } catch (error) {
       next(error);
     }
