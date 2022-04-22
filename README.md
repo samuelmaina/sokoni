@@ -1,13 +1,13 @@
 
 
 # SM online-shop
- A web-based online shop written in Node.js with Ejs as the templating language. It controls  the buying behavior of customers hence enabling customer to plan their budget and spend within their means.
+ A web-based online shop written in Node.js with Ejs as the templating language. <br/>The application controls  the buying behavior of customers hence enabling customer to plan their budget and spend within their means. <br/>
  Jest had been used for unit and intergration tests while  Selenium has been employed for end-to-end tests.
  
  ## How the App works
- There are two  users of the application, sellers(admins) and customers.
+ There are two  users of the application, sellers(admins) and customers.<br/>
  Sellers can create products in add , edit and delete products from the application. They can also view their sales which shows how their products have performed in turns of sales such as profit which are  displayed as charts.
- 
+ <br/>
 Customers can buy products from the shop. The application stores the  balance that a user has which helps the  user in budgetting. They will top up their balance at their own convinience. Customers can download invoices of their products as pdf. They can also change the details their details including  their cell phone numbers which is used to top up their accounts.
 
 ## Technologies used
