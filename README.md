@@ -11,14 +11,14 @@
 Customers can buy products from the shop. The application stores the  balance that a user has which helps the  user in budgetting. They will top up their balance at their own convinience. Customers can download invoices of their products as pdf. They can also change the details their details including  their cell phone numbers which is used to top up their accounts.
 
 ## Technologies used
-Node.js for application development.
-Ejs templating language.
-Jest for unit and integration testing.
-Selenium for End-to-End testing.
-Mongo DB database.
-Mongoose for Object Document Mapping.
-Cloudinary for image hosting.
-Sendgrid for email sending.
+ Node.js for application development.<br/>
+ Ejs templating language.<br/>
+Jest for unit and integration testing.<br/>
+Selenium for End-to-End testing.<br/>
+Mongo DB database.<br/>
+Mongoose for Object Document Mapping.<br/>
+Cloudinary for image hosting.<br/>
+Sendgrid for email sending.<br/>
 Twillio for sms sending(used mostly for confirming telephone numbers).
 
 
@@ -42,14 +42,7 @@ Twillio for sms sending(used mostly for confirming telephone numbers).
 # Some Parts of the Application
 ### The home page
 ![home-page](https://user-images.githubusercontent.com/55924723/130409303-61e4a3ab-5293-4b72-84ca-1563bb1dc084.png)
-
-
- 
-the online shop offer the shop adminstrators a way to add and modify their respective products.No admin can view or modify another administrator proucts.
-
+<br/> <br/>
+###  The Admin Page
 ![Screenshot 2021-08-23 103859](https://user-images.githubusercontent.com/55924723/130409585-20901831-8e98-4855-aceb-01a374ae00b1.png)
 
-
-the shop also registers user so that they can add products to the cart and can later order them and download invoices .
-
-It also has a view for non registered users where they can view products available  in the shop.
