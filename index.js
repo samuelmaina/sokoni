@@ -9,5 +9,5 @@ connector(MONGO_URI)
     console.log("Connected to the db", "started at port", PORT);
   })
   .catch((e) => {
-    throw new Error(e);
+    console.log(e);
   });
