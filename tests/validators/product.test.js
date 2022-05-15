@@ -1,7 +1,7 @@
 const requires= require('../utils/requires');
 
 
-const ranges = require("../../config/constraints").product;
+const ranges = requires.constrains.product;
 const {
   validateStringField,
   validateFloatField,
@@ -9,7 +9,7 @@ const {
   ensureGeneratesErrorOnPart,
 } = require("./utils");
 
-const { product } = require("../../utils/validators");
+const { product } = requires.constrains;
 
 const {
   title,

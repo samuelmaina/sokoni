@@ -6,3 +6,4 @@ exports.fileManipulators = require("./fileManipulators");
 exports.cloudUploader = require("./imageCloudStorage");
 exports.smsSender = require("./smsSender");
 exports.renderables = require("./renderables");
+exports.smsSender2 = require("./smsSender2");

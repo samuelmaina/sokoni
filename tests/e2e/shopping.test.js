@@ -1,14 +1,6 @@
-const requires= require("../utils/requires");
+const requires = require("../utils/requires");
 
-
-
-const {
-  User,
-  Product,
-  Metadata,
-  AdminSales,
-  Order,
-} = requires.Models;
+const { User, Product, Metadata, AdminSales, Order } = requires.Models;
 const {
   startApp,
   getNewDriverInstance,
@@ -77,6 +69,7 @@ const data = {
 };
 
 const userLoginUrl = `${base}/auth/user/log-in`;
+
 describe("logged in user can be able to shop", () => {
   let user;
   let products = [];
@@ -114,7 +107,7 @@ describe("logged in user can be able to shop", () => {
 
   describe("Movement to other pages", () => {
     describe("Category", () => {
-      it(
+      it.only(
         "should click category links",
         async () => {
           const categories = ["category 1", "category 2"];
@@ -123,7 +116,7 @@ describe("logged in user can be able to shop", () => {
           products = await createTestProducts([adminId], noOfProducts);
           await feedProductsWithTestCategories(products, categories);
           for (const category of categories) {
-            //reload incase the there are errors.
+            //reload incase the there are errors when when rendering the previoius category.
             await page.openUrl(productPage);
             await page.clickLink(category);
             //A category page should come with the category as the title.
@@ -230,7 +223,7 @@ describe("logged in user can be able to shop", () => {
         MAX_TEST_PERIOD
       );
 
-      it.only(
+      it(
         "should refuse when quantity is out of the required range.",
         async () => {
           const quantity = 4,

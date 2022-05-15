@@ -1,8 +1,7 @@
-const requires= require("../utils/requires");
+const requires = require("../utils/requires");
 
 const { TokenGenerator, EmailToken } = requires.Models;
 const ranges = requires.constrains.base;
-
 
 const {
   startApp,
@@ -47,8 +46,39 @@ describe("Auth", () => {
     await clearDb();
     await closeApp();
   });
-  describe("Sign Up", () => {
-    describe.only(`Admin`, () => {
+
+  describe("Admin should be able to navigate to the admin portal.", () => {
+    it(
+      "should be able to access the admin portal.",
+      async () => {
+        await page.openUrl(base);
+        await page.clickLink("Proceed as a seller");
+        await ensureHasTitle(page, "Admin Actions");
+      },
+      MAX_TESTING_TIME
+    );
+    it(
+      "should be able to click login.",
+      async () => {
+        await page.openUrl(base + "/admin");
+        await page.clickLink("Login");
+        await ensureHasTitle(page, "Admin Log In");
+      },
+      MAX_TESTING_TIME
+    );
+    it(
+      "should be able to click Sign Up.",
+      async () => {
+        await page.openUrl(base + "/admin");
+        await page.clickLink("Sign Up");
+        await ensureHasTitle(page, "Admin Sign Up");
+      },
+      MAX_TESTING_TIME
+    );
+  });
+
+  describe.only("Sign Up", () => {
+    describe(`Admin`, () => {
       let url = `${baseAuth}/admin/sign-up`;
       signUpTester("Admin", url);
     });
@@ -101,7 +131,7 @@ function signUpTester(type, url) {
     await clearDb();
   });
   describe("Valid Credentials", () => {
-    it(
+    it.only(
       "valid credentials and valid token",
       async () => {
         await signUp(url, data);
@@ -148,19 +178,25 @@ function signUpTester(type, url) {
     );
   });
 
-  it("Invalid credentials", async () => {
-    const { email, password } = data;
+  it(
+    "Invalid credentials",
+    async () => {
+      const { email, password } = data;
 
-    const { minlength, error } = ranges.name;
-    const invalidNameData = {
-      name: generateStringSizeN(minlength - 1),
-      password,
-      email,
-    };
-    await signUp(url, invalidNameData);
-    const expectedTitle = `${type} Sign Up`;
-    await ensureHasTitleAndError(page, expectedTitle, error);
-  });
+      const { minlength, error } = ranges.name;
+      const invalidNameData = {
+        name: generateStringSizeN(minlength - 1),
+        password,
+        email,
+      };
+      await signUp(url, invalidNameData);
+
+      await page.hold(5000);
+      const expectedTitle = `${type} Sign Up`;
+      await ensureHasTitleAndError(page, expectedTitle, error);
+    },
+    MAX_TESTING_TIME
+  );
   it("should not sign up when email already existing in db.", async () => {
     await createDocForType(type, data);
     await signUp(url, data);
@@ -239,7 +275,7 @@ function resetTester(url, type) {
       await reset(url, data.email);
       const title = `${type} Log In`;
       const info =
-        "A link has been sent to your email. Please click the link to reset password.";
+        "A link has been sent to your email. Please click the link to reset password.\n If mail is not in the  inbox, look at the spam folder.";
       await ensureHasTitleAndInfo(page, title, info);
     },
     MAX_TESTING_TIME
@@ -276,7 +312,7 @@ function newPasswordTester(type) {
   it(
     "should change password when token is valid",
     async () => {
-      const { token } = await TokenGenerator.createOneForId(doc.id);
+      const { token } = await EmailToken.createOneForEmail(doc.email);
       const url = `${base}/auth/${generateUrlName(type)}/new-password/${token}`;
       await enterNewPassword(url, passwords);
       await ensureHasTitleAndInfo(
@@ -295,11 +331,7 @@ function newPasswordTester(type) {
       expect(passwordIsNewPassword).toBeTruthy();
 
       //ensure that the token is also deleted from the database after successful password reset.
-      expect(
-        await TokenGenerator.findOne({
-          requesterId: id,
-        })
-      ).toBeNull();
+      expect(await EmailToken.findTokenDetailsByToken(token)).toBeNull();
     },
     MAX_TESTING_TIME
   );

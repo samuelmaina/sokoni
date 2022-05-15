@@ -60,18 +60,6 @@ describe("Auth use cases", () => {
 
       verifyTruthy(results.success);
       const { name, email } = body;
-      // var expectedEmail = {
-      //   from: EMAIL,
-      //   to: email,
-      //   subject: "Email Confirmation",
-
-      //   html: `<h3> Email Confirmation</h3><p> ${name} Thanks for joining SM Online Shop. The online shop you can trust.</p>
-      //   <br><p>Please click the link to confirm your email :<a href=${BASE_URL}/auth/${type}/confirm-email/${token}>
-      //   Confirm Email</a></p>
-      //   <p>Please note you only have one hour to confirm your email.</p>
-      //   <br> Thank you`,
-      // };
-      // verifyEqual(expectedEmail, sentEmail);
 
       //ensure that the findByEmail is called.
       verifyTruthy(emailFinderCalled);
@@ -131,18 +119,6 @@ describe("Auth use cases", () => {
 
       verifyEqual(results.error, validationError);
       const { name, email } = body;
-      // var expectedEmail = {
-      //   from: EMAIL,
-      //   to: email,
-      //   subject: "Email Confirmation",
-
-      //   html: `<h3> Email Confirmation</h3><p> ${name} Thanks for joining SM Online Shop. The online shop you can trust.</p>
-      //   <br><p>Please click the link to confirm your email :<a href=${BASE_URL}/auth/${type}/confirm-email/${token}>
-      //   Confirm Email</a></p>
-      //   <p>Please note you only have one hour to confirm your email.</p>
-      //   <br> Thank you`,
-      // };
-      // verifyEqual(expectedEmail, sentEmail);
 
       //ensure that the findByEmail is not Called.
       verifyFalsy(emailFinderCalled);
@@ -203,20 +179,8 @@ describe("Auth use cases", () => {
 
       verifyEqual(results.error, error);
       const { name, email } = body;
-      // var expectedEmail = {
-      //   from: EMAIL,
-      //   to: email,
-      //   subject: "Email Confirmation",
 
-      //   html: `<h3> Email Confirmation</h3><p> ${name} Thanks for joining SM Online Shop. The online shop you can trust.</p>
-      //   <br><p>Please click the link to confirm your email :<a href=${BASE_URL}/auth/${type}/confirm-email/${token}>
-      //   Confirm Email</a></p>
-      //   <p>Please note you only have one hour to confirm your email.</p>
-      //   <br> Thank you`,
-      // };
-      // verifyEqual(expectedEmail, sentEmail);
-
-      //ensure that the findByEmail is not Called.
+      //ensure that the findByEmail is Called.
       verifyTruthy(emailFinderCalled);
 
       //ensure that the doc is not created;
@@ -227,6 +191,111 @@ describe("Auth use cases", () => {
 
       //ensure that the email is not sent
       verifyUndefined(isEmailSent);
+    });
+  });
+
+  describe("Confirm Email", () => {
+    it("should confirm email if the token is correct", async () => {
+      let calledToken;
+      let foundEmail;
+      let isTokenDeleted;
+      let emailIsMarkedAsConfirmed;
+
+      const testEmail = "example@email.com";
+
+      const EmailToken = {
+        findTokenDetailsByToken: function (token) {
+          calledToken = token;
+          const tokenDetails = {
+            email: testEmail,
+            delete: function () {
+              isTokenDeleted = true;
+            },
+          };
+          return tokenDetails;
+        },
+      };
+      const Model = {
+        findByEmail: function (email) {
+          foundEmail = email;
+          const doc = {
+            markEmailAsConfirmed: function () {
+              emailIsMarkedAsConfirmed = true;
+            },
+          };
+          return doc;
+        },
+      };
+      const token = "some token";
+
+      const info = "Email confirmation succcessful.";
+
+      const res = await baseAuth.confirmEmail(token, EmailToken, Model);
+      //ensure that the findDetailByToken is called.
+      verifyEqual(calledToken, token);
+
+      //ensure findByEmail is called
+      verifyEqual(foundEmail, testEmail);
+
+      //ensure is marked as read
+      verifyTruthy(emailIsMarkedAsConfirmed);
+
+      //ensure that the token is deleted
+      verifyTruthy(isTokenDeleted);
+
+      //ensure that the system gives success response.
+      verifyTruthy(res.success);
+
+      //ensure that the success info is appended to the res.
+      verifyEqual(res.info, info);
+    });
+
+    it("should not confirm email if the token is incorrect", async () => {
+      let calledToken;
+      let foundEmail;
+      let isTokenDeleted;
+      let emailIsMarkedAsConfirmed;
+
+      const testEmail = "example@email.com";
+
+      const EmailToken = {
+        findTokenDetailsByToken: function (token) {
+          calledToken = token;
+          const tokenDetails = {
+            email: testEmail,
+            delete: function () {
+              isTokenDeleted = true;
+            },
+          };
+          return null;
+        },
+      };
+      const Model = {
+        findByEmail: function (email) {
+          foundEmail = email;
+          const doc = {
+            markEmailAsConfirmed: function () {
+              emailIsMarkedAsConfirmed = true;
+            },
+          };
+          return doc;
+        },
+      };
+      const token = "some token";
+      const error =
+        "Too late for confirmation or the token is incorrect. Please try again.";
+
+      const res = await baseAuth.confirmEmail(token, EmailToken, Model);
+      //ensure that the findDetailByToken is called.
+      verifyEqual(calledToken, token);
+
+      //ensure findByEmail is not called
+      verifyUndefined(foundEmail);
+
+      //ensure that the email is not marked as verified
+      verifyUndefined(emailIsMarkedAsConfirmed);
+
+      verifyEqual(res.error, error);
     });
   });
 });

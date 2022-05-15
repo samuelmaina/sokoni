@@ -5,10 +5,7 @@ sgMail.setApiKey(SENDGRID_API_KEY);
 
 module.exports = async (msg) => {
   try {
-    const result = await sgMail.send(msg);
-    if (result) {
-      console.log("the email was sent succcessfully.");
-    }
+    await sgMail.send(msg);
   } catch (error) {
     console.log(error);
     throw new Error(error);

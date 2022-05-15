@@ -1,8 +1,7 @@
-
 const { equal } = require("assert");
 
 const { database, utils } = require("../utils/generalUtils");
-const requires= require('../utils/requires');
+const requires = require("../utils/requires");
 const { clearDb } = database;
 const { returnObjectWithoutProp, generateStringSizeN } = utils;
 
@@ -139,7 +138,7 @@ module.exports = (Model) => {
   describe("After creation", () => {
     describe("Statics", () => {
       describe("findByEmail", () => {
-        const N = 200;
+        const N = 20;
         it("returns null on empty db", async () => {
           await clearDb();
           await ensureReturnsNullOnNonExistentEmail();

@@ -1,10 +1,8 @@
 const requires= require('../utils/requires');
 
-const { validateStringField, validateFloatField } = require("./utils");
-
 const { accounting } =  requires.validators
 
-const ranges = require("../../config/constraints").accounting;
+const ranges = requires.constrains.accounting;
 const { validateAmount, validatePaymentMethod, paymentValidators } = accounting;
 
 describe.skip("Accounting validators", () => {

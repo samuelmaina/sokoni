@@ -2,7 +2,7 @@ const { renderables } = require("../../utils");
 
 module.exports = (req, res, next) => {
   try {
-    const redirect = `/user/log-in`;
+    const redirect = `/auth/user/log-in`;
     if (!(req.session && req.session.isUserLoggedIn)) {
       return renderables
         .logInRenderer(res, "User", "User Log In", redirect)

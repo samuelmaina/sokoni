@@ -1,4 +1,4 @@
-const { smsSender } = require('../utils/requires').utils;
+const { smsSender } = require("../utils/requires").utils;
 
 describe.skip("Tests for the sms sender", () => {
   it("should be able to send for the correct sms and  number", async () => {

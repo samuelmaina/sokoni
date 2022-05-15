@@ -1,5 +1,4 @@
-const requires= require("../utils/requires");
-
+const requires = require("../utils/requires");
 
 const { Admin } = requires.Models;
 const { includeSetUpAndTearDown } = require("./utils");

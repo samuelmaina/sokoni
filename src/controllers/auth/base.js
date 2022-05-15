@@ -80,6 +80,8 @@ class Auth {
       const flash = new Flash(req, res);
       const token = req.params.token;
 
+      console.log("This is the token from from the endpoint", token);
+
       const result = await baseAuth.confirmEmail(token, EmailToken, this.Model);
 
       if (result.error) {

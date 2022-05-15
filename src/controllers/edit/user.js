@@ -4,6 +4,7 @@ const {
   Flash,
   validationResults,
   smsSender,
+  smsSender2,
 } = require("../../utils");
 
 const DASHBOARD_PATH = "/auth/user/dashboard";
@@ -39,7 +40,8 @@ exports.validateInputAndGenerateShortCode = async (req, res, next) => {
       const details = await ShortCode.createOneForId(to);
       const shortCode = details.code;
       const message = `Your verification code is ${shortCode}`;
-      await smsSender(message, to);
+      await smsSender2(to, message);
+      // await smsSender(message, to);
       req.validateTel = true;
     }
     return next();

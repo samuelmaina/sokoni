@@ -116,7 +116,7 @@ module.exports = () => {
       });
     });
   });
-  describe.only("findProductsForPage", () => {
+  describe("findProductsForPage", () => {
     it("should return null on empty database", async () => {
       await expect(Product.findProductsForPage(1)).resolves.toBeNull();
     });

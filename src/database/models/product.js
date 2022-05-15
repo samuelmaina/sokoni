@@ -1,24 +1,14 @@
 const mongoose = require("mongoose");
 
-const { product, mongooseId } = require("../../config/constraints");
-const ranges = product;
-const { productServices, metadata } = require("../services");
-const {
-  findCategoriesPresent,
-  calculateSellingPrice,
-  calculatePaginationData,
-} = productServices;
-const {
-  ensureStringIsNonEmpty,
-  ensureIsMongooseId,
-  ensureIsPositiveInt,
-  ensureIsNonEmptyObject,
-  ensureValueIsWithinRange,
-  ensureIsInt,
-} = require("./utils");
+const { product } = require("../../config/constraints");
+
+const { productServices } = require("../services");
+const { calculateSellingPrice, calculatePaginationData } = productServices;
+const { ensureIsPositiveInt } = require("./utils");
 
 const { PRODUCTS_PER_PAGE } = require("../../config/env");
 const { fileManipulators, cloudUploader } = require("../../utils");
+const { formatFloat, formatInt } = require("../../utils/formatters");
 
 const POSITIVE_QUNTITY_QUERY = { quantity: { $gt: 0 } };
 
@@ -162,6 +152,7 @@ statics.findCategoryProductsForAdminIdAndPage = async function (
   const query = { adminId, category };
   const paginationData = await this.calculatePaginationData(page, query);
   const products = await this.getProductsPerPageForQuery(page, query);
+
   if (products.length === 0) {
     const metadata = await getMetadata();
     await metadata.removeAdminIdFromCategory(category, adminId);
@@ -256,9 +247,21 @@ statics.calculatePaginationData = async function (page, query = {}) {
 };
 
 statics.getProductsPerPageForQuery = async function (page, query) {
-  return await this.find(query)
+  const results = [];
+  const products = await this.find(query)
     .skip((page - 1) * PRODUCTS_PER_PAGE)
     .limit(PRODUCTS_PER_PAGE);
+
+  products.forEach((product) => {
+    const prod = { ...product._doc };
+    prod.sellingPrice = formatFloat(product.sellingPrice);
+    prod.buyingPrice = formatFloat(product.buyingPrice);
+    prod.quantity = formatInt(product.quantity, ",");
+    results.push(prod);
+  });
+
+  console.log(results);
+  return results;
 };
 
 async function getMetadata() {

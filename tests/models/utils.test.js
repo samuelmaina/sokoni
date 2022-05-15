@@ -20,6 +20,10 @@ describe.skip("utils tests", () => {
       verifyDoesNotThrowError(() => {
         throwErrorIfStringLengthNotInRange(threeLetters, 1, 3, error);
       });
+
+      verifyDoesNotThrowError(() => {
+        throwErrorIfStringLengthNotInRange(threeLetters, 1, 3, error);
+      });
     });
     it("throws for very short", () => {
       const tooSmall = "hi";

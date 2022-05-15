@@ -15,8 +15,8 @@ const connectToDb = async () => {
 const connector = async (mongo_uri) => {
   try {
     const connection = await mongoose.connect(mongo_uri, {
-      useUnifiedTopology: true,
-      useNewUrlParser: true,
+      useUnifiedTopology: false,
+      useNewUrlParser: false,
     });
     assert.ok(connection, "No errors thrown but connection not established.");
   } catch (error) {

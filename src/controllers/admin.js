@@ -223,6 +223,7 @@ exports.deleteProduct = async (req, res, next) => {
     const flash = new Flash(req, res);
     const adminId = returnAdminIdIfAdminIsInSession(req);
     const prodId = req.params.id;
+
     const prod = await Product.findById(prodId);
     if (!prod || !prod.isCreatedByAdminId(adminId)) {
       return flash

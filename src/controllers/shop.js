@@ -57,16 +57,11 @@ exports.getProducts = async (req, res, next) => {
       .pageTitle("Products")
       .activePath("/products")
       .appendDataToResBody({
+        name: req.user ? req.user.name : " ",
         productsData,
         categories,
-      });
-    if (!req.user) return renderer.render();
-    else
-      return renderer
-        .appendDataToResBody({
-          name: req.user.name,
-        })
-        .render();
+      })
+      .render();
   } catch (err) {
     next(err);
   }
@@ -92,17 +87,11 @@ exports.getProductsPerCategory = async (req, res, next) => {
       .templatePath("shop/products-list")
       .pageTitle(`${category}`)
       .appendDataToResBody({
+        name: req.user ? req.user.name : " ",
         productsData,
         categories,
-      });
-
-    if (req.user)
-      return renderer
-        .appendDataToResBody({
-          name: req.user.name,
-        })
-        .render();
-    else return renderer.render();
+      })
+      .render();
   } catch (error) {
     next(error);
   }
@@ -116,11 +105,18 @@ exports.getProduct = async (req, res, next) => {
     if (!product) {
       return res.redirect("/");
     }
+
+    const productsData = {
+      paginationData: {
+        currentPage: page,
+      },
+    };
     const renderer = new Renderer(res)
       .templatePath("shop/product-detail")
       .pageTitle(product.title)
       .activePath("/product")
       .appendDataToResBody({
+        productsData,
         product,
         currentPage: page,
       });

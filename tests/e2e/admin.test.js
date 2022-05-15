@@ -1,8 +1,8 @@
 const path = require("path");
 
-const requires= require('../utils/requires');
+const { deleteAllCreatedImages } = require("../utils/generalUtils/utils");
 
-
+const requires = require("../utils/requires");
 
 const { product, maxImageSize } = requires.constrains;
 
@@ -39,12 +39,6 @@ const {
   generalUtils,
   ProductPage,
 } = require("./utils");
-const {
-  ensureHasTitleAndInfo,
-  ensureHasTitleAndError,
-  clearModelsInProductTests,
-  clearSessions,
-} = require("./utils/generalUtils");
 
 const {
   createTestProducts,
@@ -54,9 +48,15 @@ const {
 } = require("../utils/generalUtils/database");
 const { By } = require("selenium-webdriver");
 const { ensureObjectsHaveSameFields, ranges } = require("../models/utils");
-const { PRODUCTS_PER_PAGE } = require("../../config/env");
-const { checkIfExist } = require("../../utils/imageCloudStorage");
-const { ensureHasTitle } = generalUtils;
+const { PRODUCTS_PER_PAGE } = requires.envs;
+const { checkIfExist } = requires.utils.cloudUploader;
+const {
+  ensureHasTitleAndInfo,
+  ensureHasTitleAndError,
+  clearModelsInProductTests,
+  ensureHasTitle,
+  clearSessions,
+} = generalUtils;
 
 const MAX_SETUP_TIME = 25000;
 const MAX_TESTING_TIME = 20000;
@@ -107,52 +107,40 @@ describe("Admin  ", () => {
     await clearDb();
     await clearSessions();
     await closeApp();
+    await deleteAllCreatedImages();
   });
-  describe("Unprotected Activities.", () => {
-    describe("navigation to the admin portal", () => {
-      it(
-        "should be able to access the admin portal.",
-        async () => {
-          await page.openUrl(base);
-          await page.clickLink("Proceed as a seller");
-          await ensureHasTitle(page, "Admin Actions");
-        },
-        MAX_TESTING_TIME
-      );
-      it(
-        "should be able to click login.",
-        async () => {
-          await page.openUrl(base + "/admin");
-          await page.clickLink("Login");
-          await ensureHasTitle(page, "Admin Log In");
-        },
-        MAX_TESTING_TIME
-      );
-      it(
-        "should be able to click Sign Up.",
-        async () => {
-          await page.openUrl(base + "/admin");
-          await page.clickLink("Sign Up");
-          await ensureHasTitle(page, "Admin Sign Up");
-        },
-        MAX_TESTING_TIME
-      );
-    });
-  });
-  describe("Protected Activities", () => {
-    beforeAll(async () => {
-      admin = await utilLogin(page, logInUrl, data, "admin");
-      await ensureHasTitle(page, "Your Products");
-    }, MAX_SETUP_TIME);
-    afterAll(async () => {
-      await clearSessions();
-    });
-    describe("Add Product", () => {
+
+  describe("Add Product", () => {
+    const url = `${base}/admin/add-product`;
+
+    it(
+      "should refuse when admin not logged in",
+      async () => {
+        await page.openUrl(url);
+        await ensureHasTitleAndInfo(
+          page,
+          "Admin Log In",
+          "Your are required to log in to continue"
+        );
+      },
+      MAX_TESTING_TIME
+    );
+
+    describe("When Logged In", () => {
+      beforeAll(async () => {
+        await logIn();
+      }, MAX_SETUP_TIME);
+
+      afterAll(async () => {
+        await clearSessions();
+      });
+
       beforeEach(async () => {
-        await page.openUrl(`${base}/admin/add-product`);
+        await page.openUrl(url);
       }, MAX_SETUP_TIME);
 
       afterEach(clearModelsInProductTests);
+
       it(
         "should upload a product ",
         async () => {
@@ -242,7 +230,31 @@ describe("Admin  ", () => {
         );
       }
     });
-    describe("Edit Product", () => {
+  });
+
+  describe("Editing products", () => {
+    it(
+      "should refuse when admin not logged in",
+      async () => {
+        await page.openUrl(productsUrl);
+        await ensureHasTitleAndInfo(
+          page,
+          "Admin Log In",
+          "Your are required to log in to continue"
+        );
+      },
+      MAX_TESTING_TIME
+    );
+
+    describe("When logged in", () => {
+      beforeAll(async () => {
+        await logIn();
+      }, MAX_SETUP_TIME);
+
+      afterAll(async () => {
+        await clearSessions();
+      });
+
       //TODO add to test to ensure that that editing comes with the previous data
       let created;
       beforeEach(async () => {
@@ -347,16 +359,45 @@ describe("Admin  ", () => {
         ensureObjectsHaveSameFields(update, created, fields);
       }
     });
-    describe("should be able to delete products", () => {
-      afterEach(async () => {
-        await clearDb();
+  });
+
+  describe("should be able to delete products", () => {
+    it(
+      "should refuse when admin not logged in",
+      async () => {
+        await page.openUrl(productsUrl);
+        await ensureHasTitleAndInfo(
+          page,
+          "Admin Log In",
+          "Your are required to log in to continue"
+        );
+      },
+      MAX_TESTING_TIME
+    );
+    describe("When logged in", () => {
+      beforeAll(async () => {
+        await logIn();
+      }, MAX_SETUP_TIME);
+
+      afterAll(async () => {
+        await clearSessions();
       });
+
+      //TODO add to test to ensure that that editing comes with the previous data
+      let created;
+      beforeEach(async () => {
+        await page.openUrl(`${base}/admin/add-product`);
+        await enterProductData(validProduct);
+        await page.hold(5000);
+        await clickOneEdit();
+      }, MAX_SETUP_TIME);
+      afterEach(clearModelsInProductTests);
+
       it(
         "should be able to delete products without reloading ",
         async () => {
           const noOfProducts = 2;
-          await createTestProducts([admin.id], noOfProducts);
-          await page.openUrl(productsUrl);
+          await await page.openUrl(productsUrl);
           await clickOneDelete();
 
           const articles = await page.getELements("article");
@@ -404,178 +445,183 @@ describe("Admin  ", () => {
         MAX_TESTING_TIME
       );
     });
+  });
 
-    describe("Should be able to click links", () => {
-      let products;
-      const productsUrl = `${base}/admin/products`;
-      beforeEach(async () => {
-        products = await createTestProducts([admin.id], 3);
-        await page.openUrl(productsUrl);
-      });
-      afterEach(clearModelsInProductTests);
-      describe("Category navigation", () => {
-        it(
-          "should click category links",
-          async () => {
-            const category = "category 1";
-            await clearModelsInProductTests();
-            const product = { ...validProduct };
-            product.category = category;
-            product.adminId = admin.id;
-            product.imageUrl = "some/path/to/some/image.jpg";
-            await Product.createOne(product);
+  describe("Should be able to click links", () => {
+    let products;
+    const productsUrl = `${base}/admin/products`;
+    beforeEach(async () => {
+      products = await createTestProducts([admin.id], 3);
+      await page.openUrl(productsUrl);
+    });
+    afterEach(clearModelsInProductTests);
+    describe("Category navigation", () => {
+      it(
+        "should click category links",
+        async () => {
+          const category = "category 1";
+          await clearModelsInProductTests();
+          const product = { ...validProduct };
+          product.category = category;
+          product.adminId = admin.id;
+          product.imageUrl = "some/path/to/some/image.jpg";
+          await Product.createOne(product);
 
+          //reload incase the there are errors.
+          await page.openUrl(productsUrl);
+          await page.hold(200);
+          await page.clickLink(category);
+          const title = await page.getTitle();
+          expect(title).toEqual(category);
+        },
+        MAX_TESTING_TIME
+      );
+
+      it(
+        "should click a pagination for a category ",
+        async () => {
+          const categories = ["category 1", "category 2"];
+          await clearModelsInProductTests();
+          for (const category of categories) {
+            for (let i = 0; i < PRODUCTS_PER_PAGE * 1.5; i++) {
+              const product = { ...validProduct };
+              product.category = category;
+              product.adminId = admin.id;
+              product.imageUrl = "some/path/to/some/image.jpg";
+              await Product.createOne(product);
+            }
+          }
+
+          for (const category of categories) {
             //reload incase the there are errors.
             await page.openUrl(productsUrl);
-            await page.hold(200);
             await page.clickLink(category);
+            await page.clickLink("2");
             const title = await page.getTitle();
             expect(title).toEqual(category);
-          },
-          MAX_TESTING_TIME
-        );
+            let articles = await page.getELements("article");
+            verifyEqual(articles.length, PRODUCTS_PER_PAGE * 0.5);
+          }
+        },
+        MAX_TESTING_TIME
+      );
 
-        it(
-          "should click a pagination for a category ",
-          async () => {
-            const categories = ["category 1", "category 2"];
-            await clearModelsInProductTests();
-            for (const category of categories) {
-              for (let i = 0; i < PRODUCTS_PER_PAGE * 1.5; i++) {
-                const product = { ...validProduct };
-                product.category = category;
-                product.adminId = admin.id;
-                product.imageUrl = "some/path/to/some/image.jpg";
-                await Product.createOne(product);
-              }
-            }
-
-            for (const category of categories) {
-              //reload incase the there are errors.
-              await page.openUrl(productsUrl);
-              await page.clickLink(category);
-              await page.clickLink("2");
-              const title = await page.getTitle();
-              expect(title).toEqual(category);
-              let articles = await page.getELements("article");
-              verifyEqual(articles.length, PRODUCTS_PER_PAGE * 0.5);
-            }
-          },
-          MAX_TESTING_TIME
-        );
-
-        it(
-          "should refuse when category is out of range",
-          async () => {
-            const categoryRange = ranges.product.category;
-            await page.openUrl(
-              `${base}/admin/category/${generateStringSizeN(
-                categoryRange.maxlength + 1
-              )}/?page=1`
-            );
-            await ensureHasTitleAndError(
-              page,
-              "Your Products",
-              categoryRange.error
-            );
-          },
-          MAX_TESTING_TIME
-        );
-        it(
-          "should refuse when page is out of range",
-          async () => {
-            const categoryRange = ranges.product.category;
-            await page.openUrl(
-              `${base}/admin/category/${generateStringSizeN(
-                categoryRange.maxlength
-              )}?page=${ranges.shop.page.max + 1}`
-            );
-            await ensureHasTitleAndError(
-              page,
-              "Your Products",
-              ranges.shop.page.error
-            );
-          },
-          MAX_TESTING_TIME
-        );
-      });
-
-      //Tests for checking that products are rendered are left out.
-      //When the products are not there, the test will fail since there will be
-      //nothing to select.
       it(
-        "should click a pagination link ",
+        "should refuse when category is out of range",
         async () => {
-          await clearDb();
-          await createTestProducts([admin.id], PRODUCTS_PER_PAGE * 1.5);
-          await page.clickLink("1");
-          let articles = await page.getELements("article");
-          verifyEqual(articles.length, PRODUCTS_PER_PAGE);
-          await page.clickLink("2");
-          articles = await page.getELements("article");
-          verifyEqual(articles.length, PRODUCTS_PER_PAGE * 0.5);
+          const categoryRange = ranges.product.category;
+          await page.openUrl(
+            `${base}/admin/category/${generateStringSizeN(
+              categoryRange.maxlength + 1
+            )}/?page=1`
+          );
+          await ensureHasTitleAndError(
+            page,
+            "Your Products",
+            categoryRange.error
+          );
+        },
+        MAX_TESTING_TIME
+      );
+      it(
+        "should refuse when page is out of range",
+        async () => {
+          const categoryRange = ranges.product.category;
+          await page.openUrl(
+            `${base}/admin/category/${generateStringSizeN(
+              categoryRange.maxlength
+            )}?page=${ranges.shop.page.max + 1}`
+          );
+          await ensureHasTitleAndError(
+            page,
+            "Your Products",
+            ranges.shop.page.error
+          );
         },
         MAX_TESTING_TIME
       );
     });
 
+    //Tests for checking that products are rendered are left out.
+    //When the products are not there, the test will fail since there will be
+    //nothing to select.
     it(
-      "Should be able to see  their sales",
+      "should click a pagination link ",
       async () => {
-        const testTitle = "title 1";
-        let productData = generatePerfectProductData();
-        productData.title = testTitle;
-        await createAdminSalesTestDataForAdminId(admin.id, [
-          await Product.createOne(productData),
-        ]);
-        await page.openUrl(`${base}/admin/get-admin-sales`);
-        const articles = await page.getELements("article");
-        const firstArticle = articles[0];
-
-        //ensure title is rendered.
-        const text = await firstArticle
-          .findElement(By.className("card__header"))
-          .getText();
-        //the test data contains the word 'title'
-        ensureValueGreateThan(text.length, ranges.product.title.minlength);
-
-        //ensure both the total and the profit are rendered .
-        const salesDataSections = await firstArticle.findElement(
-          By.className("card__content")
-        );
-        const paragraphs = await salesDataSections.findElements(By.css("p"));
-        const profit = await paragraphs[0].getText();
-        const total = await paragraphs[1].getText();
-        const currencyIndicator = "Kshs ";
-        verifyTruthy(
-          profit.indexOf(currencyIndicator) == 0 &&
-            total.indexOf(currencyIndicator) == 0
-        );
+        await clearDb();
+        await createTestProducts([admin.id], PRODUCTS_PER_PAGE * 1.5);
+        await page.clickLink("1");
+        let articles = await page.getELements("article");
+        verifyEqual(articles.length, PRODUCTS_PER_PAGE);
+        await page.clickLink("2");
+        articles = await page.getELements("article");
+        verifyEqual(articles.length, PRODUCTS_PER_PAGE * 0.5);
       },
       MAX_TESTING_TIME
     );
-
-    async function enterProductData(product) {
-      const prodPage = new ProductPage(page);
-      await prodPage.enterTitle(product.title);
-      await prodPage.chooseFIle(product.file);
-      await prodPage.enterBuyingPrice(product.buyingPrice);
-      await prodPage.enterPercentageProfit(product.percentageProfit);
-      await prodPage.enterQuantity(product.quantity);
-      await prodPage.enterBrand(product.brand);
-      await prodPage.enterCategory(product.category);
-      await prodPage.enterDescription(product.description);
-      await prodPage.submit();
-    }
-    async function clickOneEdit() {
-      const articles = await page.getELements("article");
-      await articles[0].findElement(By.className(`edit_product`)).click();
-    }
-    async function clickOneDelete() {
-      const articles = await page.getELements("article");
-      await articles[0].findElement(By.className("delete")).click();
-    }
   });
+
+  it(
+    "Should be able to see  their sales",
+    async () => {
+      const testTitle = "title 1";
+      let productData = generatePerfectProductData();
+      productData.title = testTitle;
+      await createAdminSalesTestDataForAdminId(admin.id, [
+        await Product.createOne(productData),
+      ]);
+      await page.openUrl(`${base}/admin/get-admin-sales`);
+      const articles = await page.getELements("article");
+      const firstArticle = articles[0];
+
+      //ensure title is rendered.
+      const text = await firstArticle
+        .findElement(By.className("card__header"))
+        .getText();
+      //the test data contains the word 'title'
+      ensureValueGreateThan(text.length, ranges.product.title.minlength);
+
+      //ensure both the total and the profit are rendered .
+      const salesDataSections = await firstArticle.findElement(
+        By.className("card__content")
+      );
+      const paragraphs = await salesDataSections.findElements(By.css("p"));
+      const profit = await paragraphs[0].getText();
+      const total = await paragraphs[1].getText();
+      const currencyIndicator = "Kshs ";
+      verifyTruthy(
+        profit.indexOf(currencyIndicator) == 0 &&
+          total.indexOf(currencyIndicator) == 0
+      );
+    },
+    MAX_TESTING_TIME
+  );
+
+  async function logIn() {
+    admin = await utilLogin(page, logInUrl, data, "admin");
+    await ensureHasTitle(page, "Your Products");
+  }
+
+  async function enterProductData(product) {
+    const prodPage = new ProductPage(page);
+    await prodPage.enterTitle(product.title);
+    await prodPage.chooseFIle(product.file);
+    await prodPage.enterBuyingPrice(product.buyingPrice);
+    await prodPage.enterPercentageProfit(product.percentageProfit);
+    await prodPage.enterQuantity(product.quantity);
+    await prodPage.enterBrand(product.brand);
+    await prodPage.enterCategory(product.category);
+    await prodPage.enterDescription(product.description);
+    await prodPage.submit();
+  }
+  async function clickOneEdit() {
+    const articles = await page.getELements("article");
+    await articles[0].findElement(By.className(`edit_product`)).click();
+  }
+  async function clickOneDelete() {
+    const articles = await page.getELements("article");
+    await articles[0].findElement(By.className("delete")).click();
+  }
 });
 
 async function ensureProductExistUsingItsTitle(title) {

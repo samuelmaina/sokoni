@@ -2,5 +2,5 @@
     <%- include('./csurf.ejs') %>
         <input class="btn add-to-cart-btn" type="submit" value="Add to Cart">
         <input type="hidden" name="page" value="<%=productsData.paginationData.currentPage %>">
-        <input type="hidden" name="productId" value="<%= product.id %>">
+        <input type="hidden" name="productId" value="<%= product._id %>">
 </form>

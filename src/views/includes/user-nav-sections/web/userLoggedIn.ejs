@@ -1,7 +1,10 @@
 
 <li class="main-header__item" style="flex-direction: column;">
-    <i class="fas fa-shopping-cart shop-icon"></i>
+    <i class="fas fa-shopping-cart shop-icon"></i>   
     <a id="cart" class="<%= path === '/cart' ? 'active' : '' %>" href="/cart">Cart</a>
+    <% if (noOfCartProducts>0) { %>
+        <span class='badge badge-warning' id='lblCartCount'> <%= noOfCartProducts %> </span>
+    <% }%>
 </li>
 <li class="main-header__item">
     <i class="fas fa-receipt shop-icon" ></i>
