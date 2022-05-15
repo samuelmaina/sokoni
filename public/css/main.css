@@ -64,20 +64,8 @@ body > header > h1 {
   color: rgb(190, 183, 183);
   padding: 0 0.25rem;
 }
-.main-header::before {
-  content: "";
-  height: 40px;
-  width: 10px;
-  position: absolute;
-  background-color: black;
-}
-.main-header::after {
-  content: "";
-  height: 40px;
-  width: 10px;
-  position: absolute;
-  background-color: black;
-}
+
+
 
 .error-message {
   font-family: "Noto Sans JP", "Noto Sans JP ", Calibri, "Trebuchet MS",
@@ -136,9 +124,10 @@ form {
 }
 
 .main-header__nav {
+  margin-left:0;
   height: 60%;
   width: 80%;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: space-between;
 }
