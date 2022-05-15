@@ -259,8 +259,6 @@ statics.getProductsPerPageForQuery = async function (page, query) {
     prod.quantity = formatInt(product.quantity, ",");
     results.push(prod);
   });
-
-  console.log(results);
   return results;
 };
 

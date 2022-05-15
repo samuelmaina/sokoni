@@ -11,6 +11,7 @@ const {
   ensureIsPositiveFloat,
   ensureIsInt,
 } = require("./utils");
+const { formatFloat } = require("../../utils/formatters");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
@@ -61,7 +62,7 @@ methods.deleteProductIdFromCart = async function (prodId) {
 methods.populateCartProductsDetails = async function () {
   await this.populate("cart.productData", "sellingPrice title");
   const cart = this.cart;
-  const total = userServices.calculateProductsTotals(cart);
+  const total = formatFloat(userServices.calculateProductsTotals(cart));
   return {
     cart,
     total,

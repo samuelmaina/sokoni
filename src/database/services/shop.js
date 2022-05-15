@@ -30,7 +30,7 @@ exports.cartTotalValidator = (
 
 exports.pipeInvoicePdf = async function (orderdetails, res, User) {
   const shopEmail = "samuelmainaonlineshop@gmail.com",
-    shopName = "SM Online Shop.",
+    shopName = "Sokoni.",
     shopMotto = "Online shop you can trust.",
     shopLogo = "public/logos/logo.png",
     footer = "Payment is due within 15 days. Thank you for shopping with us.";
