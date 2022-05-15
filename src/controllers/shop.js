@@ -179,6 +179,7 @@ exports.postToCart = async (req, res, next) => {
       total = req.session.total;
     }
     const productTotal = product.sellingPrice * quantity;
+
     const balanceError = cartTotalValidator(
       total,
       productTotal,
