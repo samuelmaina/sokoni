@@ -1,13 +1,12 @@
-const { renderables } = require("../../utils");
+const { Flash } = require("../../utils");
 
 module.exports = (req, res, next) => {
   try {
-    const redirect = `/auth/user/log-in`;
+    const url = `/auth/user/log-in`;
     if (!(req.session && req.session.isUserLoggedIn)) {
-      return renderables
-        .logInRenderer(res, "User", "User Log In", redirect)
+      return new Flash(req, res)
         .appendInfo("Your are required to log in to continue")
-        .render();
+        .redirect(url);
     }
     next();
   } catch (error) {
