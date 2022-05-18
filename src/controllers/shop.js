@@ -7,6 +7,9 @@ const { Flash, Renderer, validationResults } = require("../utils");
 const { Product, Order } = require("../database/models");
 
 const { shopServices } = require("../database/services");
+const { formatFloat } = require("../utils/formatters");
+
+const { redirectUrlAndBody, resetBodyAndUrl } = require("../config/urls");
 const { productQuantityValidator, cartTotalValidator, pipeInvoicePdf } =
   shopServices;
 
@@ -134,8 +137,12 @@ exports.getProduct = async (req, res, next) => {
 
 exports.getAddToCart = async (req, res, next) => {
   try {
-    const { productId, page } = req.body;
+    const body = redirectUrlAndBody.body || req.body;
+
+    const { productId, page } = body;
     const product = await Product.findById(productId);
+
+    resetBodyAndUrl();
 
     new Renderer(res)
       .templatePath("shop/add-to-cart")
@@ -154,8 +161,11 @@ exports.postToCart = async (req, res, next) => {
   try {
     const validationErrors = validationResults(req);
 
-    let { page, quantity, productId } = req.body;
-    const previousData = req.body;
+    const { body } = req;
+
+    let { page, quantity, productId } = body;
+
+    const previousData = body;
 
     const product = await Product.findById(productId);
     const renderer = new Renderer(res)
@@ -210,6 +220,7 @@ exports.getCart = async (req, res, next) => {
 
     //put this data in the session incase the user will order the product when
     //they view the cart
+
     req.session.total = total;
     req.session.orderedProducts = req.user.cart;
 
@@ -218,7 +229,7 @@ exports.getCart = async (req, res, next) => {
       .pageTitle("Your Cart")
       .appendDataToResBody({
         products: cart,
-        total,
+        total: formatFloat(total),
         name: req.user.name,
       })
       .activePath("/cart")
@@ -255,7 +266,6 @@ exports.createOrder = async (req, res, next) => {
     await req.user.clearCart();
     res.redirect("/orders");
     await order.populateDetails();
-    console.log(order.products);
     await AdminSales.addSalesToAdmins(order.products);
   } catch (error) {
     next(error);
