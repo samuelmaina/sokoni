@@ -1,4 +1,5 @@
 const { EMAIL, BASE_URL } = require("../../config/env");
+const { redirectUrlAndBody, resetBodyAndUrl } = require("../../config/urls");
 const { EmailToken } = require("../../database/models");
 const { baseAuth } = require("../../useCases");
 
@@ -80,8 +81,6 @@ class Auth {
       const flash = new Flash(req, res);
       const token = req.params.token;
 
-      console.log("This is the token from from the endpoint", token);
-
       const result = await baseAuth.confirmEmail(token, EmailToken, this.Model);
 
       if (result.error) {
@@ -152,11 +151,11 @@ class Auth {
     }
   }
 
-  successfulLoginRedirect() {
+  successfulLoginRedirect(req) {
     if (this.type === "admin") {
-      return this.routes.adminSuccessfulLoginRedirect;
+      return redirectUrlAndBody.url || this.routes.adminSuccessfulLoginRedirect;
     } else {
-      return this.routes.userSuccessfulLoginRedirect;
+      return redirectUrlAndBody.url || this.routes.userSuccessfulLoginRedirect;
     }
   }
 
@@ -164,8 +163,10 @@ class Auth {
     try {
       this.setSessionAuth(req);
       return req.session.save((err) => {
+        const url = this.successfulLoginRedirect(req);
         if (err) throw new Error(err);
-        res.redirect(this.successfulLoginRedirect());
+        if (redirectUrlAndBody.isPostRequest) res.redirect(307, url);
+        else res.redirect(url);
       });
     } catch (error) {
       next(error);
