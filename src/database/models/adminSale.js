@@ -32,7 +32,8 @@ const AdminSales = new Schema({
             max: 20000,
             min: 1,
           },
-          soldAt: { type: Date, require: true, max: Date.now() },
+          //allow a 5 s time for the machine to carry out the operation.
+          soldAt: { type: Date, require: true, max: Date.now() + 5000 },
         },
       ],
     },
