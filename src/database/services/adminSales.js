@@ -40,10 +40,12 @@ exports.calculatProductsSalesData = (products) => {
     let profit = 0.0;
     let total = 0.0;
     calculateSalesTotalAndProfit();
+
     productsAndTheirProfits.push({
       productData: product.productData,
       total,
       profit,
+      sales: product.sales,
     });
     function calculateSalesTotalAndProfit() {
       const { sellingPrice, buyingPrice } = product.productData;
