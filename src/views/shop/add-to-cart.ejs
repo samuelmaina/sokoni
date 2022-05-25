@@ -19,8 +19,12 @@
                         <label for="quantity">Quantity</label>
                     <input type="number" name="quantity" value="<%= previousData.quantity%>">
                     </span>
+                    <div class="container"><span> Current Total </span> <p id="total"><%=total %> </p></div>
+                    <div class="container"><span id="hidable"> Your current balance</span><p id="balance"><%=balance %> </p></div>
+
                     <button class='btn' id="push-to-cart-btn" type="submit" >Push To Cart</button>
                     <input type="hidden" value="<%=page %>" name="page">
+                    <input type="hidden" value="<%=product.sellingPrice %>" id="sellingPrice">
                     <input type="hidden" name="productId" value="<%= product.id %>">
                 </form>
                 <a class="btn" href="/products/?page=<%=page%>">Continue Shopping</a>
@@ -29,5 +33,5 @@
         
     </div>
     </main>
-    <script src="/js/calculator.js"></script>
+    <script type="module" src="/js/calculator.js"></script>
 </body>

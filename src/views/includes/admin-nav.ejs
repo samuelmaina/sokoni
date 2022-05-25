@@ -14,7 +14,7 @@
       <%- include('./admin-nav-sections/web/guest') %>
       <% } %>
       <% if (isAdminLoggedIn||isUserLoggedIn) { %>
-      <%- include('./admin-nav-sections/web/logout') %>
+      <%- include('./logout') %>
       <% } %>
     </ul>
   </nav>
@@ -30,7 +30,7 @@
     <%- include('./admin-nav-sections/mobile/guest') %>
     <% } %>
     <% if (isAdminLoggedIn||isUserLoggedIn) { %>
-    <%- include('./admin-nav-sections/mobile/logout') %>
+    <%- include('./logout') %>
     <% } %>
   </ul>
 </nav>
