@@ -288,7 +288,7 @@ class Auth {
     }
   }
 
-  postLogout(req, res, next) {
+  logout(req, res, next) {
     req.session.destroy((err) => {
       if (err) {
         next(err);
