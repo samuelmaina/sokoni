@@ -54,8 +54,8 @@ class BaseRouting {
       .post(routes.newPassword, newPasswordValidator, (req, res, next) =>
         controller.postNewPassword(req, res, next)
       );
-    this.router.post(routes.logOut, (req, res, next) =>
-      controller.postLogout(req, res, next)
+    this.router.get(routes.logOut, (req, res, next) =>
+      controller.logout(req, res, next)
     );
   }
   getRouter() {
