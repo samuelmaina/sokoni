@@ -29,7 +29,6 @@ class UserAuth extends BaseAuth {
         .appendDataToResBody({
           user,
           navigationData,
-          name: user.name,
         })
         .render();
     } catch (error) {

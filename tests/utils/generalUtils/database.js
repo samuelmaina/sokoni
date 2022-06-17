@@ -1,6 +1,6 @@
 const bcrypt = require("bcrypt");
 const assert = require("assert");
-const requires= require("../requires");
+const requires = require("../requires");
 
 const Models = requires.Models;
 
@@ -165,6 +165,10 @@ exports.feedProductsWithTestCategories = async (products, categories) => {
 exports.ensureProductsHaveProperties = (products, props) => {
   for (const product of products) {
     for (const prop of props) {
+      if (prop === "sales") {
+        expect(product).toHaveProperty(prop);
+        continue;
+      }
       expect(product.productData).toHaveProperty(prop);
     }
   }

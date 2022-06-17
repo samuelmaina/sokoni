@@ -46,7 +46,7 @@ const Product = new Schema(
     percentageProfit: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0,
       max: 300,
     },
     //this one is always calculated by
@@ -66,7 +66,7 @@ const Product = new Schema(
     quantity: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0,
       max: 2000000,
     },
     adminId: {

@@ -1,4 +1,4 @@
-export function formatIntoCurrency(real) {
+function formatIntoCurrency(real) {
   const numberized = Number(real);
   if (!(numberized >= 0)) {
     throw Error(`Value ${numberized} is not a postive number`);
@@ -6,7 +6,7 @@ export function formatIntoCurrency(real) {
   let currencyToken = "Kshs ";
   return currencyToken.concat(formatFloat(numberized));
 }
-export function formatFloat(real) {
+function formatFloat(real) {
   if (typeof real !== "number") {
     throw new Error("Value must be a number.");
   }
@@ -25,8 +25,7 @@ export function formatFloat(real) {
   result += floatingPart;
   return result;
 }
-
-export function formatInt(num, separator) {
+function formatInt(num, separator) {
   const numAsString = num.toString();
   const N = numAsString.length;
 
@@ -44,3 +43,5 @@ export function formatInt(num, separator) {
   }
   return final;
 }
+
+export { formatIntoCurrency };

@@ -78,7 +78,7 @@ describe("Admin Sales", () => {
           verifyEqual(soldProducts[0].sales.length, 1);
         });
       });
-      it("findOneForAdminIdAndPopulateProductsData", async () => {
+      it.only("findOneForAdminIdAndPopulateProductsData", async () => {
         const adminId = generateMongooseId();
         const numberOfProds = 10;
 
@@ -88,10 +88,16 @@ describe("Admin Sales", () => {
         const sales = await AdminSales.findOneForAdminIdAndPopulateProductsData(
           adminId
         );
-        const props = ["title", "sellingPrice", "buyingPrice", "imageUrl"];
+        const props = [
+          "title",
+          "sellingPrice",
+          "buyingPrice",
+          "sales",
+          "imageUrl",
+        ];
         ensureProductsHaveProperties(sales, props);
         sales.forEach((product, index) => {
-          const { total, productData, profit } = product;
+          const { total, productData, profit, sales } = product;
           verifyEqual(
             total,
             Number((100 * productData.sellingPrice).toFixed(2))

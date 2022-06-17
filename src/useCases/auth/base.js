@@ -30,7 +30,7 @@ exports.signUp = async (
     html: `<h3> Email Confirmation</h3><p> ${name} Thanks for joining SM Online Shop. The online shop you can trust.</p>
     <br><p>Please click the link to confirm your email :<a href=${BASE_URL}/auth/${type}/confirm-email/${tokenDetails.token}>
     Confirm Email</a></p>
-    <p>Please note you only have one hour to confirm your email.</p>
+    <p>Please note you only have 1 day to confirm your email.</p>
     <br> Thank you`,
   };
   await Model.createOne(body);

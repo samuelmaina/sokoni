@@ -6,20 +6,27 @@ class Flash {
 
   appendError(error) {
     const errorKey = "error";
-    const {_req} = this;
+    const { _req } = this;
     _req.flash(errorKey, error);
     return this;
   }
   appendPreviousData(previousData = {}) {
     const previousDataKey = "previous-data";
-    const {_req} = this;
+    const { _req } = this;
     _req.flash(previousDataKey, previousData);
     return this;
   }
   appendInfo(info) {
     const infoKey = "info";
-    const {_req} = this;
+    const { _req } = this;
     _req.flash(infoKey, info);
+    return this;
+  }
+
+  appendSuccess(success) {
+    const successKey = "success";
+    const { _req } = this;
+    _req.flash(successKey, success);
     return this;
   }
 
@@ -28,7 +35,7 @@ class Flash {
    * @param {String} path
    */
   redirect(path) {
-    const {_res} = this;
+    const { _res } = this;
     _res.redirect(path);
   }
 }

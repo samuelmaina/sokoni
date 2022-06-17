@@ -60,7 +60,14 @@ class Auth {
 
       if (result.error)
         return flash.appendError(result.error).redirect(this.routes.signUp);
-      if (result.success) next();
+      if (result.success) {
+        return flash
+          .appendSuccess("Sign Up successful.")
+          .appendInfo(
+            "Click the link sent to your email for account confirmation.You can still login without confirmation but confirmation may be required later."
+          )
+          .redirect(this.routes.logIn);
+      }
     } catch (error) {
       next(error);
     }
@@ -87,7 +94,7 @@ class Auth {
         return flash.appendError(result.error).redirect(this.routes.signUp);
       }
       if (result.success) {
-        return flash.appendInfo(result.info).redirect(this.routes.logIn);
+        return flash.appendSuccess(result.info).redirect(this.routes.logIn);
       }
     } catch (error) {
       next(error);
@@ -127,13 +134,13 @@ class Auth {
           .appendError("Invalid Email or Password")
           .redirect(this.routes.logIn);
       }
-      if (!document.isEmailConfirmed) {
-        return flash
-          .appendError(
-            "Email not confirmed! Please confirm your email by the click the link sent to your inbox."
-          )
-          .redirect(this.routes.logIn);
-      }
+      // if (!document.isEmailConfirmed) {
+      //   return flash
+      //     .appendError(
+      //       "Email not confirmed! Please confirm your email by the click the link sent to your inbox."
+      //     )
+      //     .redirect(this.routes.logIn);
+      // }
       req.document = document;
       return next();
     } catch (error) {
@@ -211,8 +218,8 @@ class Auth {
       })
         .then((result) => {
           flash
-            .appendInfo(
-              "A link has been sent to your email. Please click the link to reset password. \n If mail is not in the  inbox, look at the spam folder."
+            .appendSuccess(
+              "Reset Successful.A link has been sent to your email. Please click the link to reset password. \n If mail is not in the  inbox, look at the spam folder."
             )
             .redirect(this.routes.logIn);
         })
@@ -280,7 +287,7 @@ class Auth {
       }
       await document.update("password", password);
       new Flash(req, res)
-        .appendInfo("Password reset successful.")
+        .appendSuccess("Password reset successful.")
         .redirect(this.routes.logIn);
       await tokenDetails.delete();
     } catch (error) {

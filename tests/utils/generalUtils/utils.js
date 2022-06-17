@@ -1,6 +1,6 @@
 const path = require("path");
 
-const requires= require('../requires')
+const requires = require("../requires");
 
 const { unlink, readdir } = require("fs");
 

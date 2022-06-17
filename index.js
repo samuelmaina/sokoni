@@ -3,6 +3,7 @@ const { MONGO_URI, PORT } = require("./src/config/env");
 const { connector } = require("./src/database/models/utils");
 
 const app = require("./src/app");
+
 connector(MONGO_URI)
   .then(() => {
     app.listen(PORT);

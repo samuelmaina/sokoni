@@ -1,12 +1,10 @@
-const requires= require("../../utils/requires");
+const requires = require("../../utils/requires");
 const { userServices } = requires.services;
-
-
 
 const { generateMongooseId } = require("../../utils/generalUtils/utils");
 const {
   ensureArrayContains,
-  verifyEqual,  
+  verifyEqual,
   verifyIDsAreEqual,
   ensureObjectHasKeyValuePair,
 } = require("../../utils/testsUtils");

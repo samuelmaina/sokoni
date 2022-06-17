@@ -27,17 +27,15 @@ exports.getIndex = async (req, res, next) => {
     //other logic may be added later.
     const productsData = await Product.findProductsForPage(page);
 
-    const renderer = new Renderer(res)
+    return new Renderer(res)
       .templatePath("shop/index")
       .pageTitle("SM Online Shop")
       .activePath("/")
       .appendDataToResBody({
         productsData,
         categories,
-      });
-
-    if (!req.user) return renderer.render();
-    else return renderer.appendDataToResBody({ name: req.user.name }).render();
+      })
+      .render();
   } catch (error) {
     next(error);
   }
@@ -55,12 +53,11 @@ exports.getProducts = async (req, res, next) => {
     const categories = await Product.findCategories();
     const productsData = await Product.findProductsForPage(page);
 
-    const renderer = new Renderer(res)
+    new Renderer(res)
       .templatePath("shop/products-list")
       .pageTitle("Products")
       .activePath("/products")
       .appendDataToResBody({
-        name: req.user ? req.user.name : " ",
         productsData,
         categories,
       })
@@ -86,11 +83,10 @@ exports.getProductsPerCategory = async (req, res, next) => {
       page
     );
 
-    const renderer = new Renderer(res)
+    new Renderer(res)
       .templatePath("shop/products-list")
       .pageTitle(`${category}`)
       .appendDataToResBody({
-        name: req.user ? req.user.name : " ",
         productsData,
         categories,
       })
@@ -122,14 +118,8 @@ exports.getProduct = async (req, res, next) => {
         productsData,
         product,
         currentPage: page,
-      });
-    if (!req.user) return renderer.render();
-    else
-      return renderer
-        .appendDataToResBody({
-          name: req.user.name,
-        })
-        .render();
+      })
+      .render();
   } catch (error) {
     next(error);
   }
@@ -140,6 +130,8 @@ exports.getAddToCart = async (req, res, next) => {
     const body = redirectUrlAndBody.body || req.body;
 
     const { productId, page } = body;
+
+    const { balance, total } = req.user;
     const product = await Product.findById(productId);
 
     resetBodyAndUrl();
@@ -148,9 +140,10 @@ exports.getAddToCart = async (req, res, next) => {
       .templatePath("shop/add-to-cart")
       .pageTitle("Add To Cart")
       .appendDataToResBody({
+        total,
+        balance,
         product,
         page,
-        name: req.user.name,
       })
       .render();
   } catch (error) {
@@ -161,9 +154,11 @@ exports.postToCart = async (req, res, next) => {
   try {
     const validationErrors = validationResults(req);
 
-    const { body } = req;
+    const { body, user } = req;
 
     let { page, quantity, productId } = body;
+
+    const { balance, total } = user;
 
     const previousData = body;
 
@@ -175,7 +170,8 @@ exports.postToCart = async (req, res, next) => {
         page,
         product,
         previousData,
-        name: req.user.name,
+        balance,
+        total,
       });
 
     if (validationErrors) {
@@ -184,10 +180,7 @@ exports.postToCart = async (req, res, next) => {
 
     const quantityError = productQuantityValidator(product, quantity);
     if (quantityError) return renderError(quantityError);
-    let total = 0.0;
-    if (req.session.total) {
-      total = req.session.total;
-    }
+
     const productTotal = product.sellingPrice * quantity;
 
     const balanceError = cartTotalValidator(
@@ -203,7 +196,7 @@ exports.postToCart = async (req, res, next) => {
 
     await product.decrementQuantity(quantity);
     new Flash(req, res)
-      .appendInfo("Product successfully added to cart.")
+      .appendSuccess("Product successfully added to cart.")
       .redirect(`products?page=${page}`);
 
     function renderError(err) {
@@ -220,8 +213,9 @@ exports.getCart = async (req, res, next) => {
 
     //put this data in the session incase the user will order the product when
     //they view the cart
+    const { session, user } = req;
 
-    req.session.total = total;
+    session.total = user.total;
     req.session.orderedProducts = req.user.cart;
 
     new Renderer(res)
@@ -230,7 +224,6 @@ exports.getCart = async (req, res, next) => {
       .appendDataToResBody({
         products: cart,
         total: formatFloat(total),
-        name: req.user.name,
       })
       .activePath("/cart")
       .render();
@@ -281,7 +274,6 @@ exports.getOrders = async (req, res, next) => {
         .activePath("/orders")
         .appendDataToResBody({
           orders,
-          name: req.user.name,
         })
         .render();
   } catch (error) {

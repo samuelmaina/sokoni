@@ -4,7 +4,6 @@ const {
   Flash,
   validationResults,
   smsSender,
-  smsSender2,
 } = require("../../utils");
 
 const DASHBOARD_PATH = "/auth/user/dashboard";
@@ -40,7 +39,7 @@ exports.validateInputAndGenerateShortCode = async (req, res, next) => {
       const details = await ShortCode.createOneForId(to);
       const shortCode = details.code;
       const message = `Your verification code is ${shortCode}`;
-      await smsSender2(to, message);
+      await smsSender(to, message);
       // await smsSender(message, to);
       req.validateTel = true;
     }
@@ -67,7 +66,7 @@ exports.getInputTelCode = async (req, res, next) => {
         .appendDataToResBody({ name: req.user.name, tel: req.body.tel })
         .render();
     return flash
-      .appendInfo(`Details successfully updated`)
+      .appendSuccess(`Details successfully updated`)
       .redirect(DASHBOARD_PATH);
   } catch (error) {
     next(error);
@@ -97,11 +96,11 @@ exports.saveTel = async (req, res, next) => {
       await req.user.updateMany(req.body);
       exists.delete();
       return flash
-        .appendInfo(`Details successfully updated`)
+        .appendSuccess(`Details successfully updated`)
         .redirect(DASHBOARD_PATH);
     } else {
       return renderer
-        .appendError("Have entered the wrong verification code.")
+        .appendError("You have entered the wrong verification code.")
         .render();
     }
   } catch (error) {
@@ -138,7 +137,9 @@ exports.postChangePassword = async (req, res, next) => {
       return flash.appendError(errorMessage).redirect("change-password");
     }
     await req.user.update("password", password);
-    flash.appendInfo("Password successfully updated").redirect(DASHBOARD_PATH);
+    flash
+      .appendSuccess("Password successfully updated")
+      .redirect(DASHBOARD_PATH);
   } catch (error) {
     next(error);
   }

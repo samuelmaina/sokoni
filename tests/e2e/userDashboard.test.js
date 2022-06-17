@@ -1,13 +1,11 @@
 // const requires= require("../utils/requires");
 
-
 // const {
 //   startApp,
 //   closeApp,
 //   getNewDriverInstance,
 //   TEST_PORT,
 // } = require("./config");
-
 
 // const { clearDb } = require("../utils/generalUtils").database;
 

@@ -53,7 +53,7 @@ exports.postAddProduct = async (req, res, next) => {
       return flash.appendError(results.error).redirect("add-product");
     }
     if (results.info) {
-      return flash.appendInfo(results.info).redirect("/admin/products");
+      return flash.appendSuccess(results.info).redirect("/admin/products");
     }
   } catch (error) {
     next(error);
@@ -142,7 +142,7 @@ exports.postEditProduct = async (req, res, next) => {
     await product.updateDetails(productData);
 
     new Flash(req, res)
-      .appendInfo("Product updated successfully.")
+      .appendSuccess("Product updated successfully.")
       .redirect(`/admin/products?page=${page}`);
   } catch (error) {
     next(error);
@@ -243,14 +243,12 @@ exports.getAdminSales = async (req, res, next) => {
     const adminId = returnAdminIdIfAdminIsInSession(req);
     const salesProfits =
       await AdminSales.findOneForAdminIdAndPopulateProductsData(adminId);
-
     renderer
       .templatePath("admin/sales")
       .pageTitle("Your Sales")
       .activePath("/sales")
       .appendDataToResBody({
         sales: salesProfits,
-        name: req.session.admin.name,
       })
       .render();
   } catch (error) {

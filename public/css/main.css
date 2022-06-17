@@ -36,6 +36,10 @@ body {
     margin-left: -10px; 
 }
 
+
+a{
+  text-decoration: none;
+}
 body > header > h1 {
   font-family: "Noto Sans JP", Calibri, "Trebuchet MS", sans-serif;
   font-weight: 300;
@@ -85,6 +89,25 @@ body > header > h1 {
   margin-bottom: 20px;
 }
 
+.success {
+  font-family: "Noto Sans JP", "Noto Sans JP ", Calibri, "Trebuchet MS",
+    sans-serif;
+  font-size: 1.2rem;
+  margin-top: 20px;
+  padding: 2px;
+  text-align: center;
+  width: 40vw;
+  min-height: 2rem;
+  margin-left: 30%;
+  background-color: rgb(228, 245, 226);
+  color: #05c422ee;
+  border: 3px solid rgb(23, 241, 26);
+  box-shadow: 2px 5px 20px rgba(219, 246, 207, 0.5);
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+
 .info {
   font-family: "Noto Sans JP", "Noto Sans JP ", Calibri, "Trebuchet MS",
     sans-serif;
@@ -95,10 +118,10 @@ body > header > h1 {
   width: 40vw;
   min-height: 2rem;
   margin-left: 30%;
-  background-color: rgb(238, 252, 244);
-  color: #0c860c;
-  border: 3px solid rgb(6, 221, 42);
-  box-shadow: 2px 5px 20px rgba(165, 248, 172, 0.5);
+  background-color: rgb(219, 247, 255);
+  color: #8291f3;
+  border: 3px solid rgb(137, 167, 251);
+  box-shadow: 2px 5px 20px rgba(179, 255, 251, 0.5);
   border-radius: 12px;
   margin-bottom: 20px;
 }

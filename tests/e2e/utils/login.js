@@ -1,5 +1,5 @@
 const { createAdminWithData, createUserWithData } =
-	require('../../utils/generalUtils').database;
+  require("../../utils/generalUtils").database;
 
 /**
  * A utility function that is used to login user.
@@ -13,24 +13,24 @@ const { createAdminWithData, createUserWithData } =
  *
  */
 module.exports = async (page, loginUrl, data, type) => {
-	let createdDoc;
-	try {
-		switch (type) {
-			case 'user':
-				createdDoc = await createUserWithData(data);
-				break;
-			case 'admin':
-				createdDoc = await createAdminWithData(data);
-				break;
-			default:
-				break;
-		}
-		await page.openUrl(loginUrl);
-		await page.enterDataByName('email', data.email);
-		await page.enterDataByName('password', data.password);
-		await page.clickById('login');
-		return createdDoc;
-	} catch (error) {
-		throw new Error(error);
-	}
+  let createdDoc;
+  try {
+    switch (type) {
+      case "user":
+        createdDoc = await createUserWithData(data);
+        break;
+      case "admin":
+        createdDoc = await createAdminWithData(data);
+        break;
+      default:
+        break;
+    }
+    await page.openUrl(loginUrl);
+    await page.enterDataByName("email", data.email);
+    await page.enterDataByName("password", data.password);
+    await page.clickById("login");
+    return createdDoc;
+  } catch (error) {
+    console.log(error);
+  }
 };

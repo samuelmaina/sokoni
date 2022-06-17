@@ -63,6 +63,11 @@ class Renderer {
     this._info = info;
     return this;
   }
+
+  appendSuccess(success) {
+    this._success = success;
+    return this;
+  }
   /**
    *
    * @param {*} previousData -
@@ -119,6 +124,7 @@ class Renderer {
       previousData: resLocals.previousData || this._previousData || {},
       error: resLocals.error || this._error,
       info: resLocals.info || this._info,
+      success: resLocals.success || this._success,
     };
 
     //finally add  to data object any additional data that

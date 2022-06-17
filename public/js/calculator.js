@@ -17,13 +17,13 @@ quantity.addEventListener("keyup", (e) => {
 
   if (remaining < 0) {
     renderOutOfBalance();
-    hideButton(true);
+    shouldHideButton(true);
     isChanged = true;
   } else {
     if (isChanged) {
       resetToNormalDislay();
     }
-    hideButton(false);
+    shouldHideButton(false);
     writeById("balance", formatIntoCurrency(remaining));
     isChanged = false;
   }
@@ -38,7 +38,7 @@ quantity.addEventListener("keyup", (e) => {
     };
   }
 
-  function hideButton(predicate) {
+  function shouldHideButton(predicate) {
     const button = document.getElementById("push-to-cart-btn");
 
     if (predicate) {
@@ -71,7 +71,8 @@ function resetToNormalDislay() {
 function renderOutOfBalance() {
   const div = document.getElementById("balance");
   document.getElementById("hidable").style.display = "none";
-  div.innerText = "Balance too low,please reduced the quantity.";
+  div.innerText =
+    "Balance too low,please reduce the quantity or recharge your account";
   div.style.color = "rgb(252, 23, 23)";
   div.style.border = "3px solid rgb(252, 23, 23)";
   div.style.boxShadow = "2px 5px 20px rgba(245, 175, 175, 0.5)";

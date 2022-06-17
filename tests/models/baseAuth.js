@@ -1,5 +1,3 @@
-const { equal } = require("assert");
-
 const { database, utils } = require("../utils/generalUtils");
 const requires = require("../utils/requires");
 const { clearDb } = database;

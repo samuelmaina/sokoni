@@ -64,8 +64,9 @@ exports.processPayment = async (req, res, next) => {
 exports.creditIntoAccount = async (req, res, next) => {
   try {
     await req.user.incrementBalance(amount);
+    const flash = new Flash(req, res);
     flash
-      .appendInfo(`${amount} successfully credited into your account`)
+      .appendSuccess(`${amount} successfully credited into your account`)
       .redirect(DASHBOARD_PATH);
   } catch (error) {
     next(error);

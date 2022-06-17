@@ -7,6 +7,19 @@ const loadAuth = (req, res, next) => {
   }
 };
 
+const setName = (req, res, next) => {
+  let name = null;
+  const user = req.user;
+  const admin = req.session ? req.session.admin : null;
+  if (user) {
+    name = user.name;
+  }
+  if (admin) {
+    name = admin.name;
+  }
+  res.locals.name = name;
+};
+
 const setNoOfCartProducts = (req, res, next) => {
   try {
     res.locals.noOfCartProducts = req.user ? req.user.cart.length : null;
@@ -21,25 +34,23 @@ const loadCsurfToken = (req, res, next) => {
     next(error);
   }
 };
-const loadErrors = (req, res, next) => {
+const loadFeedback = (req, res, next) => {
   try {
     const error = req.flash("error");
+    const info = req.flash("info");
+    const success = req.flash("success");
+
     if (error.length > 0) res.locals.error = error[0];
     else res.locals.error = null;
+    if (info.length > 0) res.locals.info = info[0];
+    else res.locals.info = null;
+    if (success.length > 0) res.locals.success = success[0];
+    else res.locals.success = null;
   } catch (error) {
     next(error);
   }
 };
 
-const loadInfo = (req, res, next) => {
-  try {
-    const info = req.flash("info");
-    if (info.length > 0) res.locals.info = info[0];
-    else res.locals.info = null;
-  } catch (error) {
-    next(error);
-  }
-};
 const loadPreviosData = (req, res, next) => {
   try {
     const previousData = req.flash("previous-data");
@@ -53,11 +64,11 @@ const loadPreviosData = (req, res, next) => {
 module.exports = (app) => {
   const setResLocals = (req, res, next) => {
     loadCsurfToken(req, res, next);
-    loadErrors(req, res, next);
-    loadInfo(req, res, next);
+    loadFeedback(req, res, next);
     loadPreviosData(req, res, next);
     loadAuth(req, res, next);
     setNoOfCartProducts(req, res, next);
+    setName(req, res, next);
     next();
   };
   app.use(setResLocals);

@@ -1,23 +1,12 @@
 const requires = require("../utils/requires");
 
-const { User, Product, Metadata, AdminSales, Order } = requires.Models;
+const { User, Product, AdminSales, Order } = requires.Models;
 const {
   startApp,
   getNewDriverInstance,
   closeApp,
   TEST_PORT,
 } = require("./config");
-
-async function addTRIALProductsToCart(user, products, quantityToAddPerProduct) {
-  for (const product of products) {
-    await user.addProductsToCart(product.id, quantityToAddPerProduct);
-  }
-}
-async function resetCart(id) {
-  const user = await User.findById(id);
-  user.cart = [];
-  return await user.save();
-}
 
 const { Page, utilLogin, session } = require("./utils");
 const {
@@ -41,9 +30,7 @@ const {
 } = require("./utils/generalUtils");
 const {
   verifyEqual,
-  ensureValueGreateThan,
-  ensureArrayContains,
-  verifyIDsAreEqual,
+  verifyTruthy,
   verifyFalsy,
 } = require("../utils/testsUtils");
 const { ranges } = require("../models/utils");
@@ -107,7 +94,7 @@ describe("logged in user can be able to shop", () => {
 
   describe("Movement to other pages", () => {
     describe("Category", () => {
-      it.only(
+      it(
         "should click category links",
         async () => {
           const categories = ["category 1", "category 2"];
@@ -224,14 +211,39 @@ describe("logged in user can be able to shop", () => {
       );
 
       it(
-        "should refuse when quantity is out of the required range.",
+        "should be shown the current total and current balance when they are about to add to cart.",
         async () => {
+          const user = await getUserCurrentData();
+
           const quantity = 4,
+            buyingPrice = 200.3;
+          const product = await generateOneProductWithQuantityAndBuyingPrice(
+            quantity,
+            buyingPrice
+          );
+          await user.addProductsToCart(product.id, 1);
+          const currentUserData = await getUserCurrentData();
+          await page.openUrl(productPage);
+          await clickAddToCart();
+          const total = await page.extractTextById("total");
+          const balance = await page.extractTextById("balance");
+          verifyEqual(currentUserData.balance, Number(balance));
+          verifyEqual(Number(total), product.sellingPrice);
+        },
+        MAX_TEST_PERIOD
+      );
+
+      it(
+        "should check to see that the Push To Cart is disabled when the total price exceed the balance.",
+        async () => {
+          const quantity = 1,
             buyingPrice = 200.3;
           await generateOneProductWithQuantityAndBuyingPrice(
             quantity,
             buyingPrice
           );
+          const balance = user.balance;
+
           await page.openUrl(productPage);
           await clickAddToCart();
           await page.enterDataByName(
@@ -285,13 +297,18 @@ describe("logged in user can be able to shop", () => {
         async () => {
           await clearModelsInProductTests();
           const product = generatePerfectProductData();
-          const presentQuantity = product.quantity;
-          await Product.createOne(product);
+          const presentQuantity = 1;
+
+          //reset the  default values since the default user balance is very small. The default values generated are very large.
+          product.buyingPrice = 200.0;
+          product.percentageProfit = 1;
+          product.quantity = 1;
+          product.quantity = await Product.createOne(product);
           //reload since the product in the database have changed.
           await page.openUrl(productPage);
           await clickAddToCart();
           await page.enterDataByName("quantity", presentQuantity + 1);
-          await clickPushToCart();
+
           await ensureHasTitleAndError(
             page,
             "Add To Cart",
@@ -301,49 +318,6 @@ describe("logged in user can be able to shop", () => {
           const savedUser = await User.findById(user.id);
           //ensure product is not added to cart
           verifyEqual(savedUser.cart.length, 0);
-        },
-        MAX_TEST_PERIOD
-      );
-
-      it(
-        "should refuse when user does not have enough balance ",
-        async () => {
-          const testQuantity = 7,
-            buyingPrice = 200.3;
-          const product = await generateOneProductWithQuantityAndBuyingPrice(
-            testQuantity,
-            buyingPrice
-          );
-
-          const savedUser = await User.findById(user.id);
-          const { quantity, sellingPrice } = product;
-          //we want to  add a product to the cart twice.
-          //reduce the balance by 1 from the total in the cart
-          const newBalance = (quantity - 1) * sellingPrice - 1;
-          savedUser.balance = newBalance;
-          await savedUser.save();
-          for (let i = 0; i < 2; i++) {
-            await page.openUrl(productPage);
-            await clickAddToCart();
-            await page.enterDataByName("quantity", 3);
-            await clickPushToCart();
-          }
-
-          await ensureHasTitleAndError(
-            page,
-            "Add To Cart",
-            `Dear customer you don't have enough balance to complete this transaction. Please reduce your quantity or recharge Kshs ${(1).toFixed(
-              2
-            )} in your account and try again.`
-          );
-          const retrieved = await User.findById(user.id);
-          //ensure the second product is not added to cart and the balance is not reduced
-          //for the second addition.
-          verifyEqual(retrieved.cart.length, 1);
-          verifyEqual(
-            retrieved.balance,
-            Number((newBalance - 3 * sellingPrice).toFixed(2))
-          );
         },
         MAX_TEST_PERIOD
       );
@@ -403,6 +377,10 @@ describe("logged in user can be able to shop", () => {
         total: testQuantity * products[0].sellingPrice,
       };
     }
+
+    async function getUserCurrentData() {
+      return await User.findById(user.id);
+    }
   });
 
   async function ensureNumberOfProductsRenderedAre(expected) {
@@ -446,6 +424,17 @@ describe("logged in user can be able to shop", () => {
     verifyFalsy(allNotFound);
   }
 });
+
+async function addTRIALProductsToCart(user, products, quantityToAddPerProduct) {
+  for (const product of products) {
+    await user.addProductsToCart(product.id, quantityToAddPerProduct);
+  }
+}
+async function resetCart(id) {
+  const user = await User.findById(id);
+  user.cart = [];
+  return await user.save();
+}
 
 async function generateOneProductWithQuantityAndBuyingPrice(
   quantity,
