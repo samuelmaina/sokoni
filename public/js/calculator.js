@@ -72,7 +72,7 @@ function renderOutOfBalance() {
   const div = document.getElementById("balance");
   document.getElementById("hidable").style.display = "none";
   div.innerText =
-    "Balance too low,please reduce the quantity or recharge your account";
+    "No enough balance.Reduce the quantity or recharge account in the Dashboard";
   div.style.color = "rgb(252, 23, 23)";
   div.style.border = "3px solid rgb(252, 23, 23)";
   div.style.boxShadow = "2px 5px 20px rgba(245, 175, 175, 0.5)";

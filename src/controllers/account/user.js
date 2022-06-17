@@ -38,7 +38,7 @@ exports.validateInput = async (req, res, next) => {
     if (validationErrors) {
       return flash.appendError(validationErrors).redirect("deposit");
     }
-    req.method = paymentMethod;
+    req.paymentDetails = req.body;
     return next();
   } catch (error) {
     next(error);
@@ -63,6 +63,7 @@ exports.processPayment = async (req, res, next) => {
 
 exports.creditIntoAccount = async (req, res, next) => {
   try {
+    const { amount } = req.paymentDetails;
     await req.user.incrementBalance(amount);
     const flash = new Flash(req, res);
     flash

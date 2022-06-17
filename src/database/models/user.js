@@ -35,7 +35,7 @@ const userSchema = new Schema({
   },
   balance: {
     type: Number,
-    default: 10000,
+    default: 2000000,
     min: 0,
     max: 2000000,
   },

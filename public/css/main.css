@@ -82,7 +82,7 @@ body > header > h1 {
   height: 3rem;
   margin-left: 30%;
   background-color: rgb(247, 236, 236);
-  color: rgb(252, 23, 23);
+  color: rgb(255, 7, 7);
   border: 3px solid rgb(252, 23, 23);
   box-shadow: 2px 5px 20px rgba(245, 175, 175, 0.5);
   border-radius: 12px;
@@ -99,9 +99,9 @@ body > header > h1 {
   width: 40vw;
   min-height: 2rem;
   margin-left: 30%;
-  background-color: rgb(228, 245, 226);
-  color: #05c422ee;
-  border: 3px solid rgb(23, 241, 26);
+  background-color: rgb(221, 250, 221);
+  color: #10e110;
+  border: 3px solid #0ff00f;
   box-shadow: 2px 5px 20px rgba(219, 246, 207, 0.5);
   border-radius: 12px;
   margin-bottom: 20px;
@@ -119,7 +119,7 @@ body > header > h1 {
   min-height: 2rem;
   margin-left: 30%;
   background-color: rgb(219, 247, 255);
-  color: #8291f3;
+  color: #3d56fa;
   border: 3px solid rgb(137, 167, 251);
   box-shadow: 2px 5px 20px rgba(179, 255, 251, 0.5);
   border-radius: 12px;
