@@ -1,5 +1,4 @@
-const requires= require('../utils/requires');
-
+const requires = require("../utils/requires");
 
 const ranges = requires.constrains.product;
 const {

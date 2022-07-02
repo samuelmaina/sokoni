@@ -21,12 +21,10 @@ exports.throwErrorIfStringLengthNotInRange = function (
 
 exports.connector = async (mongo_uri) => {
   try {
-    console.log("Connected wwith the connector");
     const connection = await mongoose.connect(mongo_uri, {
       useUnifiedTopology: true,
       useNewUrlParser: true,
     });
-    console.log("Connected to the database");
     assert.ok(connection, "No errors thrown but connection not established.");
   } catch (error) {
     throw new Error(error);

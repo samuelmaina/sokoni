@@ -134,13 +134,6 @@ class Auth {
           .appendError("Invalid Email or Password")
           .redirect(this.routes.logIn);
       }
-      // if (!document.isEmailConfirmed) {
-      //   return flash
-      //     .appendError(
-      //       "Email not confirmed! Please confirm your email by the click the link sent to your inbox."
-      //     )
-      //     .redirect(this.routes.logIn);
-      // }
       req.document = document;
       return next();
     } catch (error) {
@@ -172,8 +165,9 @@ class Auth {
       return req.session.save((err) => {
         const url = this.successfulLoginRedirect(req);
         if (err) throw new Error(err);
-        if (redirectUrlAndBody.isPostRequest) res.redirect(307, url);
-        else res.redirect(url);
+        if (redirectUrlAndBody.isPostRequest) {
+          res.redirect(307, url);
+        } else res.redirect(url);
       });
     } catch (error) {
       next(error);
@@ -219,7 +213,7 @@ class Auth {
         .then((result) => {
           flash
             .appendSuccess(
-              "Reset Successful.A link has been sent to your email. Please click the link to reset password. \n If mail is not in the  inbox, look at the spam folder."
+              "Reset Successful.A link has been sent to your email. Please click the link to reset password.If mail is not in the  inbox, look at the spam folder."
             )
             .redirect(this.routes.logIn);
         })

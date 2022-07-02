@@ -29,7 +29,7 @@ exports.getIndex = async (req, res, next) => {
 
     return new Renderer(res)
       .templatePath("shop/index")
-      .pageTitle("SM Online Shop")
+      .pageTitle("Sokoni Shop")
       .activePath("/")
       .appendDataToResBody({
         productsData,

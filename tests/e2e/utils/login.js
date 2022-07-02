@@ -25,6 +25,7 @@ module.exports = async (page, loginUrl, data, type) => {
       default:
         break;
     }
+
     await page.openUrl(loginUrl);
     await page.enterDataByName("email", data.email);
     await page.enterDataByName("password", data.password);

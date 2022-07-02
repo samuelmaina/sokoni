@@ -95,7 +95,7 @@
 // let admin;
 
 // const productsUrl = `${base}/admin/products`;
-// describe("Admin  ", () => {
+// describe.skip("Admin  ", () => {
 //   beforeAll(async () => {
 //     await startApp(PORT);
 //     page = new Page(getNewDriverInstance());
@@ -372,7 +372,7 @@
 //       },
 //       MAX_TESTING_TIME
 //     );
-//     describe("When logged in", () => {
+//     describe.skip("When logged in", () => {
 //       beforeAll(async () => {
 //         await logIn();
 //       }, MAX_SETUP_TIME);
@@ -590,7 +590,7 @@
 
 //       afterEach(clearModelsInProductTests);
 
-//       it.only(
+//       it(
 //         "Should be able to see  their sales",
 //         async () => {
 //           const testTitle = "title 1";

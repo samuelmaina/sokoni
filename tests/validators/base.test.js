@@ -1,15 +1,9 @@
-
-const requires= require('../utils/requires');
-
+const requires = require("../utils/requires");
 
 const { mongooseId } = requires.constrains;
 const { validationResults } = requires.utils;
-const {
-  intValidator,
-  stringValidator,
-  floatValidator,
-  mongoIdValidator,
-} =requires.validators.utils;
+const { intValidator, stringValidator, floatValidator, mongoIdValidator } =
+  requires.validators.utils;
 const { ranges } = require("../models/utils");
 const {
   generateStringSizeN,
@@ -21,7 +15,7 @@ const {
   verifyThrowsError,
 } = require("../utils/testsUtils");
 
-describe.skip("Test for base validator", () => {
+describe("Test for base validator", () => {
   describe("Int Validator", () => {
     carryMissingFieldsTests("IntValidator", intValidator);
     const field = "example",

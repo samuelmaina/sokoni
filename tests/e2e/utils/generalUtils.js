@@ -1,12 +1,7 @@
 const mongoose = require("mongoose");
 
-const requires= require("../../utils/requires");
-const {
-  Product,
-  Metadata,
-  Order,
-  AdminSales,
-} = requires.Models;
+const requires = require("../../utils/requires");
+const { Product, Metadata, Order, AdminSales } = requires.Models;
 const { clearModel, clearDb } = require("../../utils/generalUtils/database");
 const { deleteAllCreatedImages } = require("../../utils/generalUtils/utils");
 const { closeApp } = require("../config");

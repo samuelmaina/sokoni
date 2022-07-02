@@ -133,7 +133,7 @@ class Page {
   }
   async getInfo() {
     try {
-      const info = await this.extractTextByClassName("info");
+      const info = await this.extractTextByClassName("success");
       return info;
     } catch (error) {
       throw new Error(error);

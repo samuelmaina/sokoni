@@ -1,4 +1,4 @@
-const requires= require('../utils/requires');
+const requires = require("../utils/requires");
 
 const {
   validateStringField,
@@ -7,7 +7,7 @@ const {
 } = require("./utils");
 
 const ranges = requires.constrains.base;
-const { auth } = requires.validators
+const { auth } = requires.validators;
 
 const { generateStringSizeN } = require("../utils/generalUtils/utils");
 const {
@@ -21,7 +21,7 @@ const {
   newPasswordValidator,
 } = auth;
 
-describe.skip("Auth validators", () => {
+describe("Auth validators", () => {
   describe("Name", () => {
     const { minlength, maxlength, error } = ranges.name;
     validateStringField(nameV, "name", minlength, maxlength, error);
@@ -67,7 +67,7 @@ describe.skip("Auth validators", () => {
       });
     });
   });
-  describe("password", () => {
+  describe.skip("password", () => {
     const { minlength, maxlength, error } = ranges.password;
     it("should throw for short passwords", async () => {
       const body = {

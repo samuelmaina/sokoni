@@ -1,6 +1,4 @@
-const requires= require('../utils/requires');
-
-
+const requires = require("../utils/requires");
 
 const { shop, product } = requires.constrains;
 
@@ -11,14 +9,11 @@ const { verifyEqual, ensureArrayContains } = require("../utils/testsUtils");
 
 const { generateStringSizeN } = require("../utils/generalUtils/utils");
 
-const {
-  productQueryValidator,
-  pageV,
-  categoryV,
-} = requires.validators.productQuery;
+const { productQueryValidator, pageV, categoryV } =
+  requires.validators.productQuery;
 const { ensureGeneratesErrorOnPart } = require("./utils");
 
-describe.skip("productQuery validators", () => {
+describe("productQuery validators", () => {
   describe("pageV", () => {
     const { min, max, error } = page;
 
