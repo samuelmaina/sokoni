@@ -3,14 +3,70 @@
 <link rel="stylesheet" href="/css/css/all.min.css">
 </head>
 <%- include('../includes/user-nav.ejs') %>
-<main class="centered">
+<main style="display: flex; justify-content: space-between; padding: 12px;">
+    <div style="width:25%;">
+       <h2> Other <%= product.category %></h2>
+        <div>
+           <ul>
+          <a href="/product/<%= product._id %>">
+            <li class= "card" style="border: solid rgb(245, 239, 239) 2px; margin:2px;">
+                <span>-</span>
+                <h3><%= product.title%></h3>
+                <img style="width: 50%; height:20vh;" src="<%= product.imageUrl %>" alt="<%= product.title %>">
+            </li>
+          </a>
+          <a href="/product/<%= product._id %>">
+            <li style="border: solid black 2px;">
+                <span>-</span>
+                <h3><%= product.title%></h3>
+                <img style="width: 50%; height:20vh;" src="<%= product.imageUrl %>" alt="<%= product.title %>">
+            </li>
+          </a> <a href="/product/<%= product._id %>">
+            <li style="border: solid black 2px;">
+                <span>-</span>
+                <h3><%= product.title%></h3>
+                <img style="width: 50%; height:20vh;" src="<%= product.imageUrl %>" alt="<%= product.title %>">
+            </li>
+          </a>
+           </ul>
+        </div>
+    </div>
+ <div style="width: 45%; padding:1rem; border: solid 1px black; justify-content: start;">
     <h1><%= product.title %></h1>
-    <hr>
-    <div style="height: 16rem; width:12rem; margin:auto">
+    <div style="height: 16rem; width:12rem; margin:0">
         <img src="<%= product.imageUrl %>" alt="<%= product.title %>">
     </div>
     <h2> Kshs <%= product.sellingPrice%></h2>
+    <h2> From:<%= product.brand%> </h2>
     <p><%= product.description %></p>
     <%- include('../includes/add-to-cart.ejs', {product: product,page:currentPage}) %>
+ </div>
+ <div style="width:25%;">
+    <h2> Other Products from <%= product.brand %></h2>
+     <div>
+        <ul>
+       <a href="/product/<%= product._id %>">
+         <li style="border: solid black 2px;">
+             <span>-</span>
+             <h3><%= product.title%></h3>
+             <img style="width: 50%; height:20vh;" src="<%= product.imageUrl %>" alt="<%= product.title %>">
+         </li>
+       </a>
+       <a href="/product/<%= product._id %>">
+         <li style="border: solid black 2px;">
+             <span>-</span>
+             <h3><%= product.title%></h3>
+             <img style="width: 50%; height:20vh;" src="<%= product.imageUrl %>" alt="<%= product.title %>">
+         </li>
+       </a> <a href="/product/<%= product._id %>">
+         <li style="border: solid black 2px;">
+             <span>-</span>
+             <h3><%= product.title%></h3>
+             <img style="width: 50%; height:20vh;" src="<%= product.imageUrl %>" alt="<%= product.title %>">
+         </li>
+       </a>
+        </ul>
+     </div>
+ </div>
 </main>
 <%- include('../includes/end.ejs') %>

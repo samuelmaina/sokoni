@@ -3,10 +3,12 @@
 </head>
 <body>
 <%- include('./includes/error-info.ejs') %>
-    <div >
+    <div sytle="display:flex; flex-direction:column, justify-content:space-around">
         <h1 style="margin-left:0; text-align: center;">Some Internal Error occurred!</h2>
-        <p style="margin-left: 0;">We're working on fixing this, sorry for the inconvenience!</p>
-        <p style="margin-left: 0;">Try again later !</p>
+        <div class="error">
+            <p style="margin-left: 0;">We're working on fixing this, sorry for the inconvenience!</p>
+            <p style="margin-left: 0;">Try again later !</p>
+        </div>
     </div>
     </main>
 

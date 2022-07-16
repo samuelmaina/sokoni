@@ -1,9 +1,24 @@
-
-     <%if(categories&&categories.length>0){%>
-        <div class="btn " style="background-color:#19e6a1;">Categories </div>
+<div style="position:fixed; margin-bottom:10px; width: 100%" >
+    <div style="display:flex; align-items:table-row; justify-content: space-around; height: 40px;">
+        <input class='search' placeholder="Search by category"/> 
+        <input class="search" placeholder="Search a product"/>
+        <input class="search" placeholder="Search by Brand Name"/>
+    </div>   
+</div>
+<div style="margin-top:10vh ;">
+    <div >
+        <div class="btn " style="background-color:#19e6a1;">Categories 
+    </div>
+    
+    <%if(categories&&categories.length>0){%>
+    
         <ul class="cat-section"> 
             <% for (let category of categories) { %>
                 <li><a href="/<%=path%>/<%=category%>?page=1"> <%=category%></a></li>
             <% } %>
         </ul>
+        </div>
      <% }%>
+</div>
+
+    

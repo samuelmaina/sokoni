@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "dev": "node index.js",
-    "start": "node index.js --imageFolder=images",
+    "start": "nodemon index.js --imageFolder=images",
     "test": " jest --runInBand --forceExit --imageFolder=testFolder "
   },
   "author": "Samuel Maina",
