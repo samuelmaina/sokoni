@@ -4,7 +4,6 @@ const { addRedirectUrlAndCurrentBodyData } = require("./utils");
 module.exports = (req, res, next) => {
   try {
     const url = `/auth/user/log-in`;
-
     if (!(req.session && req.session.isUserLoggedIn)) {
       addRedirectUrlAndCurrentBodyData(req);
       return new Flash(req, res)

@@ -152,11 +152,12 @@ class Auth {
   }
 
   successfulLoginRedirect(req) {
-    if (this.type === "admin") {
-      return redirectUrlAndBody.url || this.routes.adminSuccessfulLoginRedirect;
-    } else {
-      return redirectUrlAndBody.url || this.routes.userSuccessfulLoginRedirect;
+    if (req.session.originalUrl) {
+      return req.session.originalUrl;
     }
+    return this.type === "admin"
+      ? this.routes.adminSuccessfulLoginRedirect
+      : this.routes.userSuccessfulLoginRedirect;
   }
 
   initializeSession(req, res, next) {
@@ -165,7 +166,7 @@ class Auth {
       return req.session.save((err) => {
         const url = this.successfulLoginRedirect(req);
         if (err) throw new Error(err);
-        if (redirectUrlAndBody.isPostRequest) {
+        if (req.session.isPostRequest) {
           res.redirect(307, url);
         } else res.redirect(url);
       });
