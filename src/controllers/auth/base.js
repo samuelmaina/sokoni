@@ -1,5 +1,5 @@
+const request = require("request");
 const { EMAIL, BASE_URL } = require("../../config/env");
-const { redirectUrlAndBody, resetBodyAndUrl } = require("../../config/urls");
 const { EmailToken } = require("../../database/models");
 const { baseAuth } = require("../../useCases");
 
@@ -144,17 +144,14 @@ class Auth {
   setSessionAuth(req) {
     if (this.type === "admin") {
       req.session.isAdminLoggedIn = true;
-      req.session.admin = req.document;
+      req.session.admin_id = req.document._id;
     } else {
       req.session.isUserLoggedIn = true;
-      req.session.user = req.document;
+      req.session.user_id = req.document._id;
     }
   }
 
   successfulLoginRedirect(req) {
-    if (req.session.originalUrl) {
-      return req.session.originalUrl;
-    }
     return this.type === "admin"
       ? this.routes.adminSuccessfulLoginRedirect
       : this.routes.userSuccessfulLoginRedirect;
@@ -165,10 +162,7 @@ class Auth {
       this.setSessionAuth(req);
       return req.session.save((err) => {
         const url = this.successfulLoginRedirect(req);
-        if (err) throw new Error(err);
-        if (req.session.isPostRequest) {
-          res.redirect(307, url);
-        } else res.redirect(url);
+        return res.redirect(url);
       });
     } catch (error) {
       next(error);
