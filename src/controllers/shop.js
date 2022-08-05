@@ -127,8 +127,7 @@ exports.getProduct = async (req, res, next) => {
 
 exports.getAddToCart = async (req, res, next) => {
   try {
-    const body = req.session.body || req.body;
-
+    const body = req.body;
     const { productId, page } = body;
 
     const { balance, total } = req.user;
