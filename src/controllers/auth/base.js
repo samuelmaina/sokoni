@@ -144,7 +144,7 @@ class Auth {
   setSessionAuth(req) {
     if (this.type === "admin") {
       req.session.isAdminLoggedIn = true;
-      req.session.admin_id = req.document._id;
+      req.session.admin = req.document;
     } else {
       req.session.isUserLoggedIn = true;
       req.session.user_id = req.document._id;

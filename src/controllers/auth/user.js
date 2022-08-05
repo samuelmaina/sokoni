@@ -19,7 +19,7 @@ class UserAuth extends BaseAuth {
   }
   async getDashboard(req, res, next) {
     try {
-      const userId = req.session.user._id;
+      const userId = req.user._id;
       const user = await User.findById(userId);
 
       return new Renderer(res)
