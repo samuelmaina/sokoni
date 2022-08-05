@@ -13,9 +13,11 @@ exports.getEditDetails = (req, res, next) => {
     return new Renderer(res)
       .templatePath("edit/edit")
       .pageTitle("Change Your Details")
+      .appendInfo(
+        "For now Email and Tel Number validation is not done but will be done in future."
+      )
       .pathToPost("edit/user/change-details")
       .appendPreviousData(req.user)
-      .appendDataToResBody({ name: req.user.name })
       .render();
   } catch (error) {
     next(error);
@@ -35,14 +37,14 @@ exports.validateInputAndGenerateShortCode = async (req, res, next) => {
     }
     const to = req.body.tel;
 
-    if (currentTel !== to) {
-      const details = await ShortCode.createOneForId(to);
-      const shortCode = details.code;
-      const message = `Your verification code is ${shortCode}`;
-      await smsSender(to, message);
-      // await smsSender(message, to);
-      req.validateTel = true;
-    }
+    // if (currentTel !== to) {
+    //   const details = await ShortCode.createOneForId(to);
+    //   const shortCode = details.code;
+    //   const message = `Your verification code is ${shortCode}`;
+    //   await smsSender(message, to);
+    //   // await smsSender(message, to);
+    //   req.validateTel = true;
+    // }
     return next();
   } catch (error) {
     next(error);
@@ -62,6 +64,7 @@ exports.getInputTelCode = async (req, res, next) => {
         .templatePath("edit/verify-tel")
         .pageTitle("Verify Phone Number")
         .pathToPost("edit/user/verify-tel-number")
+        .appendInfo("A short code to your phone SMS.")
         .appendPreviousData(req.user)
         .appendDataToResBody({ name: req.user.name, tel: req.body.tel })
         .render();

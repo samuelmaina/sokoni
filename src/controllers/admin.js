@@ -12,10 +12,8 @@ const { adminServices } = require("../services");
 
 const { resolvePath, deleteFile } = fileManipulators;
 
-//when admins don't interact with page for
-//too long,the session is expired.reading admin._id from it will throw an error.
 const returnAdminIdIfAdminIsInSession = (req) => {
-  if (req.session && req.session.admin) return req.session.admin._id;
+  if (req.session && req.session.admin_id) return req.session.admin_id;
   return null;
 };
 

@@ -10,11 +10,7 @@ const userEditController = edit.user;
 router
   .route("/change-details")
   .get(userEditController.getEditDetails)
-  .post(
-    updateValidator,
-    userEditController.validateInputAndGenerateShortCode,
-    userEditController.getInputTelCode
-  );
+  .post(updateValidator, userEditController.validateInputAndGenerateShortCode);
 
 router
   .route("/verify-tel-number")

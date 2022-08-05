@@ -12,3 +12,4 @@ exports.appendUser = require("./appendUserInReq");
 exports.setResLocals = require("./setLocals");
 exports.errorHandler = require("./errorHandler");
 exports.notFound = require("./notFound");
+//exports.configureRequestBody = require("./configureRequestBody");
