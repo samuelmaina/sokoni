@@ -13,7 +13,7 @@ const { adminServices } = require("../services");
 const { resolvePath, deleteFile } = fileManipulators;
 
 const returnAdminIdIfAdminIsInSession = (req) => {
-  if (req.session && req.session.admin_id) return req.session.admin_id;
+  if (req.session && req.session.admin._id) return req.session.admin._id;
   return null;
 };
 
