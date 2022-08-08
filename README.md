@@ -50,9 +50,11 @@ MPesa (a mobile transfer platform in Eastern Africa) for account recharge.
 ###  The Admin Page
 ![admin_products](https://user-images.githubusercontent.com/55924723/183142531-bb1170ec-3651-40d4-aa04-0abd3165022c.png)
 
-## Adding Product
+### Adding Product
 ![Admin_adding_Products](https://user-images.githubusercontent.com/55924723/183142611-7af4f0ce-6a82-4441-beb6-69381be80481.png)
 
+### Admin Sales
+![Sales_Presentation](https://user-images.githubusercontent.com/55924723/183475626-5847f37a-519a-4a55-9935-7deb1160ab7a.png)
 
  
  ## Running the  application
