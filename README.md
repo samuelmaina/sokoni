@@ -20,7 +20,41 @@ Mongoose for Object Document Mapping.<br/>
 Cloudinary for image hosting.<br/>
 Sendgrid for email sending.<br/>
 Twillio for sms sending(used mostly for confirming telephone numbers).
+MPesa (a mobile transfer platform in Eastern Africa) for account recharge.
 
+
+# Some Parts of the Application
+### The home page
+![homepage](https://user-images.githubusercontent.com/55924723/183141348-122d37ef-6677-46b6-ac88-b00371a1d7b0.png)
+
+## A logged in customer page
+![logged_in_user](https://user-images.githubusercontent.com/55924723/183141444-2366985b-44f4-4442-9c72-72e9732c5816.png)
+
+
+## Showing the current cart total and the current total balance when adding product to cart
+![showing_the_current_balance_and_total](https://user-images.githubusercontent.com/55924723/183141728-4030ab0d-4313-43b0-b425-2641d40b3661.png)
+
+## Refusing to add to cart when the cart total exceeds the balance
+![refusing_to_add_to_cart_when_balance_is_low](https://user-images.githubusercontent.com/55924723/183141658-3275b269-d7df-40e6-b66f-9491c766510b.png)
+
+## Product in cart
+![products_in_the_cart](https://user-images.githubusercontent.com/55924723/183141778-f2b81e3e-b2fe-495f-b7a4-23244497e020.png)
+
+## Downloading the invoice as pdf
+![downloading_invoice_as_pdf](https://user-images.githubusercontent.com/55924723/183141858-5cf27a98-af14-4e30-8fac-9c3d1540a6b9.png)
+
+
+
+
+<br/> <br/>
+###  The Admin Page
+![admin_products](https://user-images.githubusercontent.com/55924723/183142531-bb1170ec-3651-40d4-aa04-0abd3165022c.png)
+
+### Adding Product
+![Admin_adding_Products](https://user-images.githubusercontent.com/55924723/183142611-7af4f0ce-6a82-4441-beb6-69381be80481.png)
+
+### Admin Sales
+![Sales_Presentation](https://user-images.githubusercontent.com/55924723/183475626-5847f37a-519a-4a55-9935-7deb1160ab7a.png)
 
  
  ## Running the  application
@@ -39,10 +73,5 @@ Twillio for sms sending(used mostly for confirming telephone numbers).
     where one has unziped it in the PATH in the system. The chrome driver is used to run end-to-end tests
  4) Run npm test 
  
-# Some Parts of the Application
-### The home page
-![home-page](https://user-images.githubusercontent.com/55924723/130409303-61e4a3ab-5293-4b72-84ca-1563bb1dc084.png)
-<br/> <br/>
-###  The Admin Page
-![Screenshot 2021-08-23 103859](https://user-images.githubusercontent.com/55924723/130409585-20901831-8e98-4855-aceb-01a374ae00b1.png)
+
 
