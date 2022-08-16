@@ -33,39 +33,145 @@
             <% } %>
         </div>
         <% } else { %>
-        <h1 class=" centered">No Sales Yet!</h1>
+        <!-- <h1 class=" centered">No Sales Yet!</h1> -->
         <% } %>
     </div>
     </main>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
-    <canvas id="myChart" width="10%" height="10%"></canvas>
-<script>
-    if (sales.length>0){
-        console.log(sales);
-        var ctx = document.getElementById('myChart').getContext('2d');
-        const type= 'line';
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+     <div style="width:50%; height: 25%; display: flex; ">
+        <canvas id="myChart" width="200" height="100"></canvas>
+        <canvas id="myPie" width="200" height="60"></canvas>
+
+     </div>
+    <script>
+        const labels = [
+          'January',
+          'February',
+          'March',
+          'April',
+          'May',
+          'June',
+        ];
         const data = {
-        datasets: [{
-            label: 'My First Dataset',
-            data: [65, 59, 80, 81, 56, 55, 40],
-            fill: false,
-            borderColor: 'rgb(75, 192, 192)',
-            tension: 0.1
-        }]
+          title:' Sales Revenue',
+          labels: labels,
+          datasets: [{
+            label: 'Samsung Note 20 Ultra 5G 256 GB',
+            backgroundColor: 'rgb(255, 99, 132)',
+            borderColor: 'rgb(255, 99, 132)',
+            data: [200000, 343643, 987435, 123534, 884353, 234563, 123534,234553],
+          },
+          {
+            label: 'Microsoft Surface Pro 7+',
+            backgroundColor: 'rgb(100, 99, 132))',
+            borderColor: 'rgb(100, 99, 132)',
+            data: [234584, 234532, 129943, 523453, 234543, 234534, 923433],
+          },
+          {
+            label: 'Surface 23 Pro',
+            backgroundColor: 'rgb(24, 234, 212))',
+            borderColor: 'rgb(24, 234, 212)',
+            data: [234534, 899234, 2343432, 234312, 234353, 234351, 238343],
+          }]
         };
-        var myChart = new Chart(ctx, {
-            type: 'bar',
-            data,
-        options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+
+
+    const config = {
+          type: 'line',
+          data: data,
+          options:{}
+        };
+        var pieData = [
+        {
+            value: 270,
+            color: "cornflowerblue",
+            highligth: "lightskyblue",
+            label: "corn  flover blue"
+
+        },
+        {
+            value: 50,
+            color: "lightgreen",
+            highligth: "yellow",
+            label: "lightgreen"
+
+        },
+        {
+            value: 40,
+            color: "orange",
+            highligth: "darkorange",
+            label: "Orange"
+
+        }
+    ];
+    // draw
+
+      
+      
+      </script>
+      <script>
+        const canvas= document.getElementById('myChart');
+        canvas.style.marginLeft='15%';
+        canvas.style.width='25%';
+        const myChart = new Chart(
+          canvas,
+          config,
+           {
+            plugins: {
+                labels:{
+                    showActualPercentages: true,
                 }
-            }
-        }); 
-}
-</script>
+  
+    } }
+        );
+
+
+        const DATA_COUNT = 5;
+const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
+
+const data1 = {
+  labels: ['Samsung Note 20 Ultra 5G 256 GB', 'Surface 23 Pro', 'Microsoft Surface Pro 7+'],
+  datasets: [
+    {
+      label: 'Sales By Volume',
+      data:[1,2,3],
+      backgroundColor:['rgb(124, 99, 90)', 'rgb(212, 99, 23)', 'rgb(50, 125, 132)']
+    }
+  ]
+};
+
+
+const config1= {
+  type: 'pie',
+  data: data1,
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Sales By Percentage'
+      }
+    }
+  },
+};
+        const ctx= document.getElementById('myPie');
+
+    
+        ctx.style.marginLeft='15%';
+        ctx.style.width='25%';
+        ctx.style.height='20%';
+
+
+       
+
+
+        var pieChart = new Chart(
+            ctx,config1);
+
+      </script>      
 </body>
 
 </html>
