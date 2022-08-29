@@ -43,7 +43,14 @@ a{
 .footer{
   display: flex; 
   background-color: black ;
-  justify-content: space-around; height:70vh;
+  justify-content: space-around;
+  @media screen and (min-width: 480px) {
+    body {
+      display:flex;
+      flex-direction:column;
+    }
+  }
+
 };
 
 .footer ul{
@@ -403,8 +410,7 @@ img {
 }
 .pagination {
   text-align: center;
-  margin-bottom: 5rem;
-  margin-top: 5rem;
+  margin:3rem 0;
 }
 .pagination a {
   text-decoration: none;
