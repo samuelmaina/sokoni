@@ -36,10 +36,36 @@ body {
     margin-left: -10px; 
 }
 
-
 a{
   text-decoration: none;
 }
+
+.footer{
+  display: flex; 
+  background-color: black ;
+  justify-content: space-around; height:70vh;
+};
+
+.footer ul{
+ list-style-type: none;
+}
+.footer h2{
+  color:white;
+}
+li{
+  list-style-type: none;
+}
+
+a:hover{
+  text-decoration: underline;
+  color:white;
+  cursor: pointer;
+}
+li a{
+  color: rgb(162, 162, 162);
+}
+
+
 body > header > h1 {
   font-family: "Noto Sans JP", Calibri, "Trebuchet MS", sans-serif;
   font-weight: 300;
