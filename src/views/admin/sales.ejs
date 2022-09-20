@@ -4,122 +4,156 @@
 <link rel="stylesheet" href="/css/css/all.min.css">
 </head>
 <body>
+
     <%- include('../includes/admin-nav.ejs') %>
-    <div class="container">
-        <% if (sales.length>0) { %>
-        <div class="grid">
-            <% for (let product of sales) { %>
-            <article class="card product-item">
-                <header class="card__header">
-                    <p>
-                        <%= product.productData.title %>
-                    </p>
-                </header>
-                <div class="card__image">
-                    <img src="<%= product.productData.imageUrl %>" alt="<%=product.productData.title %>">
-                </div>
-                <div class="card__content">
-                    <h3>Profit</h3>
-                    <p style="color:rgb(134, 133, 133);">Kshs
-                        <%= product.profit %></p>
-
-
-                    <h3>Total Sale</h3>
-                    <p style="color:rgb(134, 133, 133);">Kshs
-                        <%= product.total %></p>
-
-                </div>
-            </article>
-            <% } %>
-        </div>
-        <% } else { %>
-        <!-- <h1 class=" centered">No Sales Yet!</h1> -->
-        <% } %>
-    </div>
-    </main>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-     <div style="width:50%; height: 25%; display: flex; ">
+   
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js" integrity="sha512-ElRFoEQdI5Ht6kZvyzXhYG9NqjtkmlkfYk0wr6wHxU9JEHakS7UJZNeml5ALk+8IKlU6jDgMabC3vkumRokgJA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+     <div style="width:50%; height: 25%; display: flex; flex-direction: column;">
         <canvas id="myChart" width="200" height="100"></canvas>
-        <canvas id="myPie" width="200" height="60"></canvas>
+        <div style="width:50%; height: 25%; display: flex; flex-direction: column;">
 
+        </div>
+        <canvas id="myPie" width="200" height="60"></canvas>
+     </div>
+     <div>
+      Your Total Profit as of now is = "<%=salesData.totalProfit %>" 
      </div>
     <script>
-        const labels = sales.months;
+        const  salesData = <%- JSON.stringify(salesData) %>;
+         const profitsData= salesData.profitTrend;
+        const timeStamps = [];
+        for (let i=0; i< profitsData.timeStamps.length; i++) {
+          timeStamps.push(new Date(profitsData.timeStamps[i]).toUTCString().slice(0, -7))
+        }
+        const profits= profitsData.profits;
+
+
+  
+        const color= 'rgb(2, 217, 81)';
+
+        const profitDataSet=  [{label:'Your profits growth rate Trend', data:profits,  backgroundColor: color,
+            borderColor: color,
+            fill: false,
+            lineTension:0,
+            radius: 5
+          }];
+       
+
+   
+        const dataPoints=[
+        {label:'dataset 1', data: [10, 50, 25, 70, 40]},
+        {label: 'dataset 2', data: [20, 35, 40, 60]}
+        ]
+        
+        const dataset=[]
+        for (let i = 0; i < 2; i++) {
+          const color= generateRandomRGBstring();
+          dataset.push({
+            label: dataPoints[i].label,
+            data: dataPoints[i].data,
+            backgroundColor: color,
+            borderColor: color,
+            fill: false,
+            lineTension:0,
+            radius: 5,
+          })
+          
+        }
         const data = {
-          title:' Sales Revenue',
-          labels: labels,
-          datasets: sales.datasets
-        };
+    labels:timeStamps,
+    datasets: profitDataSet,
+  };
+
+
+  function generateRandomRGBstring() {
+    function randomNum(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) ) + min;
+    }
+    return `rgb(${randomNum(0,255)}, ${randomNum(250,255)}, ${randomNum(0,255)})`    
+  }
+
 
 
     const config = {
           type: 'line',
-          data: data,
-          options:{}
+          data,
+          options: {
+            scales: {
+                y: {
+                    ticks: {
+                        // Include a dollar sign in the ticks
+                        callback: function(value, index, ticks) {
+                            return 'Kshs. ' + value;
+                        }
+                    }
+                }
+            }
+            ,   
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Profits trend for your products.',
+                    font: {
+                        size: 28
+                    }
+                }
+            }
+    }
         };
-      
 
-      
-      
-      </script>
-      <script>
         const canvas= document.getElementById('myChart');
-        canvas.style.marginLeft='15%';
-        canvas.style.width='25%';
         const myChart = new Chart(
           canvas,
-          config,
-           {
-            plugins: {
-                labels:{
-                    showActualPercentages: true,
-                }
-  
-    } }
-        );
+          config
+         );
+
+      
+      
+      
+    </script>
+      <script>
+       
+
+//         const DATA_COUNT = 5;
+// const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
+
+// const data1 = {
+//   labels: sales.products,
+//   datasets: [
+//     {
+//       label: 'Sales By Volume',
+//       data:sales.totalVolumes
+//     }
+//   ]
+// };
 
 
-        const DATA_COUNT = 5;
-const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
-
-const data1 = {
-  labels: sales.products,
-  datasets: [
-    {
-      label: 'Sales By Volume',
-      data:sales.totalVolumes
-    }
-  ]
-};
-
-
-const config1= {
-  type: 'pie',
-  data: data1,
-  options: {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: 'Sales By Percentage'
-      }
-    }
-  },
-};
-        const ctx= document.getElementById('myPie');
+// const config1= {
+//   type: 'pie',
+//   data: data1,
+//   options: {
+//     responsive: true,
+//     plugins: {
+//       legend: {
+//         position: 'top',
+//       },
+//       title: {
+//         display: true,
+//         text: 'Sales By Percentage'
+//       }
+//     }
+//   },
+// };
+//         const ctx= document.getElementById('myPie');
 
     
-        ctx.style.marginLeft='15%';
-        ctx.style.width='25%';
-        ctx.style.height='20%';
+//         ctx.style.marginLeft='15%';
+//         ctx.style.width='25%';
+//         ctx.style.height='20%';
 
-        var pieChart = new Chart(
-            ctx,config1);
+//         var pieChart = new Chart(
+//             ctx,config1);
 
       </script>      
 </body>
-
 </html>

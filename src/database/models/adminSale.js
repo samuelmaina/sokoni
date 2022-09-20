@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const ranges = require("../../config/constraints");
 
+const Product = require("./product");
 const { adminSalesServices } = require("../services");
 const { addSale } = adminSalesServices;
 
@@ -15,6 +16,24 @@ const AdminSales = new Schema({
     maxlength: 24,
     minlength: 24,
   },
+  totalNoOfSales: {
+    type: Number,
+    default: 0,
+  },
+  profitTrend: {
+    profits: [
+      {
+        type: Number,
+        required: "Please provide storage of admin Profits.",
+      },
+    ],
+    timeStamps: [
+      {
+        type: Date,
+        required: "Provide the timeStamp array",
+      },
+    ],
+  },
   products: [
     {
       productData: {
@@ -24,17 +43,29 @@ const AdminSales = new Schema({
         maxlength: 24,
         minlength: 24,
       },
-      sales: [
-        {
-          quantity: {
-            type: Number,
-            required: "Must provided the sold quantity",
-            max: 20000,
-            min: 1,
+      sales: {
+        timeStamps: [
+          {
+            type: Date,
+            required: "The Date must be provided",
           },
-          soldAt: { type: Date, require: true },
-        },
-      ],
+        ],
+        totals: [
+          {
+            type: Number,
+            required: "Must provide the current total of production",
+            min: 0,
+          },
+        ],
+
+        revenueTrend: [
+          {
+            type: Number,
+            required: "Must provide the current revenue rate",
+            min: 0,
+          },
+        ],
+      },
     },
   ],
 });
@@ -46,6 +77,7 @@ statics.createOne = async function (adminId) {
   });
   return await adminSale.save();
 };
+
 statics.addSalesToAdmins = async function (orderedProducts) {
   for (const product of orderedProducts) {
     const productDetails = product.productData;
@@ -64,13 +96,19 @@ statics.addSalesToAdmins = async function (orderedProducts) {
 statics.findOneForAdminIdAndPopulateProductsData = async function (adminId) {
   const sales = await this.findOne({ adminId }).populate(
     "products.productData",
-    "title sellingPrice buyingPrice imageUrl"
+    "title sellingPrice imageUrl"
   );
   if (sales) {
-    const soldOut = adminSalesServices.calculatProductsSalesData(
-      sales.products
-    );
-    return soldOut;
+    const { profitTrend, products, totalNoOfSales } = sales;
+    const totalProfit =
+      profitTrend.profits[totalNoOfSales - 1] * totalNoOfSales;
+    const result = {
+      profitTrend,
+      products,
+      totalProfit,
+    };
+
+    return result;
   }
   return [];
 };
@@ -85,7 +123,27 @@ statics.findOneByAdminId = async function (adminId) {
 
 methods.addSale = async function (saleDetails) {
   const soldProducts = this.products;
-  addSale(soldProducts, saleDetails);
+  const profits = this.profitTrend.profits;
+  const timeStamps = this.profitTrend.timeStamps;
+
+  let noOfSales = this.totalNoOfSales;
+  const { productId, quantity } = saleDetails;
+  const { sellingPrice, buyingPrice } = await Product.findById(productId);
+  const saleTotal = sellingPrice * quantity;
+  addSale(soldProducts, productId, saleTotal);
+
+  const currentProfit = saleTotal - buyingPrice * quantity;
+  timeStamps.push(Date.now());
+  if (noOfSales < 1) {
+    profits.push(currentProfit);
+  } else {
+    const newTotalProfit = profits[noOfSales - 1] * noOfSales + currentProfit;
+    console.log(newTotalProfit, noOfSales);
+    profits.push(newTotalProfit / (noOfSales + 1));
+  }
+
+  this.totalNoOfSales++;
+
   return await this.save();
 };
 

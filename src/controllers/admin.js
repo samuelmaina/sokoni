@@ -239,14 +239,15 @@ exports.getAdminSales = async (req, res, next) => {
   try {
     const renderer = new Renderer(res);
     const adminId = returnAdminIdIfAdminIsInSession(req);
-    const salesProfits =
-      await AdminSales.findOneForAdminIdAndPopulateProductsData(adminId);
+    const salesData = await AdminSales.findOneForAdminIdAndPopulateProductsData(
+      adminId
+    );
     renderer
       .templatePath("admin/sales")
       .pageTitle("Your Sales")
       .activePath("/sales")
       .appendDataToResBody({
-        sales: salesProfits,
+        salesData,
       })
       .render();
   } catch (error) {
