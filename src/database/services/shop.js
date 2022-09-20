@@ -7,6 +7,9 @@ const {
 
 exports.productQuantityValidator = (product, selectedQuantity) => {
   const currentQuantity = product.quantity;
+  if (selectedQuantity < 1) {
+    return `Quantity added must be one or greater.`;
+  }
   if (currentQuantity < selectedQuantity) {
     return `On stock quantity is ${formatInt(
       currentQuantity,
