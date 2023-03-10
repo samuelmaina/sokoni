@@ -8,8 +8,13 @@
  There are two  users of the application, sellers(admins) and customers.<br/>
  Sellers can add , edit and delete products from the application. They can also view their sales which are shows through dashboards with a variety of charts.
  <br/>
-Customers buy products from the shop and see their purchases. They top up their balance at their own convinience which is later deduced during shopping. They are shown the current purchasd items.They can also download invoices as pdf. They have a dashboard showing their current balance and details.
-
+Customers buy products from the shop and see their purchases. They top up their balance at their own convinience which is later deduced during shopping. They are shown the current purchasd items.They can also download invoices as pdf. They have a dashboard showing their current balance and details. 
+ #### Other Features
+ - The home page, product page and pages for different categories have accurate paginations(first page,next page, prev, last page).
+ - Good feedback message. Success messages are shown in green,errors shown in red and notifications are shown in blue.
+ - Ultimate validation and standardization of input and output data.
+ - Incorporation of email for signup and reset confirmations, sms for phone number validation. 
+ - Mobile phone payment integration using M-PESA.
 ## Technologies used
  Node.js .<br/>
  Ejs <br/>
@@ -21,7 +26,11 @@ Cloudinary for image hosting.<br/>
 Sendgrid for email sending.<br/>
 Twillio for sms sending(used mostly for confirming telephone numbers).
 MPesa (a mobile transfer platform in Eastern Africa) for account recharge.
-
+### Other technological implementation
+- Resused most page login,sign-up
+- Comprehensive unit, integration and end-to-end tests
+- Small and single purpose functions, classes, routes, controllers.
+- Use of some design patterns such as builder pattern.
 
 # Some Parts of the Application
 ### The home page
