@@ -1,6 +1,7 @@
-require("dotenv").config({ path: __dirname + "./../../.env" });
+const path= require('path')
+const path_url= path.normalize(__dirname + "./../../.env")
+require("dotenv").config({ path: path_url});
 const envVaribles = process.env;
-
 exports.SENDGRID_API_KEY = envVaribles.SENDGRID_API_KEY;
 exports.PORT = envVaribles.PORT;
 exports.MONGO_URI = envVaribles.MONGO_URI;
