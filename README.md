@@ -34,7 +34,8 @@ MPesa (a mobile transfer platform in Eastern Africa) for account recharge.
 ## Running the automated tests
 - Some tests are failing but most are passing. Includes unit, integrated and e2e testing.
 - Can watch the video from the youtube video [https://youtu.be/ata3ngksGGU](https://youtu.be/ata3ngksGGU)
-- <img width="1920" alt="Screenshot 2023-09-07 at 10 32 04" src="https://github.com/samuelmaina/sokoni/assets/55924723/d0ead8e0-f320-45eb-88b1-2c5c4d15f599">
+![cropped](https://github.com/samuelmaina/sokoni/assets/55924723/79238f1d-e341-4c92-b150-b70af04b8a84)
+
 
 
 # Some Parts of the Application
