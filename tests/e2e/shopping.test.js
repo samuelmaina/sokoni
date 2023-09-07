@@ -172,7 +172,7 @@ describe("logged in user can be able to shop", () => {
     );
 
     describe("Addition to cart", () => {
-      it.only(
+      it(
         "should be able to add quantity and the push to cart",
         async () => {
           const balance = (await User.findById(user.id)).balance;

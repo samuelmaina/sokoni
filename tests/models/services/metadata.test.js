@@ -9,7 +9,7 @@ const {
 const { generateMongooseId } = require("../../utils/generalUtils/utils");
 const { ensureArrayContains, verifyEqual } = require("../../utils/testsUtils");
 
-describe.skip("should be able to add element to arr", () => {
+describe("should be able to add element to arr", () => {
   const field = "category";
   it("when there are no preexisting element", () => {
     const firstElement = {

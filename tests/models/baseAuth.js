@@ -21,7 +21,7 @@ const {
 
 const ranges = requires.constrains.base;
 
-const MAX_SETUP_TIME_IN_MS = 10000;
+const MAX_SETUP_TIME_IN_MS = 7000;
 
 module.exports = (Model) => {
   describe("CreateOne", () => {

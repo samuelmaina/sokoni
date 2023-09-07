@@ -11,7 +11,7 @@ const { generateMongooseId } = require("../../utils/generalUtils/utils");
 
 const { productQuantityValidator, cartTotalValidator, addToAdminSales } =
   shopServices;
-describe.skip("Shop services", () => {
+describe("Shop services", () => {
   describe("productQuantityValidator", () => {
     it("should not reject if the quantity is within range ", () => {
       const product = {

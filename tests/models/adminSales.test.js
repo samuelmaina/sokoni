@@ -78,7 +78,7 @@ describe("Admin Sales", () => {
           verifyEqual(soldProducts[0].sales.length, 1);
         });
       });
-      it.only("findOneForAdminIdAndPopulateProductsData", async () => {
+      it("findOneForAdminIdAndPopulateProductsData", async () => {
         const adminId = generateMongooseId();
         const numberOfProds = 10;
 

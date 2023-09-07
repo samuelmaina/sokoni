@@ -1,9 +1,7 @@
-const requires= require("../utils/requires");
-
+const requires = require("../utils/requires");
 
 const { mongooseId } = requires.constrains;
 const { Metadata } = requires.Models;
-
 
 const { clearDb } = require("../utils/generalUtils/database");
 const {
@@ -18,15 +16,14 @@ const {
 } = require("../utils/testsUtils");
 const { includeSetUpAndTearDown, ValidationError, ranges } = require("./utils");
 
-describe.skip("Metadata", () => {
+describe("Metadata", () => {
   let doc;
   includeSetUpAndTearDown();
   beforeEach(async () => {
     doc = await fetchSingleton();
   });
-  afterEach(async () => {
-    await clearDb();
-  });
+
+  afterEach(async () => await clearDb());
 
   const categoryExample = {
     category: "category 1",

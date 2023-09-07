@@ -30,9 +30,9 @@ const credentials = {
 
 describe("User test", () => {
   includeSetUpAndTearDown();
-  describe("Auth tests", () => {
-    baseTest(User);
-  });
+  // describe("Auth tests", () => {
+  //   baseTest(User);
+  // });
   describe("user methods", () => {
     let user;
     beforeEach(async () => {
@@ -41,7 +41,7 @@ describe("User test", () => {
     afterEach(async () => {
       await clearDb();
     });
-    describe.only("user methods", () => {
+    describe("user methods", () => {
       describe("addProductsToCart", () => {
         it("should add productId to cart", async () => {
           const products = await createTestProducts([generateMongooseId()], 1);

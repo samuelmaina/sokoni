@@ -67,7 +67,7 @@ describe("Auth validators", () => {
       });
     });
   });
-  describe.skip("password", () => {
+  describe("password", () => {
     const { minlength, maxlength, error } = ranges.password;
     it("should throw for short passwords", async () => {
       const body = {

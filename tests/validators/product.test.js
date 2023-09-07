@@ -21,7 +21,7 @@ const {
   productValidator,
 } = product;
 
-describe.skip("Product validator", () => {
+describe("Product validator", () => {
   describe("Title", () => {
     const { minlength, maxlength, error } = ranges.title;
     validateStringField(title, "title", minlength, maxlength, error);

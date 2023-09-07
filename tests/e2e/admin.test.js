@@ -95,7 +95,7 @@ nonImage.file = path.resolve("tests/data/images/non_image.pdf");
 let admin;
 
 const productsUrl = `${base}/admin/products`;
-describe.skip("Admin  ", () => {
+describe("Admin  ", () => {
   beforeAll(async () => {
     await startApp(PORT);
     page = new Page(getNewDriverInstance());
@@ -372,7 +372,7 @@ describe.skip("Admin  ", () => {
       },
       MAX_TESTING_TIME
     );
-    describe.skip("When logged in", () => {
+    describe("When logged in", () => {
       beforeAll(async () => {
         await logIn();
       }, MAX_SETUP_TIME);

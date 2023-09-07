@@ -1,15 +1,14 @@
+const requires = require("../../utils/requires");
 
-const requires= require("../../utils/requires");
+const { emailSender } = requires.utils;
 
-const {emailSender} = requires.utils;
-
-describe.skip("Email Sender", () => {
+describe("Email Sender", () => {
   const receiver = "samuelmayna@gmail.com";
   it("should send emails", async () => {
     const body = {
       subject: "Test",
-      replyTo: "Samuel Maina",
-      text: "I am sending an email from nodemailer!",
+      replyTo: "samuelmayna@gmail.com",
+      text: "I am sending an email from sendgrid!",
       to: receiver,
       from: process.env.EMAIL,
     };

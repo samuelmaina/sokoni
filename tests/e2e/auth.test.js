@@ -47,7 +47,7 @@ describe("Auth", () => {
   });
 
   describe("Admin should be able to navigate to the admin portal.", () => {
-    it.only(
+    it(
       "should be able to access the admin portal.",
       async () => {
         await page.openUrl(base);
